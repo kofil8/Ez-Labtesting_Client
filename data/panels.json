@@ -1,0 +1,48 @@
+[
+  {
+    "id": "panel-001",
+    "name": "Essential Health Screening",
+    "description": "Core tests for overall health monitoring",
+    "testIds": ["test-001", "test-002", "test-003"],
+    "originalPrice": 104.97,
+    "bundlePrice": 89.99,
+    "savings": 14.98
+  },
+  {
+    "id": "panel-002",
+    "name": "Women's Wellness Complete",
+    "description": "Comprehensive hormone and health panel for women",
+    "testIds": ["test-001", "test-002", "test-004", "test-005", "test-010", "test-019"],
+    "originalPrice": 369.94,
+    "bundlePrice": 299.99,
+    "savings": 69.95
+  },
+  {
+    "id": "panel-003",
+    "name": "Men's Complete Health",
+    "description": "Full health assessment panel for men",
+    "testIds": ["test-001", "test-002", "test-003", "test-006", "test-011"],
+    "originalPrice": 219.95,
+    "bundlePrice": 179.99,
+    "savings": 39.96
+  },
+  {
+    "id": "panel-004",
+    "name": "STD Comprehensive Screening",
+    "description": "Complete sexual health panel",
+    "testIds": ["test-008"],
+    "originalPrice": 199.99,
+    "bundlePrice": 199.99,
+    "savings": 0
+  },
+  {
+    "id": "panel-005",
+    "name": "Energy & Vitality Panel",
+    "description": "Tests for common causes of fatigue",
+    "testIds": ["test-004", "test-005", "test-009", "test-013", "test-018"],
+    "originalPrice": 243.95,
+    "bundlePrice": 199.99,
+    "savings": 43.96
+  }
+]
+

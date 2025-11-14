@@ -1,0 +1,117 @@
+[
+  {
+    "id": "order-001",
+    "userId": "user-1",
+    "tests": [
+      {
+        "testId": "test-001",
+        "testName": "Complete Blood Count (CBC)",
+        "price": 29.99
+      },
+      {
+        "testId": "test-004",
+        "testName": "Thyroid Panel (TSH, T3, T4)",
+        "price": 79.99
+      }
+    ],
+    "status": "completed",
+    "subtotal": 109.98,
+    "totalAmount": 109.98,
+    "customerInfo": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "phone": "5551234567",
+      "dateOfBirth": "1990-05-15",
+      "address": {
+        "street": "123 Main St",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90001"
+      },
+      "notifications": {
+        "email": true,
+        "sms": false
+      }
+    },
+    "paymentMethod": "card",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-17T14:20:00Z",
+    "completedAt": "2024-01-17T14:20:00Z"
+  },
+  {
+    "id": "order-002",
+    "userId": "user-1",
+    "tests": [
+      {
+        "testId": "test-003",
+        "testName": "Lipid Panel",
+        "price": 34.99
+      }
+    ],
+    "status": "processing",
+    "subtotal": 34.99,
+    "totalAmount": 34.99,
+    "customerInfo": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "phone": "5551234567",
+      "dateOfBirth": "1990-05-15",
+      "address": {
+        "street": "123 Main St",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90001"
+      },
+      "notifications": {
+        "email": true,
+        "sms": true
+      }
+    },
+    "paymentMethod": "ach",
+    "createdAt": "2024-02-01T09:15:00Z",
+    "updatedAt": "2024-02-01T09:15:00Z"
+  },
+  {
+    "id": "order-003",
+    "userId": "user-1",
+    "tests": [
+      {
+        "testId": "test-005",
+        "testName": "Vitamin D, 25-Hydroxy",
+        "price": 49.99
+      },
+      {
+        "testId": "test-013",
+        "testName": "Vitamin B12 and Folate",
+        "price": 59.99
+      }
+    ],
+    "status": "pending",
+    "subtotal": 109.98,
+    "discount": 10.998,
+    "promoCode": "SAVE10",
+    "totalAmount": 98.98,
+    "customerInfo": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "phone": "5551234567",
+      "dateOfBirth": "1990-05-15",
+      "address": {
+        "street": "123 Main St",
+        "city": "Los Angeles",
+        "state": "CA",
+        "zipCode": "90001"
+      },
+      "notifications": {
+        "email": true,
+        "sms": false
+      }
+    },
+    "paymentMethod": "card",
+    "createdAt": "2024-02-10T16:45:00Z"
+  }
+]
+

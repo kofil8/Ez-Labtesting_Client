@@ -1,0 +1,88 @@
+[
+  {
+    "id": "result-001",
+    "orderId": "order-001",
+    "testName": "Complete Blood Count (CBC)",
+    "status": "completed",
+    "completedAt": "2024-01-17T14:20:00Z",
+    "biomarkers": [
+      {
+        "name": "White Blood Cell Count",
+        "value": "7.2",
+        "unit": "K/uL",
+        "referenceRange": "4.5-11.0",
+        "status": "normal"
+      },
+      {
+        "name": "Red Blood Cell Count",
+        "value": "4.8",
+        "unit": "M/uL",
+        "referenceRange": "4.5-5.9",
+        "status": "normal"
+      },
+      {
+        "name": "Hemoglobin",
+        "value": "14.5",
+        "unit": "g/dL",
+        "referenceRange": "13.5-17.5",
+        "status": "normal"
+      },
+      {
+        "name": "Hematocrit",
+        "value": "42.1",
+        "unit": "%",
+        "referenceRange": "38.8-50.0",
+        "status": "normal"
+      },
+      {
+        "name": "Platelet Count",
+        "value": "245",
+        "unit": "K/uL",
+        "referenceRange": "150-400",
+        "status": "normal"
+      }
+    ],
+    "interpretation": "All values are within normal range. No signs of anemia, infection, or blood disorders detected.",
+    "pdfUrl": "/mock/results-001.pdf"
+  },
+  {
+    "id": "result-002",
+    "orderId": "order-001",
+    "testName": "Thyroid Panel (TSH, T3, T4)",
+    "status": "completed",
+    "completedAt": "2024-01-17T14:20:00Z",
+    "biomarkers": [
+      {
+        "name": "TSH",
+        "value": "2.1",
+        "unit": "mIU/L",
+        "referenceRange": "0.4-4.0",
+        "status": "normal"
+      },
+      {
+        "name": "Free T3",
+        "value": "3.2",
+        "unit": "pg/mL",
+        "referenceRange": "2.3-4.2",
+        "status": "normal"
+      },
+      {
+        "name": "Free T4",
+        "value": "1.1",
+        "unit": "ng/dL",
+        "referenceRange": "0.8-1.8",
+        "status": "normal"
+      }
+    ],
+    "interpretation": "Thyroid function is within normal limits. No evidence of hypothyroidism or hyperthyroidism.",
+    "pdfUrl": "/mock/results-002.pdf"
+  },
+  {
+    "id": "result-003",
+    "orderId": "order-002",
+    "testName": "Lipid Panel",
+    "status": "pending",
+    "biomarkers": []
+  }
+]
+
