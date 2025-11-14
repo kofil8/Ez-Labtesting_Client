@@ -103,10 +103,10 @@ export function SiteFooter() {
   };
 
   return (
-    <footer className='relative border-t bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500'>
+    <footer className='relative border-t bg-gradient-to-br from-green-500 via-purple-500 to-orange-500'>
       {/* Subtle background gradients - Awsmd style */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none opacity-10'>
-        <div className='absolute top-0 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl' />
+        <div className='absolute top-0 left-1/4 w-96 h-96 bg-green-500/30 rounded-full blur-3xl' />
         <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-orange-500/30 rounded-full blur-3xl' />
       </div>
 
@@ -119,7 +119,7 @@ export function SiteFooter() {
           className='py-16 border-b border-blue-600/30'
         >
           <div className='max-w-4xl mx-auto text-center px-4 sm:px-0'>
-            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 awsmd-rounded bg-white border-2 border-blue-500 text-blue-700 text-xs font-bold mb-4 shadow-lg'>
+            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 awsmd-rounded bg-white border-2 border-green-500 text-green-700 text-xs font-bold mb-4 shadow-lg'>
               <Sparkles className='h-3 w-3 sm:h-4 sm:w-4 animate-pulse' />
               <span>Stay Updated</span>
             </div>
@@ -144,14 +144,14 @@ export function SiteFooter() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className='pl-10 h-11 awsmd-rounded bg-white border-2 border-blue-400 focus:border-blue-600 text-sm font-medium'
+                  className='pl-10 h-11 awsmd-rounded bg-white border-2 border-green-400 focus:border-blue-600 text-sm font-medium'
                 />
               </div>
               <Button
                 type='submit'
                 size='default'
                 disabled={isSubmitting}
-                className='h-11 px-6 bg-gradient-to-r from-blue-600 to-purple-500 text-white hover:from-blue-700 hover:to-purple-600 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold text-sm'
+                className='h-11 px-6 bg-gradient-to-r from-green-600 to-purple-500 text-white hover:from-blue-700 hover:to-purple-600 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold text-sm'
               >
                 {isSubmitting ? (
                   "Subscribing..."
