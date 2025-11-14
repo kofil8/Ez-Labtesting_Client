@@ -381,12 +381,12 @@
   }
 
   .awsmd-gradient-cosmic {
-    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 40%, #f97316 75%, #fb923c 100%);
     background-size: 200% 200%;
   }
 
   .awsmd-gradient-text {
-    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 40%, #f97316 75%, #fb923c 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
