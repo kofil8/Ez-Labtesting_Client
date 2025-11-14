@@ -47,12 +47,9 @@ function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
 
 export function StatsSection() {
   return (
-    <section className="awsmd-section bg-white dark:bg-gray-950 relative overflow-hidden">
-      {/* Subtle background gradients */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-        <div className="absolute top-1/4 -left-20 w-96 h-96 awsmd-gradient-blue-purple rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-20 w-96 h-96 awsmd-gradient-purple-pink rounded-full blur-3xl" />
-      </div>
+    <section className="awsmd-section bg-kalles-card relative overflow-hidden">
+      {/* Kalles-style subtle background pattern */}
+      <div className="absolute inset-0 bg-kalles-pattern opacity-30" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
@@ -66,7 +63,7 @@ export function StatsSection() {
             <span className="awsmd-gradient-text">Numbers</span>
             <span className="text-gray-900 dark:text-white"> About Us</span>
           </h2>
-          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Numbers don't lie, so we use data science to drive calculated growth
           </p>
         </motion.div>
@@ -93,7 +90,7 @@ export function StatsSection() {
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </div>
                 {/* Label */}
-                <div className="text-sm md:text-base font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                <div className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                   {stat.label}
                 </div>
                 {/* Icon or decorative element */}

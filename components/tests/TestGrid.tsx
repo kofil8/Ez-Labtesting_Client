@@ -7,7 +7,7 @@ interface TestGridProps {
 
 export function TestGrid({ tests }: TestGridProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
       {tests.map((test) => (
         <TestCard key={test.id} test={test} />
       ))}

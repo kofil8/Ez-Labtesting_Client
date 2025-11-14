@@ -1,134 +1,154 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/lib/auth-context'
-import { useCartStore } from '@/lib/store/cart-store'
-import { ShoppingCart, User, LogOut, Menu, X, Heart, Sparkles } from 'lucide-react'
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
+import { useCartStore } from "@/lib/store/cart-store";
+import { AnimatePresence, motion } from "framer-motion";
+import { LogOut, Menu, ShoppingCart, Sparkles, User, X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function SiteHeader() {
-  const { isAuthenticated, user, logout } = useAuth()
-  const itemCount = useCartStore((state) => state.getItemCount())
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { isAuthenticated, user, logout } = useAuth();
+  const itemCount = useCartStore((state) => state.getItemCount());
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
-    { href: '/tests', label: 'Browse Tests', showAlways: true },
-    { href: '/results', label: 'My Results', showWhenAuth: true },
-    { href: '/admin', label: 'Admin', adminOnly: true },
-  ]
+    { href: "/tests", label: "Browse Tests", showAlways: true },
+    { href: "/results", label: "My Results", showWhenAuth: true },
+    { href: "/admin", label: "Admin", adminOnly: true },
+  ];
 
   return (
-    <header 
+    <header
       className={`sticky top-0 z-50 w-full border-b transition-all duration-500 ${
-        isScrolled 
-          ? 'awsmd-glass border-gray-200/50 dark:border-gray-700/50 shadow-2xl' 
-          : 'bg-white/60 dark:bg-gray-900/60 backdrop-blur-2xl border-gray-200/20 dark:border-gray-700/20'
+        isScrolled
+          ? "bg-kalles-card-strong border-gray-200/50 dark:border-gray-700/50 shadow-lg backdrop-blur-md"
+          : "bg-kalles-card border-gray-200/30 dark:border-gray-700/30 backdrop-blur-sm"
       }`}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
+      <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
+        <div className='flex h-20 items-center justify-between'>
           {/* Logo - Awsmd style */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <motion.div 
-              className="w-12 h-12 awsmd-rounded awsmd-gradient-cosmic flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all"
+          <Link href='/' className='flex items-center gap-3 group'>
+            <motion.div
+              className='w-12 h-12 awsmd-rounded flex items-center justify-center transition-all'
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Heart className="h-6 w-6 text-white" />
+              <img
+                src='/images/logo.png'
+                alt='Ez Lab Testing'
+                width={100}
+                height={100}
+              />
             </motion.div>
-            <span className="text-2xl font-black awsmd-gradient-text">
-              Kevin Lab
+            <span className='text-2xl font-black awsmd-gradient-text'>
+              Ez Lab Testing
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className='hidden md:flex items-center space-x-1'>
             {navLinks.map((link) => {
-              const shouldShow = link.showAlways || 
+              const shouldShow =
+                link.showAlways ||
                 (link.showWhenAuth && isAuthenticated) ||
-                (link.adminOnly && user?.role === 'admin')
-              
-              if (!shouldShow) return null
+                (link.adminOnly && user?.role === "admin");
+
+              if (!shouldShow) return null;
 
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="relative px-5 py-2.5 text-base font-bold transition-all hover:text-primary group"
+                  className='relative px-5 py-2.5 text-base font-bold transition-all hover:text-primary group'
                 >
-                  <span className="relative z-10">{link.label}</span>
-                  <span className="absolute inset-0 awsmd-rounded bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 scale-0 group-hover:scale-100 transition-all duration-300" />
+                  <span className='relative z-10'>{link.label}</span>
+                  <span className='absolute inset-0 awsmd-rounded bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 scale-0 group-hover:scale-100 transition-all duration-300' />
                 </Link>
-              )
+              );
             })}
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             {/* Cart */}
-            <Link href="/cart">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative hover:bg-primary/10 transition-colors group"
+            <Link href='/cart'>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='relative hover:bg-primary/10 transition-colors group'
               >
-                <ShoppingCart className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                <AnimatePresence>
-                  {itemCount > 0 && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-xs text-white flex items-center justify-center font-bold shadow-lg"
-                    >
-                      {itemCount}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                <ShoppingCart className='h-5 w-5 group-hover:scale-110 transition-transform' />
+                {isMounted && (
+                  <AnimatePresence>
+                    {itemCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        className='absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-xs text-white flex items-center justify-center font-bold shadow-lg'
+                      >
+                        {itemCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                )}
               </Button>
             </Link>
 
             {/* Auth - Desktop */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className='hidden md:flex items-center gap-2'>
               {isAuthenticated ? (
                 <>
-                  <Link href="/results">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="hover:bg-primary/10 transition-colors group"
+                  <Link href='/results'>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='hover:bg-primary/10 transition-colors group'
                     >
-                      <User className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                      <User className='h-5 w-5 group-hover:scale-110 transition-transform' />
                     </Button>
                   </Link>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant='ghost'
+                    size='icon'
                     onClick={logout}
-                    className="hover:bg-destructive/10 hover:text-destructive transition-colors group"
+                    className='hover:bg-destructive/10 hover:text-destructive transition-colors group'
                   >
-                    <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    <LogOut className='h-5 w-5 group-hover:scale-110 transition-transform' />
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="ghost" asChild className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 awsmd-rounded font-bold">
-                    <Link href="/login">Sign In</Link>
+                  <Button
+                    variant='ghost'
+                    asChild
+                    className='hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 awsmd-rounded font-bold'
+                  >
+                    <Link href='/login'>Sign In</Link>
                   </Button>
-                  <Button asChild className="awsmd-gradient-cosmic text-white hover:opacity-90 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold px-6 button-shine">
-                    <Link href="/signup" className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                  <Button
+                    asChild
+                    className='awsmd-gradient-cosmic text-white hover:opacity-90 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold px-6 button-shine'
+                  >
+                    <Link href='/signup' className='flex items-center gap-2'>
+                      <Sparkles className='h-5 w-5 group-hover:rotate-12 transition-transform' />
                       Sign Up
                     </Link>
                   </Button>
@@ -138,15 +158,15 @@ export function SiteHeader() {
 
             {/* Mobile Menu Button */}
             <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
+              variant='ghost'
+              size='icon'
+              className='md:hidden'
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className='h-5 w-5' />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className='h-5 w-5' />
               )}
             </Button>
           </div>
@@ -158,62 +178,72 @@ export function SiteHeader() {
         {isMobileMenuOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
+            animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden overflow-hidden border-t bg-background/95 backdrop-blur-xl"
+            className='md:hidden overflow-hidden border-t bg-background/95 backdrop-blur-xl'
           >
-            <div className="container mx-auto px-4 py-4 space-y-3">
+            <div className='container mx-auto px-4 py-4 space-y-3'>
               {navLinks.map((link) => {
-                const shouldShow = link.showAlways || 
+                const shouldShow =
+                  link.showAlways ||
                   (link.showWhenAuth && isAuthenticated) ||
-                  (link.adminOnly && user?.role === 'admin')
-                
-                if (!shouldShow) return null
+                  (link.adminOnly && user?.role === "admin");
+
+                if (!shouldShow) return null;
 
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="block px-4 py-2 text-sm font-medium rounded-lg hover:bg-primary/10 transition-colors"
+                    className='block px-4 py-2 text-sm font-medium rounded-lg hover:bg-primary/10 transition-colors'
                   >
                     {link.label}
                   </Link>
-                )
+                );
               })}
 
-              <div className="pt-3 border-t space-y-2">
+              <div className='pt-3 border-t space-y-2'>
                 {isAuthenticated ? (
                   <>
-                    <Link href="/results" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <User className="h-4 w-4 mr-2" />
+                    <Link
+                      href='/results'
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant='ghost' className='w-full justify-start'>
+                        <User className='h-4 w-4 mr-2' />
                         My Profile
                       </Button>
                     </Link>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-destructive hover:bg-destructive/10"
+                    <Button
+                      variant='ghost'
+                      className='w-full justify-start text-destructive hover:bg-destructive/10'
                       onClick={() => {
-                        logout()
-                        setIsMobileMenuOpen(false)
+                        logout();
+                        setIsMobileMenuOpen(false);
                       }}
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
+                      <LogOut className='h-4 w-4 mr-2' />
                       Sign Out
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full">
+                    <Link
+                      href='/login'
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button variant='ghost' className='w-full'>
                         Sign In
                       </Button>
                     </Link>
-                    <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button className="w-full gradient-cosmic">
-                        <Sparkles className="h-4 w-4 mr-2" />
+                    <Link
+                      href='/signup'
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button className='w-full gradient-cosmic'>
+                        <Sparkles className='h-4 w-4 mr-2' />
                         Sign Up
                       </Button>
                     </Link>
@@ -225,6 +255,5 @@ export function SiteHeader() {
         )}
       </AnimatePresence>
     </header>
-  )
+  );
 }
-

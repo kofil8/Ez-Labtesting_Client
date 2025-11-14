@@ -35,7 +35,7 @@ export function TestCatalog() {
   return (
     <div className="space-y-6">
       {/* Search and Sort */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -43,11 +43,11 @@ export function TestCatalog() {
             placeholder="Search tests..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10"
           />
         </div>
         <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full sm:w-[200px]">
+          <SelectTrigger className="w-full sm:w-[180px] h-10">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -61,26 +61,32 @@ export function TestCatalog() {
 
       {/* Filters and Results */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Filters */}
         <div className="lg:col-span-1">
           <TestFilters
             selectedCategory={category}
             onCategoryChange={setCategory}
           />
         </div>
+        
+        {/* Results */}
         <div className="lg:col-span-3">
           {loading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Loading tests...</p>
+            <div className="text-center py-16">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+              <p className="text-muted-foreground mt-4 text-sm">Loading tests...</p>
             </div>
           ) : tests.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No tests found matching your criteria.</p>
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-sm">No tests found matching your criteria.</p>
             </div>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground mb-4">
-                Showing {tests.length} {tests.length === 1 ? 'test' : 'tests'}
-              </p>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-muted-foreground">
+                  {tests.length} {tests.length === 1 ? 'test' : 'tests'} found
+                </p>
+              </div>
               <TestGrid tests={tests} />
             </>
           )}

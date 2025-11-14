@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 250 20% 98%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -34,7 +34,7 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 0 0% 4%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -61,7 +61,42 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#fafafa] dark:bg-[#0a0a0a] text-foreground;
+    background-attachment: fixed;
+  }
+  
+  /* Kalles-style background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.03;
+    background-image: 
+      linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  
+  .dark body::before {
+    opacity: 0.05;
+  }
+  
+  /* Subtle dot pattern */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.02;
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+  
+  .dark body::after {
+    opacity: 0.04;
   }
 }
 
@@ -556,5 +591,41 @@
   /* Smooth scrolling for entire page */
   html {
     scroll-behavior: smooth;
+  }
+  
+  /* Kalles-style background utilities */
+  .bg-kalles {
+    @apply bg-[#fafafa] dark:bg-[#0a0a0a];
+  }
+  
+  .bg-kalles-pattern {
+    background-image: 
+      linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  
+  .dark .bg-kalles-pattern {
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  }
+  
+  .bg-kalles-dots {
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  
+  .dark .bg-kalles-dots {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  }
+  
+  /* Clean card backgrounds like Kalles */
+  .bg-kalles-card {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm;
+  }
+  
+  .bg-kalles-card-strong {
+    @apply bg-white dark:bg-gray-900;
   }
 }

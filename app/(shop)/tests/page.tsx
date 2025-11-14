@@ -1,47 +1,44 @@
-import { SiteHeader } from '@/components/shared/SiteHeader'
-import { SiteFooter } from '@/components/shared/SiteFooter'
-import { PageContainer } from '@/components/shared/PageContainer'
-import { TestCatalog } from '@/components/tests/TestCatalog'
-import { LocationSelector } from '@/components/shared/LocationSelector'
+import { LocationSelector } from "@/components/shared/LocationSelector";
+import { PageContainer } from "@/components/shared/PageContainer";
+import { SiteFooter } from "@/components/shared/SiteFooter";
+import { SiteHeader } from "@/components/shared/SiteHeader";
+import { TestCatalog } from "@/components/tests/TestCatalog";
 
 export const metadata = {
-  title: 'Browse Lab Tests | Kevin Lab Testing',
-  description: 'Find and order the lab tests you need',
-}
+  title: "Browse Lab Tests | Kevin Lab Testing",
+  description: "Find and order the lab tests you need",
+};
 
 export default function TestsPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className='flex min-h-screen flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black'>
       <SiteHeader />
-      <main className="flex-1">
+      <main className='flex-1'>
         <PageContainer>
-          <div className="py-12 space-y-8">
-            <div className="relative">
-              {/* Background decoration */}
-              <div className="absolute -top-20 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl" />
-              
-              <div className="relative">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-4">
-                  🔬 <span>All Tests</span>
+          <div className='py-8 md:py-12 space-y-8'>
+            {/* Minimalistic Header */}
+            <div className='space-y-4'>
+              <div className='flex items-center justify-between flex-wrap gap-4'>
+                <div className='space-y-2'>
+                  <h1 className='text-3xl md:text-4xl font-semibold tracking-tight text-white'>
+                    Lab Tests
+                  </h1>
+                  <p className='text-gray-400 text-sm md:text-base max-w-2xl'>
+                    Browse our comprehensive catalog of laboratory tests
+                  </p>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-3">
-                  Browse{' '}
-                  <span className="text-gradient-cosmic">Lab Tests</span>
-                </h1>
-                <p className="text-xl text-muted-foreground mb-8 max-w-2xl">
-                  Choose from our comprehensive catalog of laboratory tests
-                </p>
-                <div className="max-w-md">
+                <div className='w-full sm:w-auto sm:min-w-[280px]'>
                   <LocationSelector />
                 </div>
               </div>
             </div>
+
+            {/* Test Catalog */}
             <TestCatalog />
           </div>
         </PageContainer>
       </main>
       <SiteFooter />
     </div>
-  )
+  );
 }
-
