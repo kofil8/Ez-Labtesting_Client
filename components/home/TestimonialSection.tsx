@@ -88,7 +88,7 @@ export function TestimonialSection() {
             Loved by <span className='text-gradient-cosmic'>Thousands</span>
           </h2>
           <p className='text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0'>
-            Don't just take our word for it - hear from our satisfied customers
+            Don&apos;t just take our word for it - hear from our satisfied customers
           </p>
         </motion.div>
 
@@ -130,7 +130,7 @@ export function TestimonialSection() {
                     <div className='relative mb-6'>
                       <Quote className='absolute -top-4 -left-2 h-12 w-12 text-primary/10 -rotate-6' />
                       <p className='text-sm text-muted-foreground pl-6 leading-relaxed relative z-10'>
-                        "{testimonial.text}"
+                        &ldquo;{testimonial.text}&rdquo;
                       </p>
                     </div>
 

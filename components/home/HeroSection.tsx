@@ -47,15 +47,17 @@ export function HeroSection() {
       }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    const sectionElement = sectionRef.current;
+
+    if (sectionElement) {
+      observer.observe(sectionElement);
     }
 
     return () => {
       clearTimeout(loadTimer);
       mediaQuery.removeEventListener("change", handleMediaChange);
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
+      if (sectionElement) {
+        observer.unobserve(sectionElement);
       }
     };
   }, [shouldLoadVideo]);
@@ -128,7 +130,9 @@ export function HeroSection() {
             className='inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 awsmd-rounded bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-bold mb-8 sm:mb-12 shadow-xl'
           >
             <Sparkles className='h-3 w-3 sm:h-4 sm:w-4 animate-pulse' />
-            <span className='hidden sm:inline'>Trusted by 50,000+ health-conscious individuals</span>
+            <span className='hidden sm:inline'>
+              Trusted by 50,000+ health-conscious individuals
+            </span>
             <span className='sm:hidden'>50,000+ Trusted Users</span>
           </motion.div>
 
@@ -239,7 +243,9 @@ export function HeroSection() {
                   <div
                     className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-4 sm:mb-6 awsmd-rounded ${item.bgGradient} flex items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110`}
                   >
-                    <item.icon className={`h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 ${item.iconColor}`} />
+                    <item.icon
+                      className={`h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 ${item.iconColor}`}
+                    />
                   </div>
                   <h3 className='font-black text-xl sm:text-xl md:text-2xl mb-3 sm:mb-4 text-gray-900 dark:text-white'>
                     {item.title}
