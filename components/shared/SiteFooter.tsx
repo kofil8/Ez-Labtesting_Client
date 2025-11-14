@@ -103,11 +103,11 @@ export function SiteFooter() {
   };
 
   return (
-    <footer className='relative border-t bg-gradient-to-br from-green-400 via-yellow-300 to-green-500'>
+    <footer className='relative border-t bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500'>
       {/* Subtle background gradients - Awsmd style */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none opacity-10'>
-        <div className='absolute top-0 left-1/4 w-96 h-96 bg-green-500/30 rounded-full blur-3xl' />
-        <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-yellow-500/30 rounded-full blur-3xl' />
+        <div className='absolute top-0 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl' />
+        <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-orange-500/30 rounded-full blur-3xl' />
       </div>
 
       <div className='relative container mx-auto px-4 sm:px-6 lg:px-8'>
@@ -116,19 +116,16 @@ export function SiteFooter() {
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className='py-16 border-b border-green-600/30'
+          className='py-16 border-b border-blue-600/30'
         >
           <div className='max-w-4xl mx-auto text-center px-4 sm:px-0'>
-            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 awsmd-rounded bg-white border-2 border-green-500 text-green-700 text-xs font-bold mb-4 shadow-lg'>
+            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 awsmd-rounded bg-white border-2 border-blue-500 text-blue-700 text-xs font-bold mb-4 shadow-lg'>
               <Sparkles className='h-3 w-3 sm:h-4 sm:w-4 animate-pulse' />
               <span>Stay Updated</span>
             </div>
             <h3 className='text-xl sm:text-2xl md:text-3xl mb-4 text-gradient-cosmic text-center'>
-              <span className='text-green-700 font-bold'>Subscribe</span>
-              <span className='text-gray-900'>
-                {" "}
-                to Our Newsletter
-              </span>
+              <span className='text-blue-700 font-bold'>Subscribe</span>
+              <span className='text-gray-900'> to Our Newsletter</span>
             </h3>
 
             <p className='text-sm sm:text-base text-gray-800 mb-6 max-w-2xl mx-auto leading-relaxed font-medium px-4 sm:px-0'>
@@ -147,14 +144,14 @@ export function SiteFooter() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className='pl-10 h-11 awsmd-rounded bg-white border-2 border-green-400 focus:border-green-600 text-sm font-medium'
+                  className='pl-10 h-11 awsmd-rounded bg-white border-2 border-blue-400 focus:border-blue-600 text-sm font-medium'
                 />
               </div>
               <Button
                 type='submit'
                 size='default'
                 disabled={isSubmitting}
-                className='h-11 px-6 bg-gradient-to-r from-green-600 to-green-500 text-white hover:from-green-700 hover:to-green-600 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold text-sm'
+                className='h-11 px-6 bg-gradient-to-r from-blue-600 to-purple-500 text-white hover:from-blue-700 hover:to-purple-600 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold text-sm'
               >
                 {isSubmitting ? (
                   "Subscribing..."
@@ -178,7 +175,10 @@ export function SiteFooter() {
           className='py-8 sm:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8'
         >
           {/* Company Info - Awsmd style */}
-          <motion.div variants={itemVariants} className='sm:col-span-2 lg:col-span-2'>
+          <motion.div
+            variants={itemVariants}
+            className='sm:col-span-2 lg:col-span-2'
+          >
             <Link href='/' className='inline-flex items-center gap-2 mb-4'>
               <div className='w-8 h-8 sm:w-10 sm:h-10 awsmd-rounded awsmd-gradient-cosmic flex items-center justify-center shadow-xl'>
                 <Image
