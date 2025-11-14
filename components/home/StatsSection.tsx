@@ -47,7 +47,7 @@ function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
 
 export function StatsSection() {
   return (
-    <section className="awsmd-section bg-kalles-card relative overflow-hidden">
+    <section className="py-12 sm:py-16 md:py-20 lg:py-32 bg-kalles-card relative overflow-hidden">
       {/* Kalles-style subtle background pattern */}
       <div className="absolute inset-0 bg-kalles-pattern opacity-30" />
 
@@ -56,19 +56,19 @@ export function StatsSection() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-20"
+          className="text-center mb-10 sm:mb-12 md:mb-16 lg:mb-20"
         >
-          <h2 className="awsmd-heading-md mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
             <span className="text-gray-900 dark:text-white">Some </span>
             <span className="awsmd-gradient-text">Numbers</span>
             <span className="text-gray-900 dark:text-white"> About Us</span>
           </h2>
-          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4 sm:px-0">
             Numbers don't lie, so we use data science to drive calculated growth
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
@@ -84,17 +84,17 @@ export function StatsSection() {
               whileHover={{ y: -8 }}
               className="text-center relative group"
             >
-              <div className="awsmd-glass-card p-8 md:p-10 awsmd-hover-lift border-2 border-gray-200/50 dark:border-gray-700/50 group-hover:border-purple-300/50 dark:group-hover:border-purple-600/50">
+              <div className="awsmd-glass-card p-4 sm:p-6 md:p-8 lg:p-10 awsmd-hover-lift border-2 border-gray-200/50 dark:border-gray-700/50 group-hover:border-purple-300/50 dark:group-hover:border-purple-600/50">
                 {/* Number display - Awsmd style */}
-                <div className="awsmd-number mb-4">
+                <div className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 sm:mb-3 md:mb-4">
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </div>
                 {/* Label */}
-                <div className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                <div className="text-[10px] sm:text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                   {stat.label}
                 </div>
                 {/* Icon or decorative element */}
-                <div className="absolute -top-3 -right-3 w-12 h-12 awsmd-gradient-cosmic awsmd-rounded opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl" />
+                <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 awsmd-gradient-cosmic awsmd-rounded opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl" />
               </div>
             </motion.div>
           ))}

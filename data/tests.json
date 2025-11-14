@@ -12,7 +12,8 @@
     "sampleType": "Blood",
     "preparation": "Fasting not required",
     "keywords": ["blood", "anemia", "infection", "complete"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=400&h=300&fit=crop"
   },
   {
     "id": "test-002",
@@ -27,7 +28,8 @@
     "sampleType": "Blood",
     "preparation": "Fasting 8-12 hours required",
     "keywords": ["kidney", "liver", "glucose", "metabolic"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop"
   },
   {
     "id": "test-003",
@@ -42,7 +44,8 @@
     "sampleType": "Blood",
     "preparation": "Fasting 9-12 hours required",
     "keywords": ["cholesterol", "heart", "cardiovascular", "hdl", "ldl"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=400&h=300&fit=crop"
   },
   {
     "id": "test-004",
@@ -57,7 +60,8 @@
     "sampleType": "Blood",
     "preparation": "No special preparation needed",
     "keywords": ["thyroid", "metabolism", "tsh", "hormone"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=400&h=300&fit=crop"
   },
   {
     "id": "test-005",
@@ -72,7 +76,8 @@
     "sampleType": "Blood",
     "preparation": "No fasting required",
     "keywords": ["vitamin d", "bone", "immune", "nutrition"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop"
   },
   {
     "id": "test-006",
@@ -87,7 +92,8 @@
     "sampleType": "Blood",
     "preparation": "Morning collection preferred",
     "keywords": ["testosterone", "hormone", "male", "energy"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop"
   },
   {
     "id": "test-007",
@@ -102,7 +108,8 @@
     "sampleType": "Blood",
     "preparation": "No fasting required",
     "keywords": ["diabetes", "blood sugar", "glucose", "a1c"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1581594549595-35f6edc7b762?w=400&h=300&fit=crop"
   },
   {
     "id": "test-008",
@@ -117,7 +124,8 @@
     "sampleType": "Blood and Urine",
     "preparation": "No special preparation",
     "keywords": ["std", "sexual health", "hiv", "screening"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1576602976047-174e57a47881?w=400&h=300&fit=crop"
   },
   {
     "id": "test-009",
@@ -132,7 +140,8 @@
     "sampleType": "Blood",
     "preparation": "Fasting 8-10 hours preferred",
     "keywords": ["iron", "anemia", "ferritin", "fatigue"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=300&fit=crop"
   },
   {
     "id": "test-010",
@@ -147,7 +156,8 @@
     "sampleType": "Blood",
     "preparation": "No special preparation",
     "keywords": ["estrogen", "hormone", "female", "fertility", "menopause"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=300&fit=crop"
   },
   {
     "id": "test-011",
@@ -162,7 +172,8 @@
     "sampleType": "Blood",
     "preparation": "No ejaculation 48 hours before test",
     "keywords": ["prostate", "psa", "male", "cancer screening"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&h=300&fit=crop"
   },
   {
     "id": "test-012",
@@ -177,7 +188,8 @@
     "sampleType": "Blood",
     "preparation": "Morning collection 7-9 AM required",
     "keywords": ["cortisol", "stress", "adrenal", "hormone"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=300&fit=crop"
   },
   {
     "id": "test-013",
@@ -192,7 +204,8 @@
     "sampleType": "Blood",
     "preparation": "No fasting required",
     "keywords": ["b12", "folate", "vitamin", "energy", "anemia"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=400&h=300&fit=crop"
   },
   {
     "id": "test-014",
@@ -207,7 +220,8 @@
     "sampleType": "Blood",
     "preparation": "No special preparation",
     "keywords": ["inflammation", "crp", "infection", "heart disease"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=400&h=300&fit=crop"
   },
   {
     "id": "test-015",
@@ -222,7 +236,8 @@
     "sampleType": "Blood",
     "preparation": "Fasting 8 hours preferred",
     "keywords": ["liver", "alt", "ast", "hepatic"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=300&fit=crop"
   },
   {
     "id": "test-016",
@@ -237,7 +252,8 @@
     "sampleType": "Urine",
     "preparation": "First morning sample preferred",
     "keywords": ["urine", "kidney", "infection", "diabetes"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1582560475093-ba66accbc424?w=400&h=300&fit=crop"
   },
   {
     "id": "test-017",
@@ -252,7 +268,8 @@
     "sampleType": "Blood",
     "preparation": "No special preparation",
     "keywords": ["dhea", "adrenal", "hormone", "aging"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=300&fit=crop"
   },
   {
     "id": "test-018",
@@ -267,7 +284,8 @@
     "sampleType": "Blood",
     "preparation": "No fasting required",
     "keywords": ["magnesium", "muscle", "heart", "mineral"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=300&fit=crop"
   },
   {
     "id": "test-019",
@@ -282,7 +300,8 @@
     "sampleType": "Blood",
     "preparation": "Timing depends on menstrual cycle",
     "keywords": ["progesterone", "hormone", "female", "fertility", "pregnancy"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=400&h=300&fit=crop"
   },
   {
     "id": "test-020",
@@ -297,7 +316,8 @@
     "sampleType": "Blood",
     "preparation": "Morning collection preferred",
     "keywords": ["zinc", "immune", "mineral", "nutrition"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?w=400&h=300&fit=crop"
   },
   {
     "id": "test-021",
@@ -312,7 +332,8 @@
     "sampleType": "Blood",
     "preparation": "Fasting 8-12 hours required",
     "keywords": ["women", "female", "hormone", "comprehensive", "panel"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop"
   },
   {
     "id": "test-022",
@@ -327,7 +348,8 @@
     "sampleType": "Blood",
     "preparation": "Fasting 8-12 hours required",
     "keywords": ["men", "male", "testosterone", "comprehensive", "panel"],
-    "enabled": true
+    "enabled": true,
+    "image": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop"
   }
 ]
 

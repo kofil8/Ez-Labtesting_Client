@@ -60,7 +60,7 @@ export function FeaturedBundles() {
   const displayPanels = panels.slice(0, 3);
 
   return (
-    <section className='py-20 border-t bg-kalles-card relative overflow-hidden'>
+    <section className='py-12 sm:py-16 md:py-20 border-t bg-kalles-card relative overflow-hidden'>
       {/* Kalles-style subtle background pattern */}
       <div className='absolute inset-0 bg-kalles-pattern opacity-50' />
 
@@ -69,22 +69,22 @@ export function FeaturedBundles() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className='text-center mb-16'
+          className='text-center mb-10 sm:mb-12 md:mb-16'
         >
-          <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium mb-4'>
-            <Package className='h-4 w-4' />
+          <div className='inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium mb-3 sm:mb-4'>
+            <Package className='h-3 w-3 sm:h-4 sm:w-4' />
             <span>Special Offers</span>
           </div>
-          <h2 className='text-3xl md:text-4xl font-bold mb-4'>
+          <h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-4 sm:px-0'>
             Featured Test <span className='text-gradient-cosmic'>Panels</span>
           </h2>
-          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
+          <p className='text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0'>
             Save money with our curated test bundles designed for common health
             needs
           </p>
         </motion.div>
 
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8'>
           {displayPanels.map((panel, index) => (
             <motion.div
               key={panel.id}

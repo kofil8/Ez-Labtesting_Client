@@ -14,19 +14,19 @@ export default function CartPage() {
       <SiteHeader />
       <main className='flex-1'>
         <PageContainer>
-          <div className='py-12'>
-            <div className='relative mb-8'>
+          <div className='py-6 sm:py-8 md:py-12'>
+            <div className='relative mb-6 sm:mb-8'>
               {/* Background decoration */}
               <div className='absolute -top-20 left-0 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl' />
 
               <div className='relative'>
-                <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium mb-4'>
+                <div className='inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium mb-3 sm:mb-4'>
                   🛒 <span>Shopping Cart</span>
                 </div>
-                <h1 className='text-4xl md:text-5xl font-bold mb-3'>
+                <h1 className='text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3'>
                   Your <span className='text-gradient-cosmic'>Cart</span>
                 </h1>
-                <p className='text-lg text-muted-foreground'>
+                <p className='text-base sm:text-lg text-muted-foreground'>
                   Review your selected tests before checkout
                 </p>
               </div>

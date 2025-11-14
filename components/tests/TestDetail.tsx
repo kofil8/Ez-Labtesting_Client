@@ -190,10 +190,10 @@ export function TestDetail({ test }: TestDetailProps) {
   ];
 
   return (
-    <div className='space-y-8 animate-in fade-in duration-500'>
+    <div className='space-y-6 sm:space-y-8 animate-in fade-in duration-500'>
       {/* Breadcrumb & Actions */}
       <div className='flex items-center justify-between gap-4 flex-wrap'>
-        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+        <div className='flex items-center gap-2 text-xs sm:text-sm text-muted-foreground overflow-x-auto'>
           <Button
             variant='ghost'
             size='sm'
@@ -204,8 +204,8 @@ export function TestDetail({ test }: TestDetailProps) {
           </Button>
           <span>/</span>
           <span className='capitalize'>{test.category}</span>
-          <span>/</span>
-          <span className='text-foreground font-medium'>{test.name}</span>
+          <span className='hidden sm:inline'>/</span>
+          <span className='hidden sm:inline text-foreground font-medium truncate max-w-[200px]'>{test.name}</span>
         </div>
 
         <div className='flex items-center gap-2'>
@@ -216,7 +216,7 @@ export function TestDetail({ test }: TestDetailProps) {
             className='group'
           >
             <Heart
-              className={`h-4 w-4 transition-all ${
+              className={`h-3 w-3 sm:h-4 sm:w-4 transition-all ${
                 isWishlisted
                   ? "fill-red-500 text-red-500"
                   : "group-hover:text-red-500"
@@ -224,14 +224,15 @@ export function TestDetail({ test }: TestDetailProps) {
             />
           </Button>
           <Button variant='outline' size='sm' onClick={handleShare}>
-            <Share2 className='h-4 w-4' />
+            <Share2 className='h-3 w-3 sm:h-4 sm:w-4' />
           </Button>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-12 gap-8'>
-        {/* Main Content - 8 columns */}
-        <div className='lg:col-span-8 space-y-6'>
+      <div className='grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8'>
+        {/* Sidebar - 4 columns (Show first on mobile) */}
+        <div className='lg:col-span-4 lg:order-2 order-1'>
+          <div className='lg:sticky lg:top-24 space-y-6'>
           {/* Product Hero */}
           <Card className='overflow-hidden border-2 hover:shadow-xl transition-all duration-300'>
             <div
@@ -259,59 +260,59 @@ export function TestDetail({ test }: TestDetailProps) {
               </Badge>
             </div>
 
-            <CardHeader className='space-y-4'>
+              <CardHeader className='space-y-3 sm:space-y-4'>
               <div className='flex items-start justify-between gap-4'>
-                <div className='space-y-3 flex-1'>
+                <div className='space-y-2 sm:space-y-3 flex-1'>
                   <div className='flex items-center gap-2 flex-wrap'>
-                    <Badge variant='outline' className='capitalize font-medium'>
+                    <Badge variant='outline' className='capitalize font-medium text-xs sm:text-sm'>
                       {test.category}
                     </Badge>
-                    <Badge variant='secondary' className='font-medium'>
+                    <Badge variant='secondary' className='font-medium text-xs sm:text-sm'>
                       {test.labName}
                     </Badge>
-                    <div className='flex items-center gap-1 text-sm'>
-                      <Star className='h-4 w-4 fill-yellow-400 text-yellow-400' />
+                    <div className='flex items-center gap-1 text-xs sm:text-sm'>
+                      <Star className='h-3 w-3 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400' />
                       <span className='font-semibold'>4.9</span>
-                      <span className='text-muted-foreground'>
+                      <span className='text-muted-foreground hidden sm:inline'>
                         (247 reviews)
                       </span>
                     </div>
                   </div>
-                  <CardTitle className='text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'>
+                  <CardTitle className='text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'>
                     {test.name}
                   </CardTitle>
-                  <CardDescription className='text-base leading-relaxed'>
+                  <CardDescription className='text-sm sm:text-base leading-relaxed'>
                     {test.description}
                   </CardDescription>
                 </div>
               </div>
 
               {/* Quick Stats */}
-              <div className='grid grid-cols-3 gap-4 pt-4'>
-                <div className='group text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-2 border-blue-200/50 dark:border-blue-800/50 hover:scale-105 transition-all cursor-default'>
-                  <Clock className='h-5 w-5 mx-auto mb-2 text-blue-600 dark:text-blue-400 group-hover:animate-spin' />
-                  <div className='text-2xl font-bold text-blue-900 dark:text-blue-100'>
+              <div className='grid grid-cols-3 gap-2 sm:gap-4 pt-4'>
+                <div className='group text-center p-2 sm:p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-2 border-blue-200/50 dark:border-blue-800/50 hover:scale-105 transition-all cursor-default'>
+                  <Clock className='h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 sm:mb-2 text-blue-600 dark:text-blue-400 group-hover:animate-spin' />
+                  <div className='text-xl sm:text-2xl font-bold text-blue-900 dark:text-blue-100'>
                     {test.turnaroundDays}
                   </div>
-                  <div className='text-xs text-blue-700 dark:text-blue-300 font-medium'>
+                  <div className='text-[10px] sm:text-xs text-blue-700 dark:text-blue-300 font-medium'>
                     Days
                   </div>
                 </div>
-                <div className='group text-center p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 border-2 border-purple-200/50 dark:border-purple-800/50 hover:scale-105 transition-all cursor-default'>
-                  <Beaker className='h-5 w-5 mx-auto mb-2 text-purple-600 dark:text-purple-400 group-hover:animate-bounce' />
-                  <div className='text-sm font-bold text-purple-900 dark:text-purple-100'>
+                <div className='group text-center p-2 sm:p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 border-2 border-purple-200/50 dark:border-purple-800/50 hover:scale-105 transition-all cursor-default'>
+                  <Beaker className='h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 sm:mb-2 text-purple-600 dark:text-purple-400 group-hover:animate-bounce' />
+                  <div className='text-xs sm:text-sm font-bold text-purple-900 dark:text-purple-100'>
                     {test.sampleType}
                   </div>
-                  <div className='text-xs text-purple-700 dark:text-purple-300 font-medium'>
+                  <div className='text-[10px] sm:text-xs text-purple-700 dark:text-purple-300 font-medium'>
                     Sample
                   </div>
                 </div>
-                <div className='group text-center p-4 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border-2 border-amber-200/50 dark:border-amber-800/50 hover:scale-105 transition-all cursor-default'>
-                  <Star className='h-5 w-5 mx-auto mb-2 text-amber-600 dark:text-amber-400 group-hover:rotate-12 transition-transform' />
-                  <div className='text-2xl font-bold text-amber-900 dark:text-amber-100'>
+                <div className='group text-center p-2 sm:p-4 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border-2 border-amber-200/50 dark:border-amber-800/50 hover:scale-105 transition-all cursor-default'>
+                  <Star className='h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 sm:mb-2 text-amber-600 dark:text-amber-400 group-hover:rotate-12 transition-transform' />
+                  <div className='text-xl sm:text-2xl font-bold text-amber-900 dark:text-amber-100'>
                     4.9
                   </div>
-                  <div className='text-xs text-amber-700 dark:text-amber-300 font-medium'>
+                  <div className='text-[10px] sm:text-xs text-amber-700 dark:text-amber-300 font-medium'>
                     Rating
                   </div>
                 </div>
@@ -720,9 +721,8 @@ export function TestDetail({ test }: TestDetailProps) {
           )}
         </div>
 
-        {/* Sidebar - 4 columns */}
-        <div className='lg:col-span-4'>
-          <div className='sticky top-24 space-y-6'>
+        {/* Main Content - 8 columns (Show second on mobile) */}
+        <div className='lg:col-span-8 lg:order-1 order-2 space-y-6'>
             {/* Purchase Card */}
             <Card className='border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300'>
               <div className='absolute -top-3 left-1/2 -translate-x-1/2 z-10'>
@@ -733,12 +733,12 @@ export function TestDetail({ test }: TestDetailProps) {
               </div>
 
               <CardHeader className='pb-4 pt-6'>
-                <div className='flex items-baseline justify-between mb-2'>
+                  <div className='flex items-baseline justify-between mb-2'>
                   <div>
-                    <div className='text-sm text-muted-foreground font-medium'>
+                    <div className='text-xs sm:text-sm text-muted-foreground font-medium'>
                       Starting at
                     </div>
-                    <div className='text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'>
+                    <div className='text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'>
                       {formatCurrency(test.price)}
                     </div>
                     <div className='text-xs text-muted-foreground mt-1'>
@@ -748,25 +748,25 @@ export function TestDetail({ test }: TestDetailProps) {
                 </div>
               </CardHeader>
 
-              <CardContent className='space-y-4'>
+              <CardContent className='space-y-3 sm:space-y-4'>
                 <Button
                   onClick={handleAddToCart}
-                  className='w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-r from-primary to-primary/90'
+                  className='w-full h-11 sm:h-12 text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-r from-primary to-primary/90'
                   size='lg'
                 >
-                  <ShoppingCart className='h-5 w-5 mr-2' />
+                  <ShoppingCart className='h-4 w-4 sm:h-5 sm:w-5 mr-2' />
                   Add to Cart
                 </Button>
 
                 <Button
                   variant='outline'
-                  className='w-full h-11 font-semibold border-2 hover:bg-primary hover:text-primary-foreground transition-all hover:scale-105'
+                  className='w-full h-10 sm:h-11 text-sm sm:text-base font-semibold border-2 hover:bg-primary hover:text-primary-foreground transition-all hover:scale-105'
                   onClick={() => {
                     handleAddToCart();
                     router.push("/checkout");
                   }}
                 >
-                  <Zap className='h-4 w-4 mr-2' />
+                  <Zap className='h-3 w-3 sm:h-4 sm:w-4 mr-2' />
                   Buy Now - Fast Checkout
                 </Button>
 

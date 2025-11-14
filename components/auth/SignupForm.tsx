@@ -10,14 +10,18 @@ import { SignupFormData, signupSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
+import { Captcha } from "@/components/ui/captcha";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export function SignupForm() {
   const router = useRouter();
   const { toast } = useToast();
   const { signup } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const {
     register,
@@ -28,6 +32,15 @@ export function SignupForm() {
   });
 
   const onSubmit = async (data: SignupFormData) => {
+    if (!captchaToken) {
+      toast({
+        title: "Verification required",
+        description: "Please complete the captcha verification.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       await signup({
@@ -49,39 +62,54 @@ export function SignupForm() {
         description: "Unable to create account. Please try again.",
         variant: "destructive",
       });
+      recaptchaRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+  };
+
+  const handleCaptchaExpired = () => {
+    setCaptchaToken(null);
+    toast({
+      title: "Verification expired",
+      description: "Please complete the captcha again.",
+      variant: "destructive",
+    });
   };
 
   return (
     <Card>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className='pt-6 space-y-4'>
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             <div>
-              <Label htmlFor='firstName'>First Name</Label>
+              <Label htmlFor='firstName' className='text-sm'>First Name</Label>
               <Input
                 id='firstName'
                 placeholder='John'
                 {...register("firstName")}
               />
               {errors.firstName && (
-                <p className='text-sm text-destructive mt-1'>
+                <p className='text-xs sm:text-sm text-destructive mt-1'>
                   {errors.firstName.message}
                 </p>
               )}
             </div>
 
             <div>
-              <Label htmlFor='lastName'>Last Name</Label>
+              <Label htmlFor='lastName' className='text-sm'>Last Name</Label>
               <Input
                 id='lastName'
                 placeholder='Doe'
                 {...register("lastName")}
               />
               {errors.lastName && (
-                <p className='text-sm text-destructive mt-1'>
+                <p className='text-xs sm:text-sm text-destructive mt-1'>
                   {errors.lastName.message}
                 </p>
               )}
@@ -142,10 +170,16 @@ export function SignupForm() {
               </p>
             )}
           </div>
+
+          <Captcha
+            ref={recaptchaRef}
+            onChange={handleCaptchaChange}
+            onExpired={handleCaptchaExpired}
+          />
         </CardContent>
 
         <CardFooter className='flex flex-col space-y-4'>
-          <Button type='submit' disabled={loading} className='w-full'>
+          <Button type='submit' disabled={loading || !captchaToken} className='w-full'>
             {loading ? "Creating account..." : "Create Account"}
           </Button>
 

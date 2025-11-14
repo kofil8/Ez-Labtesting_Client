@@ -11,19 +11,19 @@ export const metadata = {
 
 export default function TestsPage() {
   return (
-    <div className='flex min-h-screen flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black'>
+    <div className='flex min-h-screen flex-col bg-gradient-to-br from-green-400 via-yellow-300 to-green-500'>
       <SiteHeader />
       <main className='flex-1'>
         <PageContainer>
-          <div className='py-8 md:py-12 space-y-8'>
+          <div className='py-6 sm:py-8 md:py-12 space-y-6 sm:space-y-8'>
             {/* Minimalistic Header */}
             <div className='space-y-4'>
-              <div className='flex items-center justify-between flex-wrap gap-4'>
+              <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
                 <div className='space-y-2'>
-                  <h1 className='text-3xl md:text-4xl font-semibold tracking-tight text-white'>
+                  <h1 className='text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-gray-900'>
                     Lab Tests
                   </h1>
-                  <p className='text-gray-400 text-sm md:text-base max-w-2xl'>
+                  <p className='text-gray-700 text-sm md:text-base max-w-2xl'>
                     Browse our comprehensive catalog of laboratory tests
                   </p>
                 </div>

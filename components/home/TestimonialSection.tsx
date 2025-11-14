@@ -68,7 +68,7 @@ export function TestimonialSection() {
   const visibleTestimonials = getVisibleTestimonials();
 
   return (
-    <section className='py-24 relative overflow-hidden bg-kalles-card'>
+    <section className='py-12 sm:py-16 md:py-24 relative overflow-hidden bg-kalles-card'>
       {/* Kalles-style subtle background pattern */}
       <div className='absolute inset-0 bg-kalles-pattern opacity-40' />
       <div className='absolute inset-0 bg-kalles-dots opacity-30' />
@@ -78,22 +78,22 @@ export function TestimonialSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className='text-center mb-16'
+          className='text-center mb-10 sm:mb-12 md:mb-16'
         >
-          <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-4'>
-            <Star className='h-4 w-4 fill-current' />
+          <div className='inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium mb-3 sm:mb-4'>
+            <Star className='h-3 w-3 sm:h-4 sm:w-4 fill-current' />
             <span>4.9/5 Rating</span>
           </div>
-          <h2 className='text-3xl md:text-4xl font-bold mb-4'>
+          <h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-4 sm:px-0'>
             Loved by <span className='text-gradient-cosmic'>Thousands</span>
           </h2>
-          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
+          <p className='text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0'>
             Don't just take our word for it - hear from our satisfied customers
           </p>
         </motion.div>
 
         <div className='relative overflow-hidden'>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8'>
             {visibleTestimonials.map((testimonial, index) => (
               <motion.div
                 key={`${testimonial.name}-${currentIndex}-${index}`}

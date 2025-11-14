@@ -125,26 +125,27 @@ export function HeroSection() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, type: "spring" }}
-            className='inline-flex items-center gap-2 px-6 py-3 awsmd-rounded bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-sm font-bold mb-12 shadow-xl'
+            className='inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 awsmd-rounded bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-bold mb-8 sm:mb-12 shadow-xl'
           >
-            <Sparkles className='h-4 w-4 animate-pulse' />
-            <span>Trusted by 50,000+ health-conscious individuals</span>
+            <Sparkles className='h-3 w-3 sm:h-4 sm:w-4 animate-pulse' />
+            <span className='hidden sm:inline'>Trusted by 50,000+ health-conscious individuals</span>
+            <span className='sm:hidden'>50,000+ Trusted Users</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className='text-4xl md:text-5xl lg:text-6xl mb-8 leading-tight font-bold'
+            className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-6 sm:mb-8 leading-tight font-bold px-4 sm:px-0'
           >
-            <span className='block mb-4'>We create</span>
+            <span className='block mb-2 sm:mb-4'>We create</span>
             <span className='relative inline-block'>
               <span className='awsmd-gradient-text animate-gradient'>
                 Amazing
               </span>
             </span>
             <br />
-            <span className='block mt-4 text-gray-900 dark:text-white'>
+            <span className='block mt-2 sm:mt-4 text-gray-900 dark:text-white'>
               Health Tests
             </span>
           </motion.h1>
@@ -153,7 +154,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className='text-2xl md:text-3xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-16 leading-relaxed font-light'
+            className='text-base sm:text-xl md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-10 sm:mb-16 leading-relaxed font-light px-4 sm:px-0'
           >
             Data driven. User focused. Value based.
             <br className='hidden sm:block' />
@@ -167,22 +168,22 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5 }}
-            className='flex flex-col sm:flex-row gap-6 justify-center mb-24'
+            className='flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12 sm:mb-24 px-4 sm:px-0'
           >
             <Button
               size='lg'
-              className='awsmd-gradient-cosmic text-white hover:opacity-90 transition-all shadow-2xl group awsmd-rounded px-8 py-7 text-lg font-bold button-shine awsmd-hover-lift'
+              className='awsmd-gradient-cosmic text-white hover:opacity-90 transition-all shadow-2xl group awsmd-rounded px-6 py-6 sm:px-8 sm:py-7 text-base sm:text-lg font-bold button-shine awsmd-hover-lift'
               asChild
             >
               <Link href='/tests'>
                 Browse Tests
-                <ArrowRight className='ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform' />
+                <ArrowRight className='ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-2 transition-transform' />
               </Link>
             </Button>
             <Button
               size='lg'
               variant='outline'
-              className='awsmd-glass-card hover:scale-105 transition-transform shadow-xl border-2 awsmd-rounded px-8 py-7 text-lg font-bold'
+              className='awsmd-glass-card hover:scale-105 transition-transform shadow-xl border-2 awsmd-rounded px-6 py-6 sm:px-8 sm:py-7 text-base sm:text-lg font-bold'
               asChild
             >
               <Link href='/login'>Sign In</Link>
@@ -194,7 +195,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.7 }}
-            className='grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto'
+            className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 max-w-6xl mx-auto px-4 sm:px-0'
           >
             {[
               {
@@ -234,16 +235,16 @@ export function HeroSection() {
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${item.gradient} awsmd-rounded-xl opacity-0 group-hover:opacity-30 blur-2xl transition-all duration-500`}
                 />
-                <div className='awsmd-glass-card p-10 awsmd-hover-lift border-2 border-white/40 dark:border-gray-700/40 group-hover:border-white/60 dark:group-hover:border-gray-600/60 relative'>
+                <div className='awsmd-glass-card p-6 sm:p-8 md:p-10 awsmd-hover-lift border-2 border-white/40 dark:border-gray-700/40 group-hover:border-white/60 dark:group-hover:border-gray-600/60 relative'>
                   <div
-                    className={`w-20 h-20 mx-auto mb-6 awsmd-rounded ${item.bgGradient} flex items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110`}
+                    className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-4 sm:mb-6 awsmd-rounded ${item.bgGradient} flex items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110`}
                   >
-                    <item.icon className={`h-10 w-10 ${item.iconColor}`} />
+                    <item.icon className={`h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 ${item.iconColor}`} />
                   </div>
-                  <h3 className='font-black text-2xl mb-4 text-gray-900 dark:text-white'>
+                  <h3 className='font-black text-xl sm:text-xl md:text-2xl mb-3 sm:mb-4 text-gray-900 dark:text-white'>
                     {item.title}
                   </h3>
-                  <p className='text-base text-gray-600 dark:text-gray-300 leading-relaxed'>
+                  <p className='text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed'>
                     {item.description}
                   </p>
                 </div>

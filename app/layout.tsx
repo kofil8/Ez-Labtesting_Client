@@ -3,7 +3,6 @@ import { LocationInitializer } from "@/components/shared/LocationInitializer";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth-context";
 import type { Metadata } from "next";
-// Use Inter for a clean, clinical look suitable for lab test web apps
 import { Inter } from "next/font/google";
 import "./globals.css";
 

@@ -44,9 +44,9 @@ export function SiteHeader() {
       <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex h-20 items-center justify-between'>
           {/* Logo - Awsmd style */}
-          <Link href='/' className='flex items-center gap-3 group'>
+          <Link href='/' className='flex items-center gap-2 sm:gap-3 group'>
             <motion.div
-              className='w-12 h-12 awsmd-rounded flex items-center justify-center transition-all'
+              className='w-10 h-10 sm:w-12 sm:h-12 awsmd-rounded flex items-center justify-center transition-all'
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -55,9 +55,10 @@ export function SiteHeader() {
                 alt='Ez Lab Testing'
                 width={100}
                 height={100}
+                className='w-full h-full object-contain'
               />
             </motion.div>
-            <span className='text-2xl font-black awsmd-gradient-text'>
+            <span className='text-lg sm:text-xl md:text-2xl font-black awsmd-gradient-text truncate max-w-[120px] sm:max-w-none'>
               Ez Lab Testing
             </span>
           </Link>

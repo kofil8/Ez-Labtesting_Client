@@ -67,14 +67,14 @@ export function ResultViewer({ result }: ResultViewerProps) {
       {/* Header */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <CardTitle className="text-2xl">{result.testName}</CardTitle>
-              <p className="text-muted-foreground mt-2">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <div className="flex-1">
+              <CardTitle className="text-xl sm:text-2xl">{result.testName}</CardTitle>
+              <p className="text-sm sm:text-base text-muted-foreground mt-2">
                 Completed on {formatDate(result.completedAt!)}
               </p>
             </div>
-            <Button onClick={handleDownload}>
+            <Button onClick={handleDownload} className="w-full sm:w-auto">
               <Download className="h-4 w-4 mr-2" />
               Download PDF
             </Button>
@@ -85,23 +85,23 @@ export function ResultViewer({ result }: ResultViewerProps) {
       {/* Results Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Test Results</CardTitle>
+          <CardTitle className='text-lg sm:text-xl'>Test Results</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='overflow-x-auto'>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Biomarker</TableHead>
-                <TableHead>Your Result</TableHead>
-                <TableHead>Reference Range</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className='text-xs sm:text-sm'>Biomarker</TableHead>
+                <TableHead className='text-xs sm:text-sm'>Your Result</TableHead>
+                <TableHead className='text-xs sm:text-sm hidden md:table-cell'>Reference Range</TableHead>
+                <TableHead className='text-xs sm:text-sm'>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {result.biomarkers.map((biomarker, index) => (
                 <TableRow key={index}>
-                  <TableCell className="font-medium">{biomarker.name}</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium text-xs sm:text-sm">{biomarker.name}</TableCell>
+                  <TableCell className="text-xs sm:text-sm">
                     <div className="flex items-center">
                       {getStatusIcon(biomarker.status)}
                       <span className="ml-2">
@@ -109,10 +109,10 @@ export function ResultViewer({ result }: ResultViewerProps) {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-muted-foreground text-xs sm:text-sm hidden md:table-cell">
                     {biomarker.referenceRange} {biomarker.unit}
                   </TableCell>
-                  <TableCell>{getStatusBadge(biomarker.status)}</TableCell>
+                  <TableCell className="text-xs sm:text-sm">{getStatusBadge(biomarker.status)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

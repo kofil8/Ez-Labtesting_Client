@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Test } from '@/types/test'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -47,7 +48,19 @@ export function TestCard({ test }: TestCardProps) {
 
   return (
     <Link href={`/tests/${test.id}`}>
-      <Card className="h-full group hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 transition-all duration-300 border-border/50 hover:border-border cursor-pointer flex flex-col">
+      <Card className="h-full group hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 transition-all duration-300 border-border/50 hover:border-border cursor-pointer flex flex-col overflow-hidden">
+        {/* Image */}
+        {test.image && (
+          <div className="relative w-full h-48 bg-gradient-to-br from-primary/5 to-primary/10 overflow-hidden">
+            <Image
+              src={test.image}
+              alt={test.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+        )}
+        
         <CardContent className="p-5 flex flex-col flex-1">
           {/* Header */}
           <div className="flex items-start justify-between gap-3 mb-3">
