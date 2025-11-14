@@ -3,6 +3,7 @@ import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
 import { getResultByOrderId } from "@/lib/api";
+import type { PageProps } from "next";
 import { notFound } from "next/navigation";
 
 export const metadata = {
@@ -10,12 +11,16 @@ export const metadata = {
   description: "View your test results",
 };
 
-export default async function ResultViewerPage({
-  params,
-}: {
-  params: { orderId: string };
-}) {
-  const result = await getResultByOrderId(params.orderId);
+type ResultViewerPageProps = PageProps<{ orderId: string }>;
+
+export default async function ResultViewerPage({ params }: ResultViewerPageProps) {
+  const orderId = params?.orderId;
+
+  if (!orderId) {
+    notFound();
+  }
+
+  const result = await getResultByOrderId(orderId);
 
   if (!result) {
     notFound();
