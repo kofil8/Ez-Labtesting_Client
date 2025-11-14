@@ -6,6 +6,7 @@ import { useCartStore } from "@/lib/store/cart-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, ShoppingCart, Sparkles, User, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export function SiteHeader() {
@@ -50,11 +51,11 @@ export function SiteHeader() {
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
             >
-              <img
+              <Image
                 src='/images/logo.png'
                 alt='Ez Lab Testing'
-                width={100}
-                height={100}
+                width={48}
+                height={48}
                 className='w-full h-full object-contain'
               />
             </motion.div>

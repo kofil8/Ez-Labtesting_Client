@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { searchTests } from '@/lib/api'
 import { Test } from '@/types/test'
 import { TestGrid } from './TestGrid'
@@ -21,12 +21,7 @@ export function TestCatalog() {
   const [showFilters, setShowFilters] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
 
-  useEffect(() => {
-    loadTests()
-    setCurrentPage(1) // Reset to page 1 when filters change
-  }, [searchQuery, category, sortBy])
-
-  const loadTests = async () => {
+  const loadTests = useCallback(async () => {
     setLoading(true)
     try {
       const results = await searchTests(searchQuery, category, sortBy)
@@ -36,7 +31,12 @@ export function TestCatalog() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [searchQuery, category, sortBy])
+
+  useEffect(() => {
+    loadTests()
+    setCurrentPage(1) // Reset to page 1 when filters change
+  }, [loadTests])
 
   // Pagination calculations
   const totalPages = Math.ceil(tests.length / ITEMS_PER_PAGE)

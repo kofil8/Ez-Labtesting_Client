@@ -782,7 +782,7 @@ export function TestDetail({ test }: TestDetailProps) {
                 <Separator />
 
                 <div className='space-y-3 text-sm'>
-                  <div className='font-semibold mb-2'>What's Included:</div>
+                  <div className='font-semibold mb-2'>What&apos;s Included:</div>
                   <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
                     <Shield className='h-4 w-4 text-green-500 shrink-0 mt-0.5' />
                     <div>
@@ -917,7 +917,7 @@ export function TestDetail({ test }: TestDetailProps) {
                   <div>
                     <div className='font-semibold'>Satisfaction Guarantee</div>
                     <div className='text-xs text-muted-foreground leading-relaxed'>
-                      30-day money-back guarantee if you're not satisfied
+                      30-day money-back guarantee if you&apos;re not satisfied
                     </div>
                   </div>
                 </div>

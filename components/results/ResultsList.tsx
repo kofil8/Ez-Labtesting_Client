@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { getUserOrders } from '@/lib/api'
@@ -16,11 +16,7 @@ export function ResultsList() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadOrders()
-  }, [user])
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     if (!user) return
     
     setLoading(true)
@@ -32,7 +28,11 @@ export function ResultsList() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    loadOrders()
+  }, [loadOrders])
 
   const getStatusBadge = (status: Order['status']) => {
     switch (status) {

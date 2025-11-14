@@ -1,41 +1,69 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-export const Table: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const Table: React.FC<
+  React.HTMLAttributes<HTMLTableElement>
+> = ({ children, className, ...props }) => {
   return (
-    <table className='w-full border-collapse border border-gray-300'>
+    <table
+      className={cn("w-full border-collapse border border-gray-300", className)}
+      {...props}
+    >
       {children}
     </table>
   );
 };
 
-export const TableHeader: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  return <thead className='bg-gray-100'>{children}</thead>;
+export const TableHeader: React.FC<
+  React.HTMLAttributes<HTMLTableSectionElement>
+> = ({ children, className, ...props }) => {
+  return (
+    <thead className={cn("bg-gray-100", className)} {...props}>
+      {children}
+    </thead>
+  );
 };
 
-export const TableBody: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  return <tbody>{children}</tbody>;
+export const TableBody: React.FC<
+  React.HTMLAttributes<HTMLTableSectionElement>
+> = ({ children, className, ...props }) => {
+  return (
+    <tbody className={className} {...props}>
+      {children}
+    </tbody>
+  );
 };
 
-export const TableRow: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  return <tr className='border-b'>{children}</tr>;
+export const TableRow: React.FC<
+  React.HTMLAttributes<HTMLTableRowElement>
+> = ({ children, className, ...props }) => {
+  return (
+    <tr className={cn("border-b", className)} {...props}>
+      {children}
+    </tr>
+  );
 };
 
-export const TableHead: React.FC<{ children: React.ReactNode }> = ({
+export const TableHead = ({
   children,
-}) => {
-  return <th className='px-4 py-2 text-left font-semibold'>{children}</th>;
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLTableCellElement>) => {
+  return (
+    <th className={cn("px-4 py-2 text-left font-semibold", className)} {...props}>
+      {children}
+    </th>
+  );
 };
 
-export const TableCell: React.FC<{ children: React.ReactNode }> = ({
+export const TableCell = ({
   children,
-}) => {
-  return <td className='px-4 py-2'>{children}</td>;
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLTableCellElement>) => {
+  return (
+    <td className={cn("px-4 py-2", className)} {...props}>
+      {children}
+    </td>
+  );
 };

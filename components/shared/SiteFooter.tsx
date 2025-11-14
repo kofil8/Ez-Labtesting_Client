@@ -20,6 +20,7 @@ import {
   Twitter,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 export function SiteFooter() {
@@ -180,10 +181,12 @@ export function SiteFooter() {
           <motion.div variants={itemVariants} className='sm:col-span-2 lg:col-span-2'>
             <Link href='/' className='inline-flex items-center gap-2 mb-4'>
               <div className='w-8 h-8 sm:w-10 sm:h-10 awsmd-rounded awsmd-gradient-cosmic flex items-center justify-center shadow-xl'>
-                <img
+                <Image
                   className='w-full h-full object-cover'
                   src='/images/logo.png'
                   alt='EZ Lab Testing'
+                  width={40}
+                  height={40}
                 />
               </div>
               <span className='text-lg sm:text-xl font-black awsmd-gradient-text'>
