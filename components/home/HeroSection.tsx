@@ -32,6 +32,15 @@ export function HeroSection() {
       }
     }, 100); // Small delay to let page content load first
 
+    const sectionElement = sectionRef.current;
+
+    if (!sectionElement) {
+      return () => {
+        clearTimeout(loadTimer);
+        mediaQuery.removeEventListener("change", handleMediaChange);
+      };
+    }
+
     // Intersection Observer as fallback for when section scrolls into view
     const observer = new IntersectionObserver(
       (entries) => {
@@ -47,18 +56,12 @@ export function HeroSection() {
       }
     );
 
-    const sectionElement = sectionRef.current;
-
-    if (sectionElement) {
-      observer.observe(sectionElement);
-    }
+    observer.observe(sectionElement);
 
     return () => {
       clearTimeout(loadTimer);
       mediaQuery.removeEventListener("change", handleMediaChange);
-      if (sectionElement) {
-        observer.unobserve(sectionElement);
-      }
+      observer.unobserve(sectionElement);
     };
   }, [shouldLoadVideo]);
 
