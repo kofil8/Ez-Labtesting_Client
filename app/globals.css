@@ -64,37 +64,44 @@
     @apply bg-[#fafafa] dark:bg-[#0a0a0a] text-foreground;
     background-attachment: fixed;
   }
-  
+
   /* Kalles-style background pattern */
   body::before {
-    content: '';
+    content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     opacity: 0.03;
-    background-image: 
-      linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    background-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.1) 1px,
+        transparent 1px
+      ),
       linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none;
   }
-  
+
   .dark body::before {
     opacity: 0.05;
   }
-  
+
   /* Subtle dot pattern */
   body::after {
-    content: '';
+    content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     opacity: 0.02;
-    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+    background-image: radial-gradient(
+      circle,
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px
+    );
     background-size: 24px 24px;
     pointer-events: none;
   }
-  
+
   .dark body::after {
     opacity: 0.04;
   }
@@ -570,16 +577,22 @@
 
   /* Heartbeat animation */
   @keyframes heartbeat {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
     }
-    10%, 30% {
+    10%,
+    30% {
       transform: scale(0.9);
     }
-    20%, 40%, 60%, 80% {
+    20%,
+    40%,
+    60%,
+    80% {
       transform: scale(1.1);
     }
-    50%, 70% {
+    50%,
+    70% {
       transform: scale(1.05);
     }
   }
@@ -592,40 +605,97 @@
   html {
     scroll-behavior: smooth;
   }
-  
+
   /* Kalles-style background utilities */
   .bg-kalles {
     @apply bg-[#fafafa] dark:bg-[#0a0a0a];
   }
-  
+
   .bg-kalles-pattern {
-    background-image: 
-      linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    background-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.03) 1px,
+        transparent 1px
+      ),
       linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
     background-size: 40px 40px;
   }
-  
+
   .dark .bg-kalles-pattern {
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    background-image: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.05) 1px,
+        transparent 1px
+      ),
       linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   }
-  
+
   .bg-kalles-dots {
-    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    background-image: radial-gradient(
+      circle,
+      rgba(0, 0, 0, 0.02) 1px,
+      transparent 1px
+    );
     background-size: 24px 24px;
   }
-  
+
   .dark .bg-kalles-dots {
-    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-image: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    );
   }
-  
+
   /* Clean card backgrounds like Kalles */
   .bg-kalles-card {
     @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm;
   }
-  
+
   .bg-kalles-card-strong {
     @apply bg-white dark:bg-gray-900;
   }
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.error-content {
+  text-align: center;
+}
+
+.error-content h1 {
+  font-size: 6rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.error-content p {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.lottie-animation {
+  max-width: 400px;
+  margin-bottom: 2rem;
+}
+
+.btn-home {
+  display: inline-block;
+  background: #0d6efd;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn-home:hover {
+  background: #0b5ed7;
 }
