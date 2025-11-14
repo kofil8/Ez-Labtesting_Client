@@ -17,6 +17,7 @@ import { useCartStore } from "@/lib/store/cart-store";
 import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Package, ShoppingCart } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface Panel {
@@ -184,7 +185,7 @@ export function FeaturedBundles() {
           className='mt-16 text-center'
         >
           <p className='text-muted-foreground mb-4'>
-            Can't find what you're looking for?
+            Can&apos;t find what you&apos;re looking for?
           </p>
           <Button
             variant='outline'
@@ -192,7 +193,7 @@ export function FeaturedBundles() {
             asChild
             className='hover:bg-primary/10'
           >
-            <a href='/tests'>Browse All Tests</a>
+            <Link href='/tests'>Browse All Tests</Link>
           </Button>
         </motion.div>
       </div>

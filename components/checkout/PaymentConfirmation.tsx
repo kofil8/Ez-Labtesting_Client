@@ -135,7 +135,7 @@ export function PaymentConfirmation({
               <li>• Visit a nearby lab within 7 days to provide your sample</li>
               <li>• Bring your order confirmation and a valid ID</li>
               <li>• Results will be available in your dashboard in 24-48 hours</li>
-              <li>• You'll receive an email notification when ready</li>
+              <li>• You&apos;ll receive an email notification when ready</li>
             </ul>
           </div>
         </div>
