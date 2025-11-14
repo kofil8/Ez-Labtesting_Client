@@ -1,4 +1,4 @@
-# Kevin Lab Testing - Frontend Application
+# EZ Lab Testing - Frontend Application
 
 A modern, full-featured lab testing platform built with Next.js 14, TypeScript, and Tailwind CSS.
 
@@ -160,6 +160,7 @@ NEXT_PUBLIC_API_URL=your_api_url_here
 ## 🧪 Testing
 
 The application is ready for end-to-end testing with:
+
 - Playwright
 - Cypress
 - Jest + React Testing Library
@@ -199,4 +200,3 @@ This project is for demonstration purposes.
 - Built with [Next.js](https://nextjs.org/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons from [Lucide](https://lucide.dev/)
-

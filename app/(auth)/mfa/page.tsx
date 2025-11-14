@@ -1,22 +1,24 @@
-import { SiteHeader } from '@/components/shared/SiteHeader'
-import { SiteFooter } from '@/components/shared/SiteFooter'
-import { PageContainer } from '@/components/shared/PageContainer'
-import { MFAForm } from '@/components/auth/MFAForm'
+import { MFAForm } from "@/components/auth/MFAForm";
+import { PageContainer } from "@/components/shared/PageContainer";
+import { SiteFooter } from "@/components/shared/SiteFooter";
+import { SiteHeader } from "@/components/shared/SiteHeader";
 
 export const metadata = {
-  title: 'Two-Factor Authentication | Kevin Lab Testing',
-  description: 'Enter your verification code',
-}
+  title: "Two-Factor Authentication | EZ Lab Testing",
+  description: "Enter your verification code",
+};
 
 export default function MFAPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className='flex min-h-screen flex-col'>
       <SiteHeader />
-      <main className="flex-1">
+      <main className='flex-1'>
         <PageContainer>
-          <div className="max-w-md mx-auto py-12">
-            <h1 className="text-3xl font-bold text-center mb-4">Verify Your Identity</h1>
-            <p className="text-center text-muted-foreground mb-8">
+          <div className='max-w-md mx-auto py-12'>
+            <h1 className='text-3xl font-bold text-center mb-4'>
+              Verify Your Identity
+            </h1>
+            <p className='text-center text-muted-foreground mb-8'>
               Enter the 6-digit code sent to your device
             </p>
             <MFAForm />
@@ -25,6 +27,5 @@ export default function MFAPage() {
       </main>
       <SiteFooter />
     </div>
-  )
+  );
 }
-

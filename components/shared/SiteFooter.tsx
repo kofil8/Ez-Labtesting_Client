@@ -9,7 +9,6 @@ import {
   Award,
   Facebook,
   Heart,
-  Icon,
   Instagram,
   Linkedin,
   Mail,
@@ -20,7 +19,6 @@ import {
   Sparkles,
   Twitter,
 } from "lucide-react";
-import { Iceberg } from "next/font/google";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -317,7 +315,7 @@ export function SiteFooter() {
         >
           <div className='flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground'>
             <p>
-              &copy; {new Date().getFullYear()} Kevin Lab Testing. All rights
+              &copy; {new Date().getFullYear()} EZ Lab Testing. All rights
               reserved.
             </p>
             <div className='flex items-center gap-4'>
