@@ -3,10 +3,13 @@ import { LocationInitializer } from "@/components/shared/LocationInitializer";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth-context";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: "EZ Lab Testing",
@@ -24,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' className='smooth-scroll' suppressHydrationWarning>
-      <body className={`${inter.className} antialiased custom-scrollbar`}>
+      <body className={`${manrope.className} antialiased custom-scrollbar`}>
         <KallesBackground />
         <AuthProvider>
           <LocationInitializer />
