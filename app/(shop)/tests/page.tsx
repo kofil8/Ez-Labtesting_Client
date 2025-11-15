@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function TestsPage() {
   return (
-    <div className='flex min-h-screen flex-col bg-gradient-to-br from-green-400 via-yellow-300 to-green-500'>
+    <div className='flex min-h-screen flex-col bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 from-gray-100 to-gray-200'>
       <SiteHeader />
       <main className='flex-1'>
         <PageContainer>
