@@ -1,7 +1,7 @@
 import { TestManagement } from "@/components/admin/TestManagement";
 
 export const metadata = {
-  title: "Test Management | Admin | EZ Lab Testing",
+  title: "Test Management | Admin | Ez LabTesting",
   description: "Manage lab tests",
 };
 

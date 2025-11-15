@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/shared/SiteHeader";
 import { TransactionHistory } from "@/components/transaction/TransactionHistory";
 
 export const metadata = {
-  title: "Transaction History | EZ Lab Testing",
+  title: "Transaction History | Ez LabTesting",
   description: "View your payment and transaction history",
 };
 

@@ -100,10 +100,10 @@ export function FeaturedBundles() {
                 {/* Gradient overlay on hover */}
                 <div className='absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
 
-                <CardHeader className='relative'>
-                  <div className='flex items-start justify-between gap-2 mb-3'>
-                    <div className='p-3 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 shadow-lg group-hover:shadow-xl transition-shadow'>
-                      <Package className='h-6 w-6 text-white' />
+                <CardHeader className='relative p-4 sm:p-5'>
+                  <div className='flex items-start justify-between gap-2 mb-2'>
+                    <div className='p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 shadow-lg group-hover:shadow-xl transition-shadow'>
+                      <Package className='h-5 w-5 sm:h-6 sm:w-6 text-white' />
                     </div>
                     {panel.savings > 0 && (
                       <motion.div
@@ -115,13 +115,13 @@ export function FeaturedBundles() {
                           type: "spring",
                         }}
                       >
-                        <Badge className='bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg px-3 py-1 text-sm'>
+                        <Badge className='bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg px-2.5 py-0.5 text-xs sm:text-sm'>
                           💰 Save {formatCurrency(panel.savings)}
                         </Badge>
                       </motion.div>
                     )}
                   </div>
-                  <CardTitle className='text-xl mb-2 group-hover:text-primary transition-colors'>
+                  <CardTitle className='text-lg sm:text-xl mb-1.5 group-hover:text-primary transition-colors'>
                     {panel.name}
                   </CardTitle>
                   <CardDescription className='text-sm'>
@@ -129,18 +129,18 @@ export function FeaturedBundles() {
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className='flex-1 relative'>
-                  <div className='space-y-4'>
-                    <div className='flex items-center justify-between p-3 rounded-lg bg-muted/50'>
+                <CardContent className='flex-1 relative p-4 pt-0 sm:p-5 sm:pt-0'>
+                  <div className='space-y-3'>
+                    <div className='flex items-center justify-between p-2.5 rounded-lg bg-muted/50'>
                       <span className='text-sm text-muted-foreground'>
                         Tests included
                       </span>
-                      <span className='font-bold text-lg'>
+                      <span className='font-bold text-base'>
                         {panel.testIds.length}
                       </span>
                     </div>
 
-                    <div className='space-y-2'>
+                    <div className='space-y-1.5'>
                       <div className='flex justify-between text-sm'>
                         <span className='text-muted-foreground line-through'>
                           Regular Price
@@ -149,7 +149,7 @@ export function FeaturedBundles() {
                           {formatCurrency(panel.originalPrice)}
                         </span>
                       </div>
-                      <div className='flex justify-between items-center text-lg font-bold pt-3 border-t-2'>
+                      <div className='flex justify-between items-center text-base font-bold pt-2 border-t'>
                         <span className='text-gradient-cosmic'>
                           Bundle Price
                         </span>
@@ -161,11 +161,11 @@ export function FeaturedBundles() {
                   </div>
                 </CardContent>
 
-                <CardFooter className='relative'>
+                <CardFooter className='relative p-4 pt-0 sm:p-5 sm:pt-0'>
                   <Button
                     onClick={() => handleAddBundle(panel)}
-                    className='w-full gradient-cosmic hover:scale-105 transition-transform shadow-lg group/btn'
-                    size='lg'
+                    className='w-full gradient-blue-purple hover:scale-105 transition-transform shadow-lg group/btn'
+                    size='default'
                   >
                     <ShoppingCart className='h-4 w-4 mr-2 group-hover/btn:animate-pulse' />
                     Add Bundle to Cart

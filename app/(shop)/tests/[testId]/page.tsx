@@ -20,7 +20,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${test.name} | EZ Lab Testing`,
+    title: `${test.name} | Ez LabTesting`,
     description: test.description,
   };
 }

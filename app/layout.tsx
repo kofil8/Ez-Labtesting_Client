@@ -12,12 +12,12 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "EZ Lab Testing",
+  title: "Ez LabTesting",
   description:
     "Order lab tests online without a doctor's visit. HIPAA-secure, CLIA-certified labs, encrypted checkout. Fast turnaround times.",
   keywords:
     "lab tests, online lab testing, at-home lab tests, health testing, medical tests, blood tests, urine tests, diagnostic tests, wellness tests, health screenings",
-  authors: [{ name: "EZ Lab Testing", url: "https://ezlabtesting.com" }],
+  authors: [{ name: "Ez LabTesting", url: "https://ezlabtesting.com" }],
 };
 
 export default function RootLayout({

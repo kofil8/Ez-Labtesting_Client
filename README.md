@@ -1,4 +1,4 @@
-# EZ Lab Testing - Frontend Application
+# Ez LabTesting - Frontend Application
 
 A modern, full-featured lab testing platform built with Next.js 14, TypeScript, and Tailwind CSS.
 

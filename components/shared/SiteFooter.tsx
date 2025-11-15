@@ -19,8 +19,8 @@ import {
   Sparkles,
   Twitter,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 export function SiteFooter() {
@@ -103,7 +103,7 @@ export function SiteFooter() {
   };
 
   return (
-    <footer className='relative border-t bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500'>
+    <footer className='relative border-t bg-gradient-to-br dark:from-gray-900 dark:via-purple-900 dark:to-green-900'>
       {/* Subtle background gradients - Awsmd style */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none opacity-10'>
         <div className='absolute top-0 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl' />
@@ -119,7 +119,7 @@ export function SiteFooter() {
           className='py-16 border-b border-blue-600/30'
         >
           <div className='max-w-4xl mx-auto text-center px-4 sm:px-0'>
-            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 awsmd-rounded bg-white border-2 border-blue-500 text-blue-700 text-xs font-bold mb-4 shadow-lg'>
+            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 awsmd-rounded bg-white border-2 border-gray-500 text-gray-700 text-xs font-bold mb-4 shadow-lg'>
               <Sparkles className='h-3 w-3 sm:h-4 sm:w-4 animate-pulse' />
               <span>Stay Updated</span>
             </div>
@@ -172,25 +172,25 @@ export function SiteFooter() {
           initial='hidden'
           whileInView='visible'
           viewport={{ once: true }}
-          className='py-8 sm:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8'
+          className='py-8 sm:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 bg-blue-300'
         >
           {/* Company Info - Awsmd style */}
           <motion.div
             variants={itemVariants}
-            className='sm:col-span-2 lg:col-span-2'
+            className='sm:col-span-2 lg:col-span-2 p-6 sm:p-8'
           >
             <Link href='/' className='inline-flex items-center gap-2 mb-4'>
               <div className='w-8 h-8 sm:w-10 sm:h-10 awsmd-rounded awsmd-gradient-cosmic flex items-center justify-center shadow-xl'>
                 <Image
                   className='w-full h-full object-cover'
                   src='/images/logo.png'
-                  alt='EZ Lab Testing'
+                  alt='Ez LabTesting'
                   width={40}
                   height={40}
                 />
               </div>
               <span className='text-lg sm:text-xl font-black awsmd-gradient-text'>
-                EZ Lab Testing
+                Ez LabTesting
               </span>
             </Link>
             <p className='text-gray-600 dark:text-gray-300 mb-6 max-w-sm text-xs sm:text-sm leading-relaxed'>
@@ -318,13 +318,13 @@ export function SiteFooter() {
         >
           <div className='flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground'>
             <p>
-              &copy; {new Date().getFullYear()} EZ Lab Testing. All rights
+              &copy; {new Date().getFullYear()} Ez LabTesting. All rights
               reserved.
             </p>
             <div className='flex items-center gap-2'>
-              <span className='hidden sm:inline'>Made with</span>
+              <span className='hidden sm:inline'>Developed by</span>
               <Heart className='h-3 w-3 text-red-500 animate-pulse' />
-              <span className='hidden sm:inline'>for your health</span>
+              <span className='hidden sm:inline'>devSyncBD</span>
             </div>
             <p className='text-[10px]'>
               CLIA-certified laboratories • HIPAA-compliant • Available 24/7

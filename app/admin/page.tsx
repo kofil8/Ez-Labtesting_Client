@@ -1,7 +1,7 @@
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 export const metadata = {
-  title: "Admin Dashboard | EZ Lab Testing",
+  title: "Admin Dashboard | Ez LabTesting",
   description: "Manage your lab testing platform",
 };
 

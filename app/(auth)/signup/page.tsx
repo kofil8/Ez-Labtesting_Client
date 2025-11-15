@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
 
 export const metadata = {
-  title: "Sign Up | EZ Lab Testing",
+  title: "Sign Up | Ez LabTesting",
   description: "Create your account",
 };
 

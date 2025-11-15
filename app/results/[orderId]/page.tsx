@@ -6,7 +6,7 @@ import { getResultByOrderId } from "@/lib/api";
 import { notFound } from "next/navigation";
 
 export const metadata = {
-  title: "Test Results | EZ Lab Testing",
+  title: "Test Results | Ez LabTesting",
   description: "View your test results",
 };
 

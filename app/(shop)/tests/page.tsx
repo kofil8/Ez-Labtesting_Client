@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/shared/SiteHeader";
 import { TestCatalog } from "@/components/tests/TestCatalog";
 
 export const metadata = {
-  title: "Browse Lab Tests | EZ Lab Testing",
+  title: "Browse Lab Tests | Ez LabTesting",
   description: "Find and order the lab tests you need",
 };
 

@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
 
 export const metadata = {
-  title: "Payment Successful | EZ Lab Testing",
+  title: "Payment Successful | Ez LabTesting",
   description: "Your order has been confirmed",
 };
 

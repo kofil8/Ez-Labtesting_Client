@@ -210,7 +210,7 @@ export function HeroSection() {
                 title: "HIPAA Secure",
                 description: "Bank-level encryption protects your health data",
                 gradient: "from-blue-500 via-blue-600 to-cyan-600",
-                bgGradient: "awsmd-gradient-blue-purple",
+                bgGradient: "bg-red-500",
                 iconColor: "text-white",
               },
               {

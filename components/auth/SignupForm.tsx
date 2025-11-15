@@ -53,7 +53,7 @@ export function SignupForm() {
 
       toast({
         title: "Account created!",
-        description: "Welcome to EZ Lab Testing.",
+        description: "Welcome to Ez LabTesting.",
       });
       router.push("/tests");
     } catch (error) {

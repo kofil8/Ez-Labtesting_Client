@@ -59,12 +59,12 @@ export function StatsSection() {
           viewport={{ once: true }}
           className='text-center mb-10 sm:mb-12 md:mb-16 lg:mb-20'
         >
-          <h2 className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6'>
+          <h2 className='text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 sm:mb-6'>
             <span className='text-gray-900 dark:text-white'>Some </span>
             <span className='awsmd-gradient-text'>Numbers</span>
             <span className='text-gray-900 dark:text-white'> About Us</span>
           </h2>
-          <p className='text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4 sm:px-0'>
+          <p className='text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4 sm:px-0'>
             Numbers don&#39;t lie, so we use data science to drive calculated
             growth
           </p>
@@ -88,11 +88,11 @@ export function StatsSection() {
             >
               <div className='awsmd-glass-card p-4 sm:p-6 md:p-8 lg:p-10 awsmd-hover-lift border-2 border-gray-200/50 dark:border-gray-700/50 group-hover:border-purple-300/50 dark:group-hover:border-purple-600/50'>
                 {/* Number display - Awsmd style */}
-                <div className='text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 sm:mb-3 md:mb-4'>
+                <div className='text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 sm:mb-3 md:mb-4'>
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </div>
                 {/* Label */}
-                <div className='text-[10px] sm:text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide'>
+                <div className='text-[9px] sm:text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide'>
                   {stat.label}
                 </div>
                 {/* Icon or decorative element */}

@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
 
 export const metadata = {
-  title: "Two-Factor Authentication | EZ Lab Testing",
+  title: "Two-Factor Authentication | Ez LabTesting",
   description: "Enter your verification code",
 };
 
