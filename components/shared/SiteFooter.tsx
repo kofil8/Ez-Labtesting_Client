@@ -106,7 +106,7 @@ export function SiteFooter() {
     <footer className='relative border-t bg-gradient-to-br dark:from-gray-900 dark:via-purple-900 dark:to-green-900'>
       {/* Subtle background gradients - Awsmd style */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none opacity-10'>
-        <div className='absolute top-0 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl' />
+        <div className='absolute top-0 left-1/4 w-96 h-96 bg-green-500/30 rounded-full blur-3xl' />
         <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-orange-500/30 rounded-full blur-3xl' />
       </div>
 
@@ -144,14 +144,14 @@ export function SiteFooter() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className='pl-10 h-11 awsmd-rounded bg-white border-2 border-blue-400 focus:border-blue-600 text-sm font-medium'
+                  className='pl-10 h-11 awsmd-rounded bg-white border-2 border-green-400 focus:border-blue-600 text-sm font-medium'
                 />
               </div>
               <Button
                 type='submit'
                 size='default'
                 disabled={isSubmitting}
-                className='h-11 px-6 bg-gradient-to-r from-blue-600 to-purple-500 text-white hover:from-blue-700 hover:to-purple-600 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold text-sm'
+                className='h-11 px-6 bg-gradient-to-r from-green-600 to-purple-500 text-white hover:from-blue-700 hover:to-purple-600 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold text-sm'
               >
                 {isSubmitting ? (
                   "Subscribing..."
