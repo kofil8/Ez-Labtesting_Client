@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MapPin, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const LOCATION_STORAGE_KEY = "user_location";
 export const LOCATION_PROMPT_FLAG = "location_permission_prompted";
@@ -14,6 +15,8 @@ export type StoredLocation = {
   method: "manual" | "geolocation";
   zipCode?: string;
   state?: string;
+  city?: string;
+  country?: string;
   latitude?: number;
   longitude?: number;
   resolvedAt: string;
@@ -109,21 +112,68 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
               let derivedZip = "";
               let derivedState = "";
 
+              // Enhanced reverse geocoding with multiple fallback services
               try {
-                const response = await fetch(
-                  `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-                );
-                if (response.ok) {
-                  const data = await response.json();
-                  derivedZip = data.postcode ?? "";
-                  derivedState =
-                    data.principalSubdivision ?? data.countryName ?? "";
+                let geoData = null;
+
+                // Try BigDataCloud first
+                try {
+                  const response = await fetch(
+                    `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+                  );
+                  if (response.ok) {
+                    geoData = await response.json();
+                    derivedZip = geoData.postcode ?? "";
+                    derivedState =
+                      geoData.principalSubdivision ?? geoData.countryName ?? "";
+
+                    // If we got good data, we're done
+                    if (derivedZip || derivedState) {
+                      console.log(
+                        "Successfully resolved location with BigDataCloud"
+                      );
+                    }
+                  }
+                } catch (error) {
+                  console.warn(
+                    "BigDataCloud geocoding failed, trying fallback"
+                  );
+                }
+
+                // If BigDataCloud didn't provide good results, try Nominatim
+                if (!derivedZip && !derivedState) {
+                  try {
+                    const response = await fetch(
+                      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`
+                    );
+                    if (response.ok) {
+                      const nominatimData = await response.json();
+                      const address = nominatimData.address || {};
+                      derivedZip = address.postcode ?? "";
+                      derivedState = address.state ?? address.country ?? "";
+
+                      if (derivedZip || derivedState) {
+                        console.log(
+                          "Successfully resolved location with Nominatim"
+                        );
+                      }
+                    }
+                  } catch (error) {
+                    console.warn("Nominatim geocoding failed");
+                  }
+                }
+
+                // If we still don't have good location data, provide a generic location
+                if (!derivedZip && !derivedState) {
+                  derivedState = "Current Location";
+                  console.log("Using generic location name as fallback");
                 }
               } catch (geoError) {
-                console.error("Reverse geocoding failed", geoError);
+                console.error("All geocoding services failed", geoError);
+                derivedState = "Current Location";
                 if (!options?.silent) {
                   setErrorMessage(
-                    "Unable to resolve address details, but your coordinates were saved."
+                    "Unable to resolve exact address, but your location was saved."
                   );
                 }
               }
@@ -218,102 +268,203 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
 
   const locationLabel = (() => {
     if (!location) return "";
-    if (location.zipCode && location.state) {
+
+    // Prefer zipCode + state combination
+    if (
+      location.zipCode &&
+      location.state &&
+      location.state !== "Not specified"
+    ) {
       return `${location.zipCode}, ${location.state}`;
     }
+
+    // Just zipCode if available
     if (location.zipCode) {
       return location.zipCode;
     }
-    if (location.latitude != null && location.longitude != null) {
-      return `Lat ${formatCoordinate(
-        location.latitude
-      )}, Lon ${formatCoordinate(location.longitude)}`;
+
+    // Just state/region if available and meaningful
+    if (location.state && location.state !== "Not specified") {
+      return location.state;
     }
+
+    // Only show coordinates as absolute last resort, and make them more user-friendly
+    if (location.latitude != null && location.longitude != null) {
+      return `Near ${formatCoordinate(location.latitude)}, ${formatCoordinate(
+        location.longitude
+      )}`;
+    }
+
     return "Location saved";
   })();
 
   if (location) {
     return (
-      <Card className='border-primary/20 bg-primary/5'>
-        <CardContent className='pt-4 pb-4'>
-          <div className='flex items-start justify-between gap-4'>
-            <div>
-              <div className='flex items-center gap-2'>
-                <MapPin className='h-4 w-4 text-primary' />
-                <span className='text-sm font-medium'>{locationLabel}</span>
+      <AnimatePresence mode='wait'>
+        <motion.div
+          key='location-set'
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          <Card className='border-primary/20 bg-primary/5'>
+            <CardContent className='pt-4 pb-4'>
+              <div className='flex items-start justify-between gap-4'>
+                <motion.div
+                  initial={{ x: -10, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.1, duration: 0.3 }}
+                >
+                  <div className='flex items-center gap-2'>
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <MapPin className='h-4 w-4 text-primary' />
+                    </motion.div>
+                    <motion.span
+                      className='text-sm font-medium'
+                      layout
+                      transition={{ duration: 0.3 }}
+                    >
+                      {locationLabel}
+                    </motion.span>
+                  </div>
+                  <motion.p
+                    className='text-xs text-muted-foreground mt-2'
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.3 }}
+                  >
+                    Saved via{" "}
+                    {location.method === "manual"
+                      ? "manual entry"
+                      : "device location"}{" "}
+                    on {new Date(location.resolvedAt).toLocaleDateString()}
+                  </motion.p>
+                </motion.div>
+                <motion.div
+                  initial={{ x: 10, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.15, duration: 0.3 }}
+                >
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={handleClear}
+                    className='hover:bg-red-50 hover:text-red-600 transition-colors'
+                  >
+                    <X className='h-4 w-4' />
+                  </Button>
+                </motion.div>
               </div>
-              <p className='text-xs text-muted-foreground mt-2'>
-                Saved via{" "}
-                {location.method === "manual"
-                  ? "manual entry"
-                  : "device location"}{" "}
-                on {new Date(location.resolvedAt).toLocaleDateString()}
-              </p>
-            </div>
-            <Button variant='ghost' size='sm' onClick={handleClear}>
-              <X className='h-4 w-4' />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </AnimatePresence>
     );
   }
 
   return (
-    <Card>
-      <CardContent className='pt-6 pb-6 space-y-4'>
-        <div className='flex items-center gap-2'>
-          <MapPin className='h-5 w-5 text-muted-foreground' />
-          <h3 className='font-semibold'>Set Your Location</h3>
-        </div>
-        <p className='text-sm text-muted-foreground'>
-          Help us show you the most convenient labs in your area. We will only
-          ask for this once.
-        </p>
-
-        <div className='space-y-3'>
-          <div className='flex gap-2'>
-            <Input
-              placeholder='Enter ZIP code'
-              value={zipInput}
-              onChange={(e) => setZipInput(e.target.value)}
-              maxLength={5}
-              className='flex-1'
-            />
-            <Button
-              onClick={handleSetZipCode}
-              disabled={zipInput.length !== 5 || loading}
+    <AnimatePresence mode='wait'>
+      <motion.div
+        key='location-form'
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        <Card>
+          <CardContent className='pt-6 pb-6 space-y-4'>
+            <motion.div
+              className='flex items-center gap-2'
+              initial={{ x: -10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
             >
-              Set
-            </Button>
-          </div>
+              <MapPin className='h-5 w-5 text-muted-foreground' />
+              <h3 className='font-semibold'>Set Your Location</h3>
+            </motion.div>
+            <motion.p
+              className='text-sm text-muted-foreground'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.3 }}
+            >
+              Help us show you the most convenient labs in your area. We will
+              only ask for this once.
+            </motion.p>
 
-          <div className='relative'>
-            <div className='absolute inset-0 flex items-center'>
-              <span className='w-full border-t' />
-            </div>
-            <div className='relative flex justify-center text-xs uppercase'>
-              <span className='bg-background px-2 text-muted-foreground'>
-                Or
-              </span>
-            </div>
-          </div>
+            <motion.div
+              className='space-y-3'
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
+              <div className='flex gap-2'>
+                <Input
+                  placeholder='Enter ZIP code'
+                  value={zipInput}
+                  onChange={(e) => setZipInput(e.target.value)}
+                  maxLength={5}
+                  className='flex-1'
+                />
+                <Button
+                  onClick={handleSetZipCode}
+                  disabled={zipInput.length !== 5 || loading}
+                >
+                  Set
+                </Button>
+              </div>
 
-          <Button
-            variant='outline'
-            className='w-full'
-            onClick={() => requestDeviceLocation()}
-            disabled={loading}
-          >
-            <MapPin className='h-4 w-4 mr-2' />
-            {loading ? "Getting location..." : "Use my current location"}
-          </Button>
+              <div className='relative'>
+                <div className='absolute inset-0 flex items-center'>
+                  <span className='w-full border-t' />
+                </div>
+                <div className='relative flex justify-center text-xs uppercase'>
+                  <span className='bg-background px-2 text-muted-foreground'>
+                    Or
+                  </span>
+                </div>
+              </div>
 
-          {errorMessage && (
-            <p className='text-xs text-destructive'>{errorMessage}</p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+              <Button
+                variant='outline'
+                className='w-full transition-all hover:scale-[1.02]'
+                onClick={() => requestDeviceLocation()}
+                disabled={loading}
+              >
+                <motion.div
+                  animate={{ rotate: loading ? 360 : 0 }}
+                  transition={{
+                    duration: 1,
+                    repeat: loading ? Infinity : 0,
+                    ease: "linear",
+                  }}
+                >
+                  <MapPin className='h-4 w-4 mr-2' />
+                </motion.div>
+                {loading ? "Getting location..." : "Use my current location"}
+              </Button>
+
+              <AnimatePresence>
+                {errorMessage && (
+                  <motion.p
+                    className='text-xs text-destructive'
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {errorMessage}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </AnimatePresence>
   );
 }

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/store/cart-store";
+import { useCartSidebar } from "@/lib/cart-sidebar-context";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, ShoppingCart, Sparkles, User, X } from "lucide-react";
 import Image from "next/image";
@@ -12,6 +13,7 @@ import { useEffect, useState } from "react";
 export function SiteHeader() {
   const { isAuthenticated, user, logout } = useAuth();
   const itemCount = useCartStore((state) => state.getItemCount());
+  const { toggleCart } = useCartSidebar();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -112,29 +114,28 @@ export function SiteHeader() {
           {/* Actions */}
           <div className='flex items-center gap-2'>
             {/* Cart */}
-            <Link href='/cart'>
-              <Button
-                variant='ghost'
-                size='icon'
-                className='relative hover:bg-primary/10 transition-colors group'
-              >
-                <ShoppingCart className='h-5 w-5 group-hover:scale-110 transition-transform' />
-                {isMounted && (
-                  <AnimatePresence>
-                    {itemCount > 0 && (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        className='absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-xs text-white flex items-center justify-center font-bold shadow-lg'
-                      >
-                        {itemCount}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                )}
-              </Button>
-            </Link>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={toggleCart}
+              className='relative hover:bg-primary/10 transition-colors group'
+            >
+              <ShoppingCart className='h-5 w-5 group-hover:scale-110 transition-transform' />
+              {isMounted && (
+                <AnimatePresence>
+                  {itemCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      exit={{ scale: 0 }}
+                      className='absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-xs text-white flex items-center justify-center font-bold shadow-lg'
+                    >
+                      {itemCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              )}
+            </Button>
 
             {/* Auth - Desktop */}
             <div className='hidden md:flex items-center gap-2'>
