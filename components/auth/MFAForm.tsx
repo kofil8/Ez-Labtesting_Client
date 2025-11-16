@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { mfaSchema, MFAFormData } from '@/lib/schemas/auth-schemas'
@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 
 export function MFAForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const { verifyMFA } = useAuth()
   const [loading, setLoading] = useState(false)
@@ -30,13 +31,18 @@ export function MFAForm() {
     setLoading(true)
     try {
       const success = await verifyMFA(data.code)
-      
+      const fromParam = searchParams.get('from')
+      const safeFrom =
+        fromParam && fromParam.startsWith('/') && !fromParam.startsWith('//')
+          ? fromParam
+          : null
+
       if (success) {
         toast({
           title: 'Verification successful!',
           description: 'You have been authenticated.',
         })
-        router.push('/results')
+        router.push(safeFrom || '/results')
       } else {
         toast({
           title: 'Verification failed',
@@ -90,7 +96,17 @@ export function MFAForm() {
             type="button"
             variant="ghost"
             className="w-full"
-            onClick={() => router.push('/login')}
+            onClick={() => {
+              const fromParam = searchParams.get('from')
+              const safeFrom =
+                fromParam && fromParam.startsWith('/') && !fromParam.startsWith('//')
+                  ? fromParam
+                  : null
+
+              router.push(
+                safeFrom ? `/login?from=${encodeURIComponent(safeFrom)}` : '/login'
+              )
+            }}
           >
             Back to Login
           </Button>

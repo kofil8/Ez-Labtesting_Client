@@ -49,12 +49,20 @@ export function PaymentMethodCard({ paymentMethod, onPaymentMethodChange }: Paym
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              className={`border-2 rounded-lg p-4 transition-all ${
                 paymentMethod === 'card' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => onPaymentMethodChange('card')}
             >
-              <div className="flex items-start space-x-3">
+              <div 
+                className="flex items-start space-x-3 cursor-pointer"
+                onClick={(e) => {
+                  // Only change payment method if clicking on the header area, not on input fields
+                  const target = e.target as HTMLElement
+                  if (!target.closest('input') && !target.closest('button')) {
+                    onPaymentMethodChange('card')
+                  }
+                }}
+              >
                 <RadioGroupItem value="card" id="card" className="mt-1" />
                 <div className="flex-1">
                   <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer font-semibold">
@@ -136,12 +144,20 @@ export function PaymentMethodCard({ paymentMethod, onPaymentMethodChange }: Paym
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              className={`border-2 rounded-lg p-4 transition-all ${
                 paymentMethod === 'ach' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
               }`}
-              onClick={() => onPaymentMethodChange('ach')}
             >
-              <div className="flex items-start space-x-3">
+              <div 
+                className="flex items-start space-x-3 cursor-pointer"
+                onClick={(e) => {
+                  // Only change payment method if clicking on the header area, not on input fields
+                  const target = e.target as HTMLElement
+                  if (!target.closest('input') && !target.closest('button')) {
+                    onPaymentMethodChange('ach')
+                  }
+                }}
+              >
                 <RadioGroupItem value="ach" id="ach" className="mt-1" />
                 <div className="flex-1">
                   <Label htmlFor="ach" className="flex items-center gap-2 cursor-pointer font-semibold">
@@ -162,7 +178,7 @@ export function PaymentMethodCard({ paymentMethod, onPaymentMethodChange }: Paym
                       <div>
                         <Label htmlFor="accountType">Account Type *</Label>
                         <Select defaultValue="checking">
-                          <SelectTrigger id="accountType">
+                          <SelectTrigger id="accountType" className="bg-purple-50/50 dark:bg-purple-950/20">
                             <SelectValue placeholder="Select account type" />
                           </SelectTrigger>
                           <SelectContent>
@@ -178,6 +194,7 @@ export function PaymentMethodCard({ paymentMethod, onPaymentMethodChange }: Paym
                           id="routingNumber"
                           placeholder="123456789"
                           maxLength={9}
+                          className="bg-purple-50/50 dark:bg-purple-950/20"
                         />
                       </div>
                       
@@ -187,6 +204,7 @@ export function PaymentMethodCard({ paymentMethod, onPaymentMethodChange }: Paym
                           id="accountNumber"
                           placeholder="1234567890"
                           type="password"
+                          className="bg-purple-50/50 dark:bg-purple-950/20"
                         />
                       </div>
 
@@ -195,11 +213,12 @@ export function PaymentMethodCard({ paymentMethod, onPaymentMethodChange }: Paym
                         <Input
                           id="accountHolderName"
                           placeholder="John Doe"
+                          className="bg-purple-50/50 dark:bg-purple-950/20"
                         />
                       </div>
                       
                       <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                        <Lock className="h-4 w-4 text-green-600" />
+                        <Lock className="h-4 w-4 text-green-600 dark:text-green-400" />
                         <p className="text-xs text-green-700 dark:text-green-300">
                           ACH transfers are processed securely through your bank
                         </p>

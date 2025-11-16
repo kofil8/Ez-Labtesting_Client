@@ -10,13 +10,14 @@ import { useAuth } from "@/lib/auth-context";
 import { LoginFormData, loginSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useForm } from "react-hook-form";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -43,21 +44,28 @@ export function LoginForm() {
 
     setLoading(true);
     try {
-      const result = await login(data.email, data.password);
+      const result = await login(data.email, data.password, captchaToken);
+      const fromParam = searchParams.get("from");
+      const safeFrom =
+        fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
+          ? fromParam
+          : null;
 
       if (result.requiresMFA) {
-        router.push("/mfa");
+        // Preserve the original destination through the MFA step
+        router.push(safeFrom ? `/mfa?from=${encodeURIComponent(safeFrom)}` : "/mfa");
       } else {
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
-        router.push("/results");
+        router.push(safeFrom || "/results");
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Invalid email or password.";
       toast({
         title: "Login failed",
-        description: "Invalid email or password.",
+        description: errorMessage,
         variant: "destructive",
       });
       recaptchaRef.current?.reset();
@@ -141,7 +149,19 @@ export function LoginForm() {
 
           <p className='text-sm text-center text-muted-foreground'>
             Don&apos;t have an account?{" "}
-            <Link href='/signup' className='text-primary hover:underline'>
+            <Link
+              href={(() => {
+                const fromParam = searchParams.get("from");
+                const safeFrom =
+                  fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
+                    ? fromParam
+                    : null;
+                return safeFrom
+                  ? `/signup?from=${encodeURIComponent(safeFrom)}`
+                  : "/signup";
+              })()}
+              className='text-primary hover:underline'
+            >
               Sign up
             </Link>
           </p>

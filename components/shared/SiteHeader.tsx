@@ -142,11 +142,12 @@ export function SiteHeader() {
             <div className='hidden md:flex items-center gap-2'>
               {isAuthenticated ? (
                 <>
-                  <Link href='/results'>
+                  <Link href='/profile'>
                     <Button
                       variant='ghost'
                       size='icon'
                       className='hover:bg-primary/10 transition-colors group'
+                      title='My Account'
                     >
                       <User className='h-5 w-5 group-hover:scale-110 transition-transform' />
                     </Button>
@@ -234,12 +235,12 @@ export function SiteHeader() {
                 {isAuthenticated ? (
                   <>
                     <Link
-                      href='/results'
+                      href='/profile'
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <Button variant='ghost' className='w-full justify-start'>
                         <User className='h-4 w-4 mr-2' />
-                        My Profile
+                        My Account
                       </Button>
                     </Link>
                     <Button

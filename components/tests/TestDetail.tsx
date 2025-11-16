@@ -229,10 +229,188 @@ export function TestDetail({ test }: TestDetailProps) {
         </div>
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8'>
-        {/* Sidebar - 4 columns (Show first on mobile) */}
-        <div className='lg:col-span-4 lg:order-2 order-1'>
-          <div className='lg:sticky lg:top-24 space-y-6'>
+      <div className='grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8'>
+        {/* Main Content - 8 columns */}
+        <div className='md:col-span-8 space-y-6'>
+            {/* Test Requirements Section */}
+            {(test.sampleVolume || test.tubeType || test.collectionMethod || test.resultsTimeframe || test.ageRequirement || test.fastingRequired !== undefined) && (
+              <Card className='border-2 border-primary/20 shadow-lg'>
+                <CardHeader>
+                  <CardTitle className='flex items-center gap-2'>
+                    <FileText className='h-5 w-5' />
+                    Important Test Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='grid grid-cols-2 md:grid-cols-3 gap-4'>
+                  {test.sampleVolume && (
+                    <div className='p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800'>
+                      <div className='text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1'>Sample Volume</div>
+                      <div className='text-sm font-medium'>{test.sampleVolume}</div>
+                    </div>
+                  )}
+                  {test.tubeType && (
+                    <div className='p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800'>
+                      <div className='text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1'>Tube Type</div>
+                      <div className='text-sm font-medium'>{test.tubeType}</div>
+                    </div>
+                  )}
+                  {test.collectionMethod && (
+                    <div className='p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800'>
+                      <div className='text-xs font-semibold text-green-700 dark:text-green-300 mb-1'>Collection</div>
+                      <div className='text-sm font-medium'>{test.collectionMethod}</div>
+                    </div>
+                  )}
+                  {test.resultsTimeframe && (
+                    <div className='p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800'>
+                      <div className='text-xs font-semibold text-orange-700 dark:text-orange-300 mb-1'>Results</div>
+                      <div className='text-sm font-medium'>{test.resultsTimeframe}</div>
+                    </div>
+                  )}
+                  {test.ageRequirement && (
+                    <div className='p-3 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800'>
+                      <div className='text-xs font-semibold text-indigo-700 dark:text-indigo-300 mb-1'>Age Requirement</div>
+                      <div className='text-sm font-medium'>{test.ageRequirement}</div>
+                    </div>
+                  )}
+                  {test.fastingRequired !== undefined && (
+                    <div className={`p-3 rounded-lg border ${
+                      test.fastingRequired 
+                        ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
+                        : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+                    }`}>
+                      <div className={`text-xs font-semibold mb-1 ${
+                        test.fastingRequired
+                          ? 'text-orange-700 dark:text-orange-300'
+                          : 'text-green-700 dark:text-green-300'
+                      }`}>
+                        Fasting
+                      </div>
+                      <div className='text-sm font-medium'>
+                        {test.fastingRequired ? `Required${test.fastingHours ? ` (${test.fastingHours}h)` : ''}` : 'Not Required'}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Purchase Card */}
+            <Card className='border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 relative'>
+              <div className='absolute -top-3 left-1/2 -translate-x-1/2 z-10'>
+                <Badge className='bg-gradient-to-r from-primary to-primary/80 shadow-lg px-4 py-1'>
+                  <TrendingUp className='h-3 w-3 mr-1' />
+                  Most Popular
+                </Badge>
+              </div>
+
+              <CardHeader className='pb-4 pt-8'>
+                  <div className='flex items-baseline justify-between mb-2'>
+                  <div>
+                    <div className='text-xs sm:text-sm text-muted-foreground font-medium'>
+                      Starting at
+                    </div>
+                    <div className='text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'>
+                      {formatCurrency(test.price)}
+                    </div>
+                    <div className='text-xs text-muted-foreground mt-1'>
+                      One-time payment
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className='space-y-3 sm:space-y-4'>
+                <Button
+                  onClick={handleAddToCart}
+                  className='w-full h-11 sm:h-12 text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-r from-primary to-primary/90'
+                  size='lg'
+                >
+                  <ShoppingCart className='h-4 w-4 sm:h-5 sm:w-5 mr-2' />
+                  Add to Cart
+                </Button>
+
+                <Button
+                  variant='outline'
+                  className='w-full h-10 sm:h-11 text-sm sm:text-base font-semibold border-2 hover:bg-primary hover:text-primary-foreground transition-all hover:scale-105'
+                  onClick={() => {
+                    handleAddToCart();
+                    router.push("/checkout");
+                  }}
+                >
+                  <Zap className='h-3 w-3 sm:h-4 sm:w-4 mr-2' />
+                  Buy Now - Fast Checkout
+                </Button>
+
+                <div className='p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800'>
+                  <div className='flex items-center gap-2 text-sm text-green-700 dark:text-green-300'>
+                    <CheckCircle2 className='h-4 w-4 shrink-0' />
+                    <span className='font-medium'>
+                      In Stock - Ships within 24 hours
+                    </span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className='space-y-3 text-sm'>
+                  <div className='font-semibold mb-2'>What&apos;s Included:</div>
+                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
+                    <Shield className='h-4 w-4 text-green-500 shrink-0 mt-0.5' />
+                    <div>
+                      <div className='font-medium'>
+                        100% Secure & Confidential
+                      </div>
+                      <div className='text-xs text-muted-foreground'>
+                        HIPAA-compliant data protection
+                      </div>
+                    </div>
+                  </div>
+                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
+                    <Truck className='h-4 w-4 text-blue-500 shrink-0 mt-0.5' />
+                    <div>
+                      <div className='font-medium'>Free Express Shipping</div>
+                      <div className='text-xs text-muted-foreground'>
+                        Test kit delivered to your door
+                      </div>
+                    </div>
+                  </div>
+                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
+                    <Users className='h-4 w-4 text-purple-500 shrink-0 mt-0.5' />
+                    <div>
+                      <div className='font-medium'>No Doctor Visit Needed</div>
+                      <div className='text-xs text-muted-foreground'>
+                        Order directly online
+                      </div>
+                    </div>
+                  </div>
+                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
+                    <Mail className='h-4 w-4 text-orange-500 shrink-0 mt-0.5' />
+                    <div>
+                      <div className='font-medium'>Fast Digital Results</div>
+                      <div className='text-xs text-muted-foreground'>
+                        Receive results via email & SMS
+                      </div>
+                    </div>
+                  </div>
+                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
+                    <Calendar className='h-4 w-4 text-red-500 shrink-0 mt-0.5' />
+                    <div>
+                      <div className='font-medium'>
+                        {test.turnaroundDays}-Day Turnaround
+                      </div>
+                      <div className='text-xs text-muted-foreground'>
+                        Quick and reliable results
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+        </div>
+
+        {/* Sidebar - 4 columns */}
+        <div className='md:col-span-4'>
+          <div className='space-y-6'>
           {/* Product Hero */}
           <Card className='overflow-hidden border-2 hover:shadow-xl transition-all duration-300'>
             <div
@@ -418,9 +596,81 @@ export function TestDetail({ test }: TestDetailProps) {
                 <div className='space-y-6'>
                   <div>
                     <h3 className='text-lg font-semibold mb-4'>
-                      Technical Details
+                      Test Details
                     </h3>
                     <dl className='grid sm:grid-cols-2 gap-4'>
+                      {test.sampleVolume && (
+                        <div className='p-4 rounded-lg border bg-card'>
+                          <dt className='text-sm text-muted-foreground mb-1 flex items-center gap-2'>
+                            <Beaker className='h-4 w-4' />
+                            Sample Type
+                          </dt>
+                          <dd className='font-semibold text-lg'>
+                            {test.sampleVolume}
+                          </dd>
+                        </div>
+                      )}
+                      {test.tubeType && (
+                        <div className='p-4 rounded-lg border bg-card'>
+                          <dt className='text-sm text-muted-foreground mb-1 flex items-center gap-2'>
+                            <Beaker className='h-4 w-4' />
+                            Tube Type
+                          </dt>
+                          <dd className='font-semibold text-lg'>
+                            {test.tubeType}
+                          </dd>
+                        </div>
+                      )}
+                      {test.collectionMethod && (
+                        <div className='p-4 rounded-lg border bg-card'>
+                          <dt className='text-sm text-muted-foreground mb-1 flex items-center gap-2'>
+                            <Calendar className='h-4 w-4' />
+                            Collection Method
+                          </dt>
+                          <dd className='font-semibold text-lg'>
+                            {test.collectionMethod}
+                          </dd>
+                        </div>
+                      )}
+                      {test.resultsTimeframe && (
+                        <div className='p-4 rounded-lg border bg-card'>
+                          <dt className='text-sm text-muted-foreground mb-1 flex items-center gap-2'>
+                            <Clock className='h-4 w-4' />
+                            Results
+                          </dt>
+                          <dd className='font-semibold text-lg'>
+                            {test.resultsTimeframe}
+                          </dd>
+                        </div>
+                      )}
+                      {test.ageRequirement && (
+                        <div className='p-4 rounded-lg border bg-card'>
+                          <dt className='text-sm text-muted-foreground mb-1 flex items-center gap-2'>
+                            <Users className='h-4 w-4' />
+                            Age
+                          </dt>
+                          <dd className='font-semibold text-lg'>
+                            {test.ageRequirement}
+                          </dd>
+                        </div>
+                      )}
+                      {test.fastingRequired !== undefined && (
+                        <div className='p-4 rounded-lg border bg-card'>
+                          <dt className='text-sm text-muted-foreground mb-1 flex items-center gap-2'>
+                            <AlertCircle className='h-4 w-4' />
+                            Fasting Required
+                          </dt>
+                          <dd className='font-semibold text-lg'>
+                            {test.fastingRequired ? (
+                              <span className='text-orange-600 dark:text-orange-400'>
+                                Yes{test.fastingHours ? ` (${test.fastingHours} hours)` : ""}
+                              </span>
+                            ) : (
+                              <span className='text-green-600 dark:text-green-400'>No</span>
+                            )}
+                          </dd>
+                        </div>
+                      )}
                       <div className='p-4 rounded-lg border bg-card'>
                         <dt className='text-sm text-muted-foreground mb-1'>
                           Sample Type
@@ -482,6 +732,38 @@ export function TestDetail({ test }: TestDetailProps) {
 
               {activeTab === "preparation" && (
                 <div className='space-y-6 animate-in fade-in duration-300'>
+                  {test.fastingRequired !== undefined && (
+                    <div className={`p-6 rounded-lg border-2 ${
+                      test.fastingRequired 
+                        ? "border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20"
+                        : "border-green-200 dark:border-green-800 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20"
+                    }`}>
+                      <h3 className='text-lg font-semibold mb-3 flex items-center gap-2'>
+                        <AlertCircle className={`h-5 w-5 ${
+                          test.fastingRequired ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400"
+                        }`} />
+                        Fasting Requirements
+                      </h3>
+                      <p className='text-base leading-relaxed font-medium'>
+                        {test.fastingRequired ? (
+                          <>
+                            <span className='text-orange-700 dark:text-orange-300'>
+                              Fasting is required for this test.
+                            </span>
+                            {test.fastingHours && (
+                              <span className='block mt-2 text-sm text-orange-600 dark:text-orange-400'>
+                                Please fast for {test.fastingHours} hours before your test. Only water is allowed during the fasting period.
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className='text-green-700 dark:text-green-300'>
+                            No fasting required. You can eat and drink normally before this test.
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
                   <div className='p-6 rounded-lg border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10'>
                     <h3 className='text-lg font-semibold mb-3 flex items-center gap-2'>
                       <Zap className='h-5 w-5 text-primary' />
@@ -719,249 +1001,9 @@ export function TestDetail({ test }: TestDetailProps) {
               </CardContent>
             </Card>
           )}
-        </div>
-
-        {/* Main Content - 8 columns (Show second on mobile) */}
-        <div className='lg:col-span-8 lg:order-1 order-2 space-y-6'>
-            {/* Purchase Card */}
-            <Card className='border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300'>
-              <div className='absolute -top-3 left-1/2 -translate-x-1/2 z-10'>
-                <Badge className='bg-gradient-to-r from-primary to-primary/80 shadow-lg px-4 py-1'>
-                  <TrendingUp className='h-3 w-3 mr-1' />
-                  Most Popular
-                </Badge>
-              </div>
-
-              <CardHeader className='pb-4 pt-6'>
-                  <div className='flex items-baseline justify-between mb-2'>
-                  <div>
-                    <div className='text-xs sm:text-sm text-muted-foreground font-medium'>
-                      Starting at
-                    </div>
-                    <div className='text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent'>
-                      {formatCurrency(test.price)}
-                    </div>
-                    <div className='text-xs text-muted-foreground mt-1'>
-                      One-time payment
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className='space-y-3 sm:space-y-4'>
-                <Button
-                  onClick={handleAddToCart}
-                  className='w-full h-11 sm:h-12 text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-r from-primary to-primary/90'
-                  size='lg'
-                >
-                  <ShoppingCart className='h-4 w-4 sm:h-5 sm:w-5 mr-2' />
-                  Add to Cart
-                </Button>
-
-                <Button
-                  variant='outline'
-                  className='w-full h-10 sm:h-11 text-sm sm:text-base font-semibold border-2 hover:bg-primary hover:text-primary-foreground transition-all hover:scale-105'
-                  onClick={() => {
-                    handleAddToCart();
-                    router.push("/checkout");
-                  }}
-                >
-                  <Zap className='h-3 w-3 sm:h-4 sm:w-4 mr-2' />
-                  Buy Now - Fast Checkout
-                </Button>
-
-                <div className='p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800'>
-                  <div className='flex items-center gap-2 text-sm text-green-700 dark:text-green-300'>
-                    <CheckCircle2 className='h-4 w-4 shrink-0' />
-                    <span className='font-medium'>
-                      In Stock - Ships within 24 hours
-                    </span>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className='space-y-3 text-sm'>
-                  <div className='font-semibold mb-2'>What&apos;s Included:</div>
-                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
-                    <Shield className='h-4 w-4 text-green-500 shrink-0 mt-0.5' />
-                    <div>
-                      <div className='font-medium'>
-                        100% Secure & Confidential
-                      </div>
-                      <div className='text-xs text-muted-foreground'>
-                        HIPAA-compliant data protection
-                      </div>
-                    </div>
-                  </div>
-                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
-                    <Truck className='h-4 w-4 text-blue-500 shrink-0 mt-0.5' />
-                    <div>
-                      <div className='font-medium'>Free Express Shipping</div>
-                      <div className='text-xs text-muted-foreground'>
-                        Test kit delivered to your door
-                      </div>
-                    </div>
-                  </div>
-                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
-                    <Users className='h-4 w-4 text-purple-500 shrink-0 mt-0.5' />
-                    <div>
-                      <div className='font-medium'>No Doctor Visit Needed</div>
-                      <div className='text-xs text-muted-foreground'>
-                        Order directly online
-                      </div>
-                    </div>
-                  </div>
-                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
-                    <Mail className='h-4 w-4 text-orange-500 shrink-0 mt-0.5' />
-                    <div>
-                      <div className='font-medium'>Fast Digital Results</div>
-                      <div className='text-xs text-muted-foreground'>
-                        Receive results via email & SMS
-                      </div>
-                    </div>
-                  </div>
-                  <div className='flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors'>
-                    <Calendar className='h-4 w-4 text-red-500 shrink-0 mt-0.5' />
-                    <div>
-                      <div className='font-medium'>
-                        {test.turnaroundDays}-Day Turnaround
-                      </div>
-                      <div className='text-xs text-muted-foreground'>
-                        Quick and reliable results
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className='bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 space-y-3 border border-primary/20'>
-                  <div className='flex items-start gap-2'>
-                    <Phone className='h-5 w-5 text-primary shrink-0 mt-0.5' />
-                    <div>
-                      <div className='font-semibold text-sm'>
-                        Need Help Deciding?
-                      </div>
-                      <div className='text-xs text-muted-foreground mt-0.5'>
-                        Our health specialists are available 24/7 to assist you
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    className='w-full hover:bg-primary hover:text-primary-foreground transition-all'
-                  >
-                    <Phone className='h-4 w-4 mr-2' />
-                    Talk to a Specialist
-                  </Button>
-                </div>
-
-                <div className='flex items-center justify-center gap-1 text-xs text-muted-foreground pt-2'>
-                  <Shield className='h-3 w-3' />
-                  <span>Secure checkout with 256-bit SSL encryption</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Trust Signals */}
-            <Card className='overflow-hidden border-2 hover:shadow-lg transition-all duration-300'>
-              <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent' />
-              <CardHeader className='pb-3 relative'>
-                <CardTitle className='text-lg font-bold flex items-center gap-2'>
-                  <Award className='h-5 w-5 text-primary' />
-                  Why Choose Us
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-4 text-sm relative'>
-                <div className='group flex gap-3 p-3 rounded-lg hover:bg-primary/5 transition-all cursor-default'>
-                  <div className='h-10 w-10 rounded-full bg-gradient-to-br from-blue-500/10 to-blue-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform'>
-                    <Award className='h-5 w-5 text-blue-600 dark:text-blue-400' />
-                  </div>
-                  <div>
-                    <div className='font-semibold'>CLIA-Certified Labs</div>
-                    <div className='text-xs text-muted-foreground leading-relaxed'>
-                      All tests processed in fully accredited, state-of-the-art
-                      laboratories
-                    </div>
-                  </div>
-                </div>
-                <div className='group flex gap-3 p-3 rounded-lg hover:bg-primary/5 transition-all cursor-default'>
-                  <div className='h-10 w-10 rounded-full bg-gradient-to-br from-green-500/10 to-green-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform'>
-                    <Shield className='h-5 w-5 text-green-600 dark:text-green-400' />
-                  </div>
-                  <div>
-                    <div className='font-semibold'>Bank-Level Security</div>
-                    <div className='text-xs text-muted-foreground leading-relaxed'>
-                      Your health data is protected with military-grade
-                      encryption
-                    </div>
-                  </div>
-                </div>
-                <div className='group flex gap-3 p-3 rounded-lg hover:bg-primary/5 transition-all cursor-default'>
-                  <div className='h-10 w-10 rounded-full bg-gradient-to-br from-yellow-500/10 to-yellow-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform'>
-                    <Star className='h-5 w-5 text-yellow-600 dark:text-yellow-400' />
-                  </div>
-                  <div>
-                    <div className='font-semibold'>10,000+ Happy Customers</div>
-                    <div className='text-xs text-muted-foreground leading-relaxed'>
-                      Rated 4.9/5 stars based on 3,247 verified reviews
-                    </div>
-                  </div>
-                </div>
-                <div className='group flex gap-3 p-3 rounded-lg hover:bg-primary/5 transition-all cursor-default'>
-                  <div className='h-10 w-10 rounded-full bg-gradient-to-br from-purple-500/10 to-purple-600/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform'>
-                    <CheckCircle2 className='h-5 w-5 text-purple-600 dark:text-purple-400' />
-                  </div>
-                  <div>
-                    <div className='font-semibold'>Satisfaction Guarantee</div>
-                    <div className='text-xs text-muted-foreground leading-relaxed'>
-                      30-day money-back guarantee if you&apos;re not satisfied
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Social Proof */}
-            <Card className='bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-2 border-primary/20'>
-              <CardContent className='pt-6'>
-                <div className='text-center space-y-3'>
-                  <div className='flex justify-center gap-1'>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className='h-6 w-6 fill-yellow-400 text-yellow-400'
-                      />
-                    ))}
-                  </div>
-                  <div>
-                    <div className='text-2xl font-bold'>4.9/5</div>
-                    <div className='text-sm text-muted-foreground'>
-                      Average Rating
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className='grid grid-cols-2 gap-4 text-center pt-2'>
-                    <div>
-                      <div className='text-xl font-bold text-primary'>10K+</div>
-                      <div className='text-xs text-muted-foreground'>
-                        Tests Completed
-                      </div>
-                    </div>
-                    <div>
-                      <div className='text-xl font-bold text-primary'>98%</div>
-                      <div className='text-xs text-muted-foreground'>
-                        Satisfaction Rate
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
+
       </div>
     </div>
   );

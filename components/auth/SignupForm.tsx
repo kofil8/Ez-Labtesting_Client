@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { SignupFormData, signupSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Captcha } from "@/components/ui/captcha";
@@ -17,6 +17,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 
 export function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const { signup } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -49,17 +50,23 @@ export function SignupForm() {
         email: data.email,
         phone: data.phone,
         password: data.password,
-      });
+      }, captchaToken);
 
       toast({
         title: "Account created!",
         description: "Welcome to Ez LabTesting.",
       });
-      router.push("/tests");
+      const fromParam = searchParams.get("from");
+      const safeFrom =
+        fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
+          ? fromParam
+          : null;
+      router.push(safeFrom || "/tests");
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unable to create account. Please try again.";
       toast({
         title: "Signup failed",
-        description: "Unable to create account. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       recaptchaRef.current?.reset();
@@ -185,7 +192,19 @@ export function SignupForm() {
 
           <p className='text-sm text-center text-muted-foreground'>
             Already have an account?{" "}
-            <Link href='/login' className='text-primary hover:underline'>
+            <Link
+              href={(() => {
+                const fromParam = searchParams.get("from");
+                const safeFrom =
+                  fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
+                    ? fromParam
+                    : null;
+                return safeFrom
+                  ? `/login?from=${encodeURIComponent(safeFrom)}`
+                  : "/login";
+              })()}
+              className='text-primary hover:underline'
+            >
               Sign in
             </Link>
           </p>

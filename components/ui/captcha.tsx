@@ -1,37 +1,68 @@
-'use client'
+"use client";
 
-import ReCAPTCHA from 'react-google-recaptcha'
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useState } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 interface CaptchaProps {
-  onChange: (token: string | null) => void
-  onExpired?: () => void
-  onError?: () => void
+  onChange: (token: string | null) => void;
+  onExpired?: () => void;
+  onError?: () => void;
 }
 
 export const Captcha = forwardRef<ReCAPTCHA, CaptchaProps>(
   ({ onChange, onExpired, onError }, ref) => {
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''
+    const [siteKey, setSiteKey] = useState<string>("");
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+      setIsMounted(true);
+      const key = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+      setSiteKey(key);
+
+      if (!key) {
+        console.warn(
+          "reCAPTCHA site key is not configured. Please set NEXT_PUBLIC_RECAPTCHA_SITE_KEY in your environment variables."
+        );
+      }
+    }, []);
+
+    const handleError = () => {
+      console.error("reCAPTCHA error occurred");
+      if (onError) {
+        onError();
+      }
+      // Also call onChange with null to reset the form state
+      onChange(null);
+    };
+
+    if (!isMounted) {
+      return null;
+    }
 
     if (!siteKey) {
-      console.warn('reCAPTCHA site key is not configured')
-      return null
+      return (
+        <div className='flex justify-center p-4 border border-destructive rounded-md bg-destructive/10'>
+          <p className='text-sm text-destructive'>
+            reCAPTCHA is not configured. Please contact support.
+          </p>
+        </div>
+      );
     }
 
     return (
-      <div className="flex justify-center">
+      <div className='flex justify-center'>
         <ReCAPTCHA
           ref={ref}
           sitekey={siteKey}
           onChange={onChange}
           onExpired={onExpired}
-          onErrored={onError}
-          theme="light"
+          onErrored={handleError}
+          theme='light'
+          size='normal' // v2 checkbox reCAPTCHA
         />
       </div>
-    )
+    );
   }
-)
+);
 
-Captcha.displayName = 'Captcha'
-
+Captcha.displayName = "Captcha";
