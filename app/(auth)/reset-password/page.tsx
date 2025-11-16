@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { PageContainer } from "@/components/shared/PageContainer";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
 export const metadata = {
   title: "Reset Password | Ez LabTesting",
@@ -18,7 +20,13 @@ export default function ResetPasswordPage() {
             </p>
           </div>
 
-          <ResetPasswordForm />
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <LoadingSpinner />
+            </div>
+          }>
+            <ResetPasswordForm />
+          </Suspense>
         </div>
       </div>
     </PageContainer>

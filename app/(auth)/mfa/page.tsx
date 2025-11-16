@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { MFAForm } from "@/components/auth/MFAForm";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
 export const metadata = {
   title: "Two-Factor Authentication | Ez LabTesting",
@@ -21,7 +23,13 @@ export default function MFAPage() {
             <p className='text-center text-muted-foreground mb-8'>
               Enter the 6-digit code sent to your device
             </p>
-            <MFAForm />
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-12">
+                <LoadingSpinner />
+              </div>
+            }>
+              <MFAForm />
+            </Suspense>
           </div>
         </PageContainer>
       </main>

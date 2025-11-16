@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
 export const metadata = {
   title: "Sign Up | Ez LabTesting",
@@ -18,7 +20,13 @@ export default function SignupPage() {
             <h1 className='text-3xl font-bold text-center mb-8'>
               Create Account
             </h1>
-            <SignupForm />
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-12">
+                <LoadingSpinner />
+              </div>
+            }>
+              <SignupForm />
+            </Suspense>
           </div>
         </PageContainer>
       </main>
