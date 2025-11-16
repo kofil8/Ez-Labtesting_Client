@@ -32,6 +32,7 @@ export function SiteHeader() {
 
   const navLinks = [
     { href: "/tests", label: "Browse Tests", showAlways: true },
+    { href: "/panels", label: "Test Panels", showAlways: true },
     { href: "/results", label: "My Results", showWhenAuth: true },
     { href: "/admin", label: "Admin", adminOnly: true },
   ];

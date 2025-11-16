@@ -1,6 +1,7 @@
 import { SiteHeader } from '@/components/shared/SiteHeader'
 import { SiteFooter } from '@/components/shared/SiteFooter'
 import { FeaturedBundles } from '@/components/home/FeaturedBundles'
+import { FeaturedPanelsHome } from '@/components/home/FeaturedPanelsHome'
 import { HeroSection } from '@/components/home/HeroSection'
 import { StatsSection } from '@/components/home/StatsSection'
 import { TestimonialSection } from '@/components/home/TestimonialSection'
@@ -14,6 +15,7 @@ export default function HomePage() {
         <HeroSection />
         <StatsSection />
         <FeaturedBundles />
+        <FeaturedPanelsHome />
         <TestimonialSection />
       </main>
       <SiteFooter />

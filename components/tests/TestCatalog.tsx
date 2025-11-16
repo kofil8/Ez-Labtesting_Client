@@ -142,7 +142,7 @@ export function TestCatalog() {
 
           {/* Sort Dropdown */}
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className='w-[200px] h-12 border-gray-300 rounded-xl'>
+            <SelectTrigger className='w-full sm:w-[200px] h-12 border-gray-300 rounded-xl'>
               <SelectValue placeholder='Sort by' />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +171,39 @@ export function TestCatalog() {
         <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
           Test Categories
         </h3>
-        <div className='flex flex-wrap gap-3'>
+        {/* Mobile Layout (2 columns) */}
+        <div className='md:hidden'>
+          <div className='grid grid-cols-2 gap-2'>
+            {[
+              { id: "all", name: "All Tests", icon: "🔬" },
+              { id: "general", name: "General Health", icon: "❤️" },
+              { id: "hormone", name: "Hormone", icon: "⚡" },
+              { id: "std", name: "STD Screening", icon: "🛡️" },
+              { id: "thyroid", name: "Thyroid", icon: "🦋" },
+              { id: "cardiac", name: "Cardiac", icon: "💓" },
+              { id: "metabolic", name: "Metabolic", icon: "🔥" },
+              { id: "nutrition", name: "Nutrition", icon: "🥗" },
+            ].map((categoryItem) => (
+              <button
+                key={categoryItem.id}
+                onClick={() => setCategory(categoryItem.id)}
+                className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
+                  category === categoryItem.id
+                    ? "bg-red-500 text-white shadow-md"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"
+                }`}
+              >
+                <span className='text-base flex-shrink-0'>
+                  {categoryItem.icon}
+                </span>
+                <span className='truncate'>{categoryItem.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Layout (Flex wrap) */}
+        <div className='hidden md:flex flex-wrap gap-3'>
           {[
             { id: "all", name: "All Tests", icon: "🔬" },
             { id: "general", name: "General Health", icon: "❤️" },
@@ -181,6 +213,7 @@ export function TestCatalog() {
             { id: "cardiac", name: "Cardiac", icon: "💓" },
             { id: "metabolic", name: "Metabolic", icon: "🔥" },
             { id: "nutrition", name: "Nutrition", icon: "🥗" },
+            { id: "immunology", name: "Immunology", icon: "🛡️" },
           ].map((categoryItem) => (
             <button
               key={categoryItem.id}
@@ -203,7 +236,9 @@ export function TestCatalog() {
         {loading ? (
           <div className='text-center py-16'>
             <div className='inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]' />
-            <p className='text-gray-500 dark:text-gray-400 mt-4 text-sm'>Loading tests...</p>
+            <p className='text-gray-500 dark:text-gray-400 mt-4 text-sm'>
+              Loading tests...
+            </p>
           </div>
         ) : tests.length === 0 ? (
           <div className='text-center py-16'>
