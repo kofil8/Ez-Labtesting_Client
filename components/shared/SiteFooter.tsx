@@ -187,6 +187,7 @@ export function SiteFooter() {
                   alt='Ez LabTesting'
                   width={40}
                   height={40}
+                  unoptimized
                 />
               </div>
               <span className='text-lg sm:text-xl font-black awsmd-gradient-text'>
