@@ -2,6 +2,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "Login | Ez LabTesting",
@@ -18,7 +19,9 @@ export default function LoginPage() {
             <h1 className='text-3xl font-bold text-center mb-8'>
               Welcome Back
             </h1>
-            <LoginForm />
+            <Suspense fallback={<div className='text-center'>Loading...</div>}>
+              <LoginForm />
+            </Suspense>
           </div>
         </PageContainer>
       </main>
