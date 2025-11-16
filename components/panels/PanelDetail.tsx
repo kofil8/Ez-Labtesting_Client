@@ -230,10 +230,10 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                 >
                   <Card>
                     <CardHeader>
-                      <CardTitle className='flex items-center gap-2'>
-                        <Package className='h-5 w-5 text-purple-600 dark:text-purple-400' />
-                        What's Included
-                      </CardTitle>
+                    <CardTitle className='flex items-center gap-2'>
+                      <Package className='h-5 w-5 text-purple-600 dark:text-purple-400' />
+                      What&apos;s Included
+                    </CardTitle>
                     </CardHeader>
                     <CardContent className='space-y-3'>
                       <div className='space-y-2'>

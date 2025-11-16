@@ -5,13 +5,9 @@ import { CartSidebar } from './CartSidebar'
 import { Suspense } from 'react'
 
 function CartSidebarContent() {
-  try {
-    const { isOpen, closeCart } = useCartSidebar()
-    return <CartSidebar isOpen={isOpen} onClose={closeCart} />
-  } catch (error) {
-    console.error('CartSidebarWrapper error:', error)
-    return null
-  }
+  const { isOpen, closeCart } = useCartSidebar()
+
+  return <CartSidebar isOpen={isOpen} onClose={closeCart} />
 }
 
 export function CartSidebarWrapper() {
