@@ -60,6 +60,8 @@ export function SiteHeader() {
                 width={48}
                 height={48}
                 className='w-full h-full object-contain'
+                priority
+                unoptimized
               />
             </motion.div>
             <span className='text-lg sm:text-xl md:text-2xl font-black awsmd-gradient-text truncate max-w-[120px] sm:max-w-none'>
