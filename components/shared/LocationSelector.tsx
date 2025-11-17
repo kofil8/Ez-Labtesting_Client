@@ -36,6 +36,7 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
   const [location, setLocation] = useState<StoredLocation | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showChangeForm, setShowChangeForm] = useState(false);
 
   const broadcastLocationChange = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -72,6 +73,7 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
       localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(next));
       onLocationChange?.(next.zipCode ?? "", next.state ?? "");
       setErrorMessage(null);
+      setShowChangeForm(false);
       broadcastLocationChange();
     },
     [broadcastLocationChange, onLocationChange]
@@ -298,7 +300,7 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
     return "Location saved";
   })();
 
-  if (location) {
+  if (location && !showChangeForm) {
     return (
       <AnimatePresence mode='wait'>
         <motion.div
@@ -315,6 +317,7 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
                   initial={{ x: -10, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.1, duration: 0.3 }}
+                  className='flex-1'
                 >
                   <div className='flex items-center gap-2'>
                     <motion.div
@@ -343,6 +346,21 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
                       : "device location"}{" "}
                     on {new Date(location.resolvedAt).toLocaleDateString()}
                   </motion.p>
+                  <motion.div
+                    className='mt-3 flex gap-2'
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.3 }}
+                  >
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={() => setShowChangeForm(true)}
+                      className='h-8 text-xs hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors'
+                    >
+                      Change Location
+                    </Button>
+                  </motion.div>
                 </motion.div>
                 <motion.div
                   initial={{ x: 10, opacity: 0 }}
@@ -354,6 +372,7 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
                     size='sm'
                     onClick={handleClear}
                     className='hover:bg-red-50 hover:text-red-600 transition-colors'
+                    title='Clear location'
                   >
                     <X className='h-4 w-4' />
                   </Button>
@@ -378,13 +397,28 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
         <Card>
           <CardContent className='pt-6 pb-6 space-y-4'>
             <motion.div
-              className='flex items-center gap-2'
+              className='flex items-center justify-between gap-2'
               initial={{ x: -10, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.3 }}
             >
-              <MapPin className='h-5 w-5 text-muted-foreground' />
-              <h3 className='font-semibold'>Set Your Location</h3>
+              <div className='flex items-center gap-2'>
+                <MapPin className='h-5 w-5 text-muted-foreground' />
+                <h3 className='font-semibold'>
+                  {location ? "Change Your Location" : "Set Your Location"}
+                </h3>
+              </div>
+              {location && (
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={() => setShowChangeForm(false)}
+                  className='h-8 w-8 p-0 hover:bg-gray-100'
+                  title='Cancel'
+                >
+                  <X className='h-4 w-4' />
+                </Button>
+              )}
             </motion.div>
             <motion.p
               className='text-sm text-muted-foreground'
@@ -392,8 +426,9 @@ export function LocationSelector({ onLocationChange }: LocationSelectorProps) {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15, duration: 0.3 }}
             >
-              Help us show you the most convenient labs in your area. We will
-              only ask for this once.
+              {location
+                ? "Enter a new ZIP code or use your current device location."
+                : "Help us show you the most convenient labs in your area. We will only ask for this once."}
             </motion.p>
 
             <motion.div

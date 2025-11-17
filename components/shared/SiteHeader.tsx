@@ -55,7 +55,7 @@ export function SiteHeader() {
               whileTap={{ scale: 0.95 }}
             >
               <Image
-                src='/images/logo.png'
+                src='https://ik.imagekit.io/an6uwgksy/logo.png'
                 alt='Ez LabTesting'
                 width={48}
                 height={48}

@@ -117,7 +117,10 @@ export function HeroSection() {
               transition: "opacity 0.5s ease-in",
             }}
           >
-            <source src='/hero_bg.mp4' type='video/mp4' />
+            <source
+              src='https://ik.imagekit.io/an6uwgksy/Hero.mp4'
+              type='video/mp4'
+            />
           </video>
         ) : null}
         {/* Fallback gradient background */}

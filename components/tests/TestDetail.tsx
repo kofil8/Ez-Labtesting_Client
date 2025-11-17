@@ -38,6 +38,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -413,15 +414,33 @@ export function TestDetail({ test }: TestDetailProps) {
           <div className='space-y-6'>
           {/* Product Hero */}
           <Card className='overflow-hidden border-2 hover:shadow-xl transition-all duration-300'>
-            <div
-              className={`bg-gradient-to-br ${getCategoryColor(
-                test.category
-              )} border-b p-12 flex items-center justify-center relative overflow-hidden`}
-            >
-              <div className='absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]' />
-              <div className='text-8xl animate-in zoom-in duration-700 relative z-10'>
-                {getCategoryIcon(test.category)}
+            <div className='relative h-64 sm:h-72 md:h-80 border-b overflow-hidden'>
+              {test.image && (
+                <Image
+                  src={test.image}
+                  alt={test.name}
+                  fill
+                  className='object-cover'
+                  priority
+                />
+              )}
+              {/* Gradient & pattern overlay to keep design consistent */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${getCategoryColor(
+                  test.category
+                )} mix-blend-multiply`}
+              />
+              <div className='absolute inset-0 bg-grid-white/[0.12] bg-[size:20px_20px]' />
+
+              {/* Center icon overlay so visual matches list card */}
+              <div className='relative z-10 flex h-full items-center justify-center'>
+                <div className='flex h-24 w-24 items-center justify-center rounded-2xl bg-black/10 backdrop-blur-sm'>
+                  <span className='text-6xl drop-shadow-md'>
+                    {getCategoryIcon(test.category)}
+                  </span>
+                </div>
               </div>
+
               <Badge
                 variant='secondary'
                 className='absolute top-4 right-4 text-sm px-3 py-1 shadow-lg backdrop-blur-sm'

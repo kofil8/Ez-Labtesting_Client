@@ -183,7 +183,7 @@ export function SiteFooter() {
               <div className='w-8 h-8 sm:w-10 sm:h-10 awsmd-rounded awsmd-gradient-cosmic flex items-center justify-center shadow-xl'>
                 <Image
                   className='w-full h-full object-cover'
-                  src='/images/logo.png'
+                  src='https://ik.imagekit.io/an6uwgksy/logo.png'
                   alt='Ez LabTesting'
                   width={40}
                   height={40}

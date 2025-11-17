@@ -31,7 +31,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' className='smooth-scroll' suppressHydrationWarning>
-      <body className={`${manrope.className} antialiased custom-scrollbar`}>
+      <body
+        className={`${manrope.className} antialiased custom-scrollbar`}
+        suppressHydrationWarning
+      >
         <KallesBackground />
         <AuthProvider>
           <CartSidebarProvider>
