@@ -9,10 +9,16 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[]
+  promoCode: string | null
+  discount: number
   addItem: (item: CartItem) => void
   removeItem: (testId: string) => void
   clearCart: () => void
+  setPromoCode: (code: string, discount: number) => void
+  clearPromoCode: () => void
   getTotal: () => number
+  getSubtotal: () => number
+  getDiscount: () => number
   getItemCount: () => number
 }
 
@@ -20,6 +26,8 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      promoCode: null,
+      discount: 0,
       
       addItem: (item: CartItem) => {
         set((state) => {
@@ -39,11 +47,30 @@ export const useCartStore = create<CartState>()(
       },
       
       clearCart: () => {
-        set({ items: [] })
+        set({ items: [], promoCode: null, discount: 0 })
+      },
+      
+      setPromoCode: (code: string, discount: number) => {
+        set({ promoCode: code, discount })
+      },
+      
+      clearPromoCode: () => {
+        set({ promoCode: null, discount: 0 })
+      },
+      
+      getSubtotal: () => {
+        return get().items.reduce((sum, item) => sum + item.price, 0)
+      },
+      
+      getDiscount: () => {
+        const subtotal = get().getSubtotal()
+        return subtotal * get().discount
       },
       
       getTotal: () => {
-        return get().items.reduce((sum, item) => sum + item.price, 0)
+        const subtotal = get().getSubtotal()
+        const discountAmount = subtotal * get().discount
+        return subtotal - discountAmount
       },
       
       getItemCount: () => {

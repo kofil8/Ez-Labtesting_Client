@@ -22,10 +22,14 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const items = useCartStore((state) => state.items);
   const removeItem = useCartStore((state) => state.removeItem);
   const getTotal = useCartStore((state) => state.getTotal);
+  const getSubtotal = useCartStore((state) => state.getSubtotal);
+  const getDiscount = useCartStore((state) => state.getDiscount);
+  const appliedPromoCode = useCartStore((state) => state.promoCode);
+  const storeDiscount = useCartStore((state) => state.discount);
+  const setStorePromoCode = useCartStore((state) => state.setPromoCode);
+  const clearPromoCode = useCartStore((state) => state.clearPromoCode);
 
-  const [promoCode, setPromoCode] = useState("");
-  const [discount, setDiscount] = useState(0);
-  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoCodeInput, setPromoCodeInput] = useState("");
   const [validating, setValidating] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -56,19 +60,19 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     };
   }, [isOpen]);
 
-  const subtotal = getTotal();
-  const discountAmount = subtotal * discount;
-  const total = subtotal - discountAmount;
+  const subtotal = getSubtotal();
+  const discountAmount = getDiscount();
+  const total = getTotal();
 
   const handleApplyPromo = async () => {
-    if (!promoCode.trim()) return;
+    if (!promoCodeInput.trim()) return;
 
     setValidating(true);
     try {
-      const result = await validatePromoCode(promoCode);
+      const result = await validatePromoCode(promoCodeInput);
       if (result.valid) {
-        setDiscount(result.discount);
-        setPromoApplied(true);
+        setStorePromoCode(promoCodeInput.toUpperCase(), result.discount);
+        setPromoCodeInput("");
         toast({
           title: "Promo code applied!",
           description: `You saved ${Math.round(result.discount * 100)}%`,
@@ -89,6 +93,14 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     } finally {
       setValidating(false);
     }
+  };
+
+  const handleRemovePromo = () => {
+    clearPromoCode();
+    toast({
+      title: "Promo code removed",
+      description: "The discount has been removed from your order.",
+    });
   };
 
   const handleCheckout = () => {
@@ -201,34 +213,51 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   {/* Promo Code Section */}
                   <div className='space-y-3'>
                     <label className='text-sm font-semibold'>Promo Code</label>
-                    <div className='flex gap-2'>
-                      <Input
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        placeholder='Enter code'
-                        disabled={promoApplied}
-                        className='text-sm'
-                      />
-                      <Button
-                        onClick={handleApplyPromo}
-                        disabled={
-                          !promoCode.trim() || promoApplied || validating
-                        }
-                        variant='secondary'
-                        size='sm'
-                        className='text-xs'
-                      >
-                        {validating
-                          ? "Checking..."
-                          : promoApplied
-                          ? "Applied"
-                          : "Apply"}
-                      </Button>
-                    </div>
-                    {promoApplied && (
-                      <p className='text-xs text-green-600 font-medium'>
-                        ✓ Promo code applied
-                      </p>
+                    {appliedPromoCode ? (
+                      <div className='flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-lg'>
+                        <div className='flex-1'>
+                          <p className='text-xs font-semibold text-green-600'>
+                            ✓ {appliedPromoCode} Applied
+                          </p>
+                          <p className='text-xs text-muted-foreground'>
+                            {Math.round(storeDiscount * 100)}% discount
+                          </p>
+                        </div>
+                        <Button
+                          onClick={handleRemovePromo}
+                          variant='ghost'
+                          size='sm'
+                          className='text-xs h-7'
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className='flex gap-2'>
+                        <Input
+                          value={promoCodeInput}
+                          onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                          placeholder='Enter code'
+                          disabled={validating}
+                          className='text-sm'
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleApplyPromo()
+                            }
+                          }}
+                        />
+                        <Button
+                          onClick={handleApplyPromo}
+                          disabled={
+                            !promoCodeInput.trim() || validating
+                          }
+                          variant='secondary'
+                          size='sm'
+                          className='text-xs'
+                        >
+                          {validating ? "Checking..." : "Apply"}
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </>
@@ -246,9 +275,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       {formatCurrency(subtotal)}
                     </span>
                   </div>
-                  {discount > 0 && (
+                  {storeDiscount > 0 && (
                     <div className='flex justify-between text-sm text-green-600'>
-                      <span>Discount ({Math.round(discount * 100)}%)</span>
+                      <span>Discount ({Math.round(storeDiscount * 100)}%)</span>
                       <span className='font-medium'>
                         -{formatCurrency(discountAmount)}
                       </span>

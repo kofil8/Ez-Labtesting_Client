@@ -23,6 +23,10 @@ export function CheckoutForm() {
   const { user } = useAuth()
   const items = useCartStore((state) => state.items)
   const getTotal = useCartStore((state) => state.getTotal)
+  const getSubtotal = useCartStore((state) => state.getSubtotal)
+  const getDiscount = useCartStore((state) => state.getDiscount)
+  const promoCode = useCartStore((state) => state.promoCode)
+  const discount = useCartStore((state) => state.discount)
   const clearCart = useCartStore((state) => state.clearCart)
   const [submitting, setSubmitting] = useState(false)
 
@@ -42,6 +46,8 @@ export function CheckoutForm() {
   })
 
   const paymentMethod = watch('paymentMethod')
+  const subtotal = getSubtotal()
+  const discountAmount = getDiscount()
   const total = getTotal()
 
   if (items.length === 0) {
@@ -55,8 +61,10 @@ export function CheckoutForm() {
       const order = await createOrder({
         userId: user?.id || 'guest',
         tests: items,
-        subtotal: total,
+        subtotal: subtotal,
         totalAmount: total,
+        discount: discountAmount,
+        promoCode: promoCode || undefined,
         customerInfo: {
           firstName: data.firstName,
           lastName: data.lastName,
@@ -341,8 +349,20 @@ export function CheckoutForm() {
                 ))}
               </div>
 
-              <div className="pt-4 border-t">
-                <div className="flex justify-between text-lg font-semibold">
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>{formatCurrency(subtotal)}</span>
+                </div>
+                {discount > 0 && (
+                  <>
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Discount ({promoCode})</span>
+                      <span>-{formatCurrency(discountAmount)}</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex justify-between text-lg font-semibold pt-2 border-t">
                   <span>Total</span>
                   <span>{formatCurrency(total)}</span>
                 </div>

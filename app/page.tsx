@@ -4,6 +4,7 @@ import { FeaturedBundles } from "@/components/home/FeaturedBundles";
 import { HeroSection } from "@/components/home/HeroSection";
 import { StatsSection } from "@/components/home/StatsSection";
 import { TestimonialSection } from "@/components/home/TestimonialSection";
+import { PromoCodeSection } from "@/components/home/PromoCodeSection";
 import { FloatingActionButton } from "@/components/shared/FloatingActionButton";
 
 export default function HomePage() {
@@ -14,6 +15,7 @@ export default function HomePage() {
         <HeroSection />
         <StatsSection />
         <FeaturedBundles />
+        <PromoCodeSection />
         <TestimonialSection />
       </main>
       <SiteFooter />
