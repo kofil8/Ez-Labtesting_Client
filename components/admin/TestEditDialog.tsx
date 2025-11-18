@@ -21,6 +21,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
+// Form type with cptCodes and keywords as strings for easier editing
+type TestFormData = Omit<Test, 'cptCodes' | 'keywords'> & {
+  cptCodes: string
+  keywords: string
+}
+
 interface TestEditDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -29,7 +35,7 @@ interface TestEditDialogProps {
 }
 
 export function TestEditDialog({ open, onOpenChange, test, onSave }: TestEditDialogProps) {
-  const { register, handleSubmit, reset, setValue, watch } = useForm<Test>({
+  const { register, handleSubmit, reset, setValue, watch } = useForm<TestFormData>({
     defaultValues: {
       enabled: true,
       category: 'general',
@@ -45,11 +51,11 @@ export function TestEditDialog({ open, onOpenChange, test, onSave }: TestEditDia
         ...test,
         cptCodes: Array.isArray(test.cptCodes) 
           ? test.cptCodes.join(', ') 
-          : test.cptCodes || '',
+          : '',
         keywords: Array.isArray(test.keywords)
           ? test.keywords.join(', ')
-          : test.keywords || '',
-      })
+          : '',
+      } as TestFormData)
       // Set preview if existing image
       if (test.image) {
         setImagePreview(test.image)
@@ -78,7 +84,7 @@ export function TestEditDialog({ open, onOpenChange, test, onSave }: TestEditDia
         collectionMethod: '',
         resultsTimeframe: '',
         enabled: true,
-      } as Partial<Test> as Test)
+      } as TestFormData)
       setImagePreview(null)
     }
     setSelectedImageFile(null)
@@ -125,19 +131,7 @@ export function TestEditDialog({ open, onOpenChange, test, onSave }: TestEditDia
     setValue('image', '')
   }
 
-  const onSubmit = async (data: any) => {
-    // Parse CPT codes from comma-separated string
-    if (typeof data.cptCodes === 'string') {
-      data.cptCodes = data.cptCodes.split(',').map((c: string) => c.trim()).filter(Boolean)
-    }
-    
-    // Parse keywords from comma-separated string
-    if (typeof data.keywords === 'string' && data.keywords.trim()) {
-      data.keywords = data.keywords.split(',').map((k: string) => k.trim()).filter(Boolean)
-    } else if (!data.keywords) {
-      data.keywords = []
-    }
-    
+  const onSubmit = async (data: TestFormData) => {
     // Handle image upload
     if (selectedImageFile) {
       try {
@@ -177,7 +171,20 @@ export function TestEditDialog({ open, onOpenChange, test, onSave }: TestEditDia
     if (data.resultsTimeframe === '') data.resultsTimeframe = undefined
     if (data.fastingHours === '' || data.fastingHours === null) data.fastingHours = undefined
     
-    onSave(data as Test)
+    // Convert form data back to Test type
+    const testData: Test = {
+      ...data,
+      cptCodes: Array.isArray(data.cptCodes) ? data.cptCodes : 
+                typeof data.cptCodes === 'string' && data.cptCodes.trim() 
+                  ? data.cptCodes.split(',').map(c => c.trim()).filter(Boolean)
+                  : [],
+      keywords: Array.isArray(data.keywords) ? data.keywords : 
+                typeof data.keywords === 'string' && data.keywords.trim()
+                  ? data.keywords.split(',').map(k => k.trim()).filter(Boolean)
+                  : undefined,
+    }
+    
+    onSave(testData)
   }
 
   const category = watch('category')
