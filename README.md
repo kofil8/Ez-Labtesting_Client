@@ -30,9 +30,17 @@ A modern, full-featured lab testing platform built with Next.js 14, TypeScript, 
 ```bash
 # Install dependencies
 npm install
+# or
+yarn install
+
+# Set up environment variables
+# Create a .env.local file and add your Google Maps API key:
+# NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
 
 # Run development server
 npm run dev
+# or
+yarn dev
 
 # Build for production
 npm run build
@@ -40,6 +48,20 @@ npm run build
 # Start production server
 npm start
 ```
+
+### Google Maps API Setup
+
+To enable the lab center finder feature with full functionality:
+
+1. Get a Google Maps API key from [Google Cloud Console](https://console.cloud.google.com/google/maps-apis)
+2. Enable the following APIs:
+   - **Maps JavaScript API** (Required - for map display)
+   - **Places API** (Required - for location autocomplete)
+   - Geocoding API (Optional - for future features)
+3. Create a `.env.local` file in the root directory
+4. Add your API key: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here`
+
+See `GOOGLE_MAPS_SETUP.md` for detailed setup instructions.
 
 ## 🗂 Project Structure
 
@@ -76,6 +98,7 @@ npm start
 - **`/`** - Home page with featured bundles
 - **`/tests`** - Test catalog with search and filters
 - **`/tests/[testId]`** - Individual test details
+- **`/find-lab-center`** - Find lab testing centers with Google Maps
 - **`/cart`** - Shopping cart
 - **`/checkout`** - Checkout form
 - **`/login`** - User login

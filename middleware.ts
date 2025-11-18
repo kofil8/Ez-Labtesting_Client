@@ -2,7 +2,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 // Check if auth bypass is enabled for testing
-const BYPASS_AUTH = process.env.BYPASS_AUTH === "true" || process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
+const BYPASS_AUTH =
+  process.env.BYPASS_AUTH === "true" ||
+  process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
 
 // Define which routes are public (no auth required)
 function isPublicPath(pathname: string) {
@@ -20,9 +22,13 @@ function isPublicPath(pathname: string) {
   if (pathname.startsWith("/tests")) return true; // tests list + detail
   if (pathname.startsWith("/panels")) return true; // panels list + detail
   if (pathname.startsWith("/cart")) return true; // allow cart without auth
+  if (pathname.startsWith("/find-lab-center")) return true; // lab center finder
+  if (pathname.startsWith("/results")) return true; // results page (public for demo)
+  if (pathname.startsWith("/admin")) return true; // admin page (public for demo)
+  if (pathname.startsWith("/profile")) return true; // profile page (public for demo)
 
-  // Profile page is public when auth is bypassed for testing
-  if (BYPASS_AUTH && pathname.startsWith("/profile")) return true;
+  // // Profile page is public when auth is bypassed for testing
+  // if (BYPASS_AUTH && pathname.startsWith("/profile")) return true;
 
   return false;
 }

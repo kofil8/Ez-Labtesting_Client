@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, TestTube2, Users, Settings, Home, Menu, X } from 'lucide-react'
+import { LayoutDashboard, TestTube2, Users, Settings, Home, Menu, X, Package, Ticket } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 
@@ -14,9 +14,19 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    title: 'Test Management',
+    title: 'Tests',
     href: '/admin/tests',
     icon: TestTube2,
+  },
+  {
+    title: 'Test Panels',
+    href: '/admin/panels',
+    icon: Package,
+  },
+  {
+    title: 'Promo Codes',
+    href: '/admin/promo-codes',
+    icon: Ticket,
   },
 ]
 
@@ -75,7 +85,7 @@ export function AdminSidebar() {
           <div className="pt-4 border-t">
             {navItems.map((item) => {
               const Icon = item.icon
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
               
               return (
                 <Link
@@ -83,7 +93,7 @@ export function AdminSidebar() {
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent',
+                    'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent transition-colors',
                     isActive
                       ? 'bg-accent text-accent-foreground'
                       : 'text-muted-foreground'

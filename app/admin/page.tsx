@@ -8,7 +8,10 @@ export const metadata = {
 export default function AdminPage() {
   return (
     <div>
-      <h1 className='text-3xl font-bold mb-8'>Dashboard</h1>
+      <div className="mb-8">
+        <h1 className='text-4xl font-bold tracking-tight'>Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Overview of your lab testing platform</p>
+      </div>
       <AdminDashboard />
     </div>
   );

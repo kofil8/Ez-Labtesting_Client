@@ -49,7 +49,7 @@
         "price": 34.99
       }
     ],
-    "status": "processing",
+    "status": "completed",
     "subtotal": 34.99,
     "totalAmount": 34.99,
     "customerInfo": {
@@ -71,7 +71,8 @@
     },
     "paymentMethod": "ach",
     "createdAt": "2024-02-01T09:15:00Z",
-    "updatedAt": "2024-02-01T09:15:00Z"
+    "updatedAt": "2024-02-05T10:30:00Z",
+    "completedAt": "2024-02-05T10:30:00Z"
   },
   {
     "id": "order-003",
@@ -88,7 +89,7 @@
         "price": 59.99
       }
     ],
-    "status": "pending",
+    "status": "completed",
     "subtotal": 109.98,
     "discount": 10.998,
     "promoCode": "SAVE10",
@@ -111,7 +112,9 @@
       }
     },
     "paymentMethod": "card",
-    "createdAt": "2024-02-10T16:45:00Z"
+    "createdAt": "2024-02-10T16:45:00Z",
+    "updatedAt": "2024-02-15T11:45:00Z",
+    "completedAt": "2024-02-15T11:45:00Z"
   }
 ]
 

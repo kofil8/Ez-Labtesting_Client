@@ -2,7 +2,7 @@ import { ResultViewer } from "@/components/results/ResultViewer";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
-import { getResultByOrderId } from "@/lib/api";
+import { getResultsByOrderId, getOrderById } from "@/lib/api";
 import { notFound } from "next/navigation";
 
 export const metadata = {
@@ -17,9 +17,12 @@ export default async function ResultViewerPage({
 }) {
   const { orderId } = await params;
 
-  const result = await getResultByOrderId(orderId);
+  const [results, order] = await Promise.all([
+    getResultsByOrderId(orderId),
+    getOrderById(orderId)
+  ]);
 
-  if (!result) {
+  if (!results || results.length === 0 || !order) {
     notFound();
   }
 
@@ -29,7 +32,7 @@ export default async function ResultViewerPage({
       <main className='flex-1'>
         <PageContainer>
           <div className='py-8'>
-            <ResultViewer result={result} />
+            <ResultViewer results={results} order={order} />
           </div>
         </PageContainer>
       </main>

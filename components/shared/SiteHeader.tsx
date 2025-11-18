@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
-import { useCartStore } from "@/lib/store/cart-store";
 import { useCartSidebar } from "@/lib/cart-sidebar-context";
+import { useCartStore } from "@/lib/store/cart-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, ShoppingCart, Sparkles, User, X } from "lucide-react";
 import Image from "next/image";
@@ -33,6 +33,7 @@ export function SiteHeader() {
   const navLinks = [
     { href: "/tests", label: "Browse Tests", showAlways: true },
     { href: "/panels", label: "Test Panels", showAlways: true },
+    { href: "/find-lab-center", label: "Find a Lab Center", showAlways: true },
     { href: "/results", label: "My Results", showWhenAuth: true },
     { href: "/admin", label: "Admin", adminOnly: true },
   ];

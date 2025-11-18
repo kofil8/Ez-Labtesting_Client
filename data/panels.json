@@ -6,7 +6,8 @@
     "testIds": ["test-001", "test-002", "test-003"],
     "originalPrice": 104.97,
     "bundlePrice": 89.99,
-    "savings": 14.98
+    "savings": 14.98,
+    "enabled": true
   },
   {
     "id": "panel-002",
@@ -15,7 +16,8 @@
     "testIds": ["test-001", "test-002", "test-004", "test-005", "test-010", "test-019"],
     "originalPrice": 369.94,
     "bundlePrice": 299.99,
-    "savings": 69.95
+    "savings": 69.95,
+    "enabled": true
   },
   {
     "id": "panel-003",
@@ -24,7 +26,8 @@
     "testIds": ["test-001", "test-002", "test-003", "test-006", "test-011"],
     "originalPrice": 219.95,
     "bundlePrice": 179.99,
-    "savings": 39.96
+    "savings": 39.96,
+    "enabled": true
   },
   {
     "id": "panel-004",
@@ -33,7 +36,8 @@
     "testIds": ["test-008"],
     "originalPrice": 199.99,
     "bundlePrice": 199.99,
-    "savings": 0
+    "savings": 0,
+    "enabled": true
   },
   {
     "id": "panel-005",
@@ -42,7 +46,8 @@
     "testIds": ["test-004", "test-005", "test-009", "test-013", "test-018"],
     "originalPrice": 243.95,
     "bundlePrice": 199.99,
-    "savings": 43.96
+    "savings": 43.96,
+    "enabled": true
   }
 ]
 

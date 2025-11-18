@@ -1,0 +1,115 @@
+[
+  {
+    "id": "quest-diagnostics-1",
+    "name": "Quest Diagnostics",
+    "address": "North Las Vegas, NV, United States",
+    "phone": "+1 702-908-5988",
+    "rating": 4.1,
+    "reviewCount": 177,
+    "type": "Medical laboratory",
+    "hours": "Opens 7:30 AM Tue",
+    "status": "Closed",
+    "location": {
+      "lat": 36.1989,
+      "lng": -115.1175
+    },
+    "website": "https://www.questdiagnostics.com"
+  },
+  {
+    "id": "labcorp-1",
+    "name": "Labcorp",
+    "address": "North Las Vegas, NV, United States",
+    "phone": "+1 702-639-1000",
+    "rating": 2.9,
+    "reviewCount": 52,
+    "type": "Medical laboratory",
+    "hours": "Opens 7 AM Tue",
+    "status": "Closed",
+    "location": {
+      "lat": 36.1950,
+      "lng": -115.1398
+    },
+    "website": "https://www.labcorp.com"
+  },
+  {
+    "id": "rapid-lab-1",
+    "name": "Rapid Lab",
+    "address": "North Las Vegas, NV, United States",
+    "phone": "+1 702-780-4888",
+    "rating": 5.0,
+    "reviewCount": 9,
+    "type": "Medical laboratory",
+    "hours": "Opens 8 AM Tue",
+    "status": "Closed",
+    "location": {
+      "lat": 36.2125,
+      "lng": -115.1253
+    },
+    "website": "https://www.rapidlab.com"
+  },
+  {
+    "id": "quest-diagnostics-2",
+    "name": "Quest Diagnostics",
+    "address": "Las Vegas, NV, United States",
+    "phone": "+1 702-369-8899",
+    "rating": 3.8,
+    "reviewCount": 245,
+    "type": "Medical laboratory",
+    "hours": "Opens 7 AM Tue",
+    "status": "Closed",
+    "location": {
+      "lat": 36.1699,
+      "lng": -115.1398
+    },
+    "website": "https://www.questdiagnostics.com"
+  },
+  {
+    "id": "e7-health-1",
+    "name": "e7 Health",
+    "address": "Las Vegas, NV, United States",
+    "phone": "+1 702-800-2323",
+    "rating": 4.5,
+    "reviewCount": 87,
+    "type": "Medical laboratory",
+    "hours": "Opens 8 AM Tue",
+    "status": "Closed",
+    "location": {
+      "lat": 36.1447,
+      "lng": -115.1521
+    },
+    "website": "https://www.e7health.com"
+  },
+  {
+    "id": "quest-diagnostics-3",
+    "name": "Quest Diagnostics",
+    "address": "Henderson, NV, United States",
+    "phone": "+1 702-565-7788",
+    "rating": 4.2,
+    "reviewCount": 198,
+    "type": "Medical laboratory",
+    "hours": "Opens 7:30 AM Tue",
+    "status": "Closed",
+    "location": {
+      "lat": 36.0395,
+      "lng": -114.9817
+    },
+    "website": "https://www.questdiagnostics.com"
+  },
+  {
+    "id": "labcorp-2",
+    "name": "Labcorp",
+    "address": "Henderson, NV, United States",
+    "phone": "+1 702-433-2100",
+    "rating": 3.1,
+    "reviewCount": 65,
+    "type": "Medical laboratory",
+    "hours": "Opens 7 AM Tue",
+    "status": "Closed",
+    "location": {
+      "lat": 36.0150,
+      "lng": -115.0364
+    },
+    "website": "https://www.labcorp.com"
+  }
+]
+

@@ -1,0 +1,61 @@
+[
+  {
+    "id": "promo-001",
+    "code": "SAVE10",
+    "description": "10% off on all orders",
+    "discountType": "percentage",
+    "discountValue": 10,
+    "minPurchaseAmount": 0,
+    "maxDiscountAmount": 50,
+    "validFrom": "2024-01-01T00:00:00Z",
+    "validUntil": "2025-12-31T23:59:59Z",
+    "usageLimit": 1000,
+    "usageCount": 45,
+    "enabled": true,
+    "applicableTo": "all"
+  },
+  {
+    "id": "promo-002",
+    "code": "WELCOME20",
+    "description": "20% welcome discount for new customers",
+    "discountType": "percentage",
+    "discountValue": 20,
+    "minPurchaseAmount": 50,
+    "maxDiscountAmount": 100,
+    "validFrom": "2024-01-01T00:00:00Z",
+    "validUntil": "2025-12-31T23:59:59Z",
+    "usageLimit": 500,
+    "usageCount": 123,
+    "enabled": true,
+    "applicableTo": "all"
+  },
+  {
+    "id": "promo-003",
+    "code": "HEALTH25",
+    "description": "25% off health panels",
+    "discountType": "percentage",
+    "discountValue": 25,
+    "minPurchaseAmount": 100,
+    "validFrom": "2024-01-01T00:00:00Z",
+    "validUntil": "2024-12-31T23:59:59Z",
+    "usageLimit": 200,
+    "usageCount": 67,
+    "enabled": true,
+    "applicableTo": "panels"
+  },
+  {
+    "id": "promo-004",
+    "code": "FLAT50",
+    "description": "$50 off orders over $200",
+    "discountType": "fixed",
+    "discountValue": 50,
+    "minPurchaseAmount": 200,
+    "validFrom": "2024-01-01T00:00:00Z",
+    "validUntil": "2024-12-31T23:59:59Z",
+    "usageLimit": 100,
+    "usageCount": 23,
+    "enabled": true,
+    "applicableTo": "all"
+  }
+]
+

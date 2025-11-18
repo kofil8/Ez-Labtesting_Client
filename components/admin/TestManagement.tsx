@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllTests } from "@/lib/api";
+import { getAllTests, createTest, updateTest, deleteTest } from "@/lib/api";
 import { Test } from "@/types/test";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,11 @@ export function TestManagement() {
       setTests(data);
     } catch (error) {
       console.error("Error loading tests:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load tests.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -52,34 +57,52 @@ export function TestManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (test: Test) => {
+  const handleDelete = async (test: Test) => {
     if (confirm(`Are you sure you want to delete "${test.name}"?`)) {
-      toast({
-        title: "Test deleted",
-        description: `${test.name} has been removed.`,
-      });
-      // In real app, would call API to delete
-      setTests(tests.filter((t) => t.id !== test.id));
+      try {
+        await deleteTest(test.id);
+        setTests(tests.filter((t) => t.id !== test.id));
+        toast({
+          title: "Test deleted",
+          description: `${test.name} has been removed.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete test.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
-  const handleSave = (test: Test) => {
-    if (editingTest) {
-      // Update existing
-      setTests(tests.map((t) => (t.id === test.id ? test : t)));
+  const handleSave = async (test: Test) => {
+    try {
+      if (editingTest) {
+        // Update existing
+        const updatedTest = await updateTest(test.id, test);
+        setTests(tests.map((t) => (t.id === test.id ? updatedTest : t)));
+        toast({
+          title: "Test updated",
+          description: `${test.name} has been updated.`,
+        });
+      } else {
+        // Add new
+        const newTest = await createTest(test);
+        setTests([...tests, newTest]);
+        toast({
+          title: "Test created",
+          description: `${test.name} has been added.`,
+        });
+      }
+      setIsDialogOpen(false);
+    } catch (error) {
       toast({
-        title: "Test updated",
-        description: `${test.name} has been updated.`,
-      });
-    } else {
-      // Add new
-      setTests([...tests, { ...test, id: `test-${Date.now()}` }]);
-      toast({
-        title: "Test created",
-        description: `${test.name} has been added.`,
+        title: "Error",
+        description: "Failed to save test.",
+        variant: "destructive",
       });
     }
-    setIsDialogOpen(false);
   };
 
   if (loading) {

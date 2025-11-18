@@ -81,8 +81,90 @@
     "id": "result-003",
     "orderId": "order-002",
     "testName": "Lipid Panel",
-    "status": "pending",
-    "biomarkers": []
+    "status": "completed",
+    "completedAt": "2024-02-05T10:30:00Z",
+    "biomarkers": [
+      {
+        "name": "Total Cholesterol",
+        "value": "215",
+        "unit": "mg/dL",
+        "referenceRange": "<200",
+        "status": "high"
+      },
+      {
+        "name": "LDL Cholesterol",
+        "value": "145",
+        "unit": "mg/dL",
+        "referenceRange": "<100",
+        "status": "high"
+      },
+      {
+        "name": "HDL Cholesterol",
+        "value": "48",
+        "unit": "mg/dL",
+        "referenceRange": ">40",
+        "status": "normal"
+      },
+      {
+        "name": "Triglycerides",
+        "value": "178",
+        "unit": "mg/dL",
+        "referenceRange": "<150",
+        "status": "high"
+      },
+      {
+        "name": "VLDL Cholesterol",
+        "value": "36",
+        "unit": "mg/dL",
+        "referenceRange": "5-40",
+        "status": "normal"
+      }
+    ],
+    "interpretation": "Your cholesterol levels are elevated. Total cholesterol and LDL cholesterol are above the optimal range, which may increase your risk of heart disease. Consider dietary modifications, increased physical activity, and follow up with your healthcare provider to discuss potential treatment options.",
+    "pdfUrl": "/mock/results-003.pdf"
+  },
+  {
+    "id": "result-004",
+    "orderId": "order-003",
+    "testName": "Vitamin D, 25-Hydroxy",
+    "status": "completed",
+    "completedAt": "2024-02-15T11:45:00Z",
+    "biomarkers": [
+      {
+        "name": "Vitamin D, 25-Hydroxy",
+        "value": "18",
+        "unit": "ng/mL",
+        "referenceRange": "30-100",
+        "status": "low"
+      }
+    ],
+    "interpretation": "Your vitamin D level is below the optimal range, indicating vitamin D insufficiency. Low vitamin D can affect bone health, immune function, and overall well-being. Your healthcare provider may recommend vitamin D supplementation and increased sun exposure.",
+    "pdfUrl": "/mock/results-004.pdf"
+  },
+  {
+    "id": "result-005",
+    "orderId": "order-003",
+    "testName": "Vitamin B12 and Folate",
+    "status": "completed",
+    "completedAt": "2024-02-15T11:45:00Z",
+    "biomarkers": [
+      {
+        "name": "Vitamin B12",
+        "value": "450",
+        "unit": "pg/mL",
+        "referenceRange": "200-900",
+        "status": "normal"
+      },
+      {
+        "name": "Folate (Folic Acid)",
+        "value": "12.5",
+        "unit": "ng/mL",
+        "referenceRange": "3.0-17.0",
+        "status": "normal"
+      }
+    ],
+    "interpretation": "Both vitamin B12 and folate levels are within normal range, indicating adequate nutritional status for these essential vitamins.",
+    "pdfUrl": "/mock/results-005.pdf"
   }
 ]
 

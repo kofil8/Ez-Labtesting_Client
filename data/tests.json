@@ -16,8 +16,8 @@
     "image": "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=400&h=300&fit=crop",
     "fastingRequired": false,
     "ageRequirement": "18+",
-    "sampleVolume": "Serum 0.5mL (no gel)",
-    "tubeType": "1 SST",
+    "sampleVolume": "Whole blood 2.0mL",
+    "tubeType": "1 EDTA (Lavender)",
     "collectionMethod": "In person at a Lab location",
     "resultsTimeframe": "1-2 days from sample arrival at our lab"
   },
@@ -383,7 +383,7 @@
     "name": "17-Hydroxyprogesterone (17-OHP)",
     "description": "The 17-Hydroxyprogesterone (17-OHP) test is a simple blood test used to measure the level of 17-hydroxyprogesterone, a hormone produced by the adrenal glands and ovaries. This test is often ordered to evaluate adrenal function and diagnose conditions like congenital adrenal hyperplasia (CAH), a genetic disorder affecting hormone production. It may also help in assessing the cause of irregular periods, infertility, or abnormal hair growth in women.",
     "category": "hormone",
-    "price": 109.00,
+    "price": 109.0,
     "cptCodes": ["82633"],
     "labCode": "17OHP-001",
     "labName": "CPL",
@@ -401,4 +401,3 @@
     "resultsTimeframe": "1-6 days from sample arrival at our lab"
   }
 ]
-

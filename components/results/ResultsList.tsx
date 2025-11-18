@@ -17,11 +17,11 @@ export function ResultsList() {
   const [loading, setLoading] = useState(true)
 
   const loadOrders = useCallback(async () => {
-    if (!user) return
-    
     setLoading(true)
     try {
-      const data = await getUserOrders(user.id)
+      // Use default user-1 if no user is logged in (for demo purposes)
+      const userId = user?.id || 'user-1'
+      const data = await getUserOrders(userId)
       setOrders(data)
     } catch (error) {
       console.error('Error loading orders:', error)

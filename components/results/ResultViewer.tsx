@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,22 +14,39 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/utils";
 import { Result } from "@/types/result";
+import { Order } from "@/types/order";
+import { downloadResultPDF } from "@/lib/pdf-generator";
 import {
   AlertCircle,
   CheckCircle,
   Download,
+  Loader2,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
 
 interface ResultViewerProps {
-  result: Result;
+  results: Result[];
+  order: Order;
 }
 
-export function ResultViewer({ result }: ResultViewerProps) {
-  const handleDownload = () => {
-    // Mock PDF download
-    alert("In a real app, this would download the PDF report");
+export function ResultViewer({ results, order }: ResultViewerProps) {
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
+
+  const handleDownload = async (result: Result) => {
+    setIsDownloading(result.id);
+    try {
+      const patientName = `${order.customerInfo.firstName} ${order.customerInfo.lastName}`;
+      await downloadResultPDF(result, {
+        patientName,
+        dateOfBirth: order.customerInfo.dateOfBirth,
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      alert("Failed to download PDF. Please try again.");
+    } finally {
+      setIsDownloading(null);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -61,7 +79,10 @@ export function ResultViewer({ result }: ResultViewerProps) {
     }
   };
 
-  if (result.status === "pending") {
+  // Check if any results are pending
+  const hasPendingResults = results.some((r) => r.status === "pending");
+
+  if (results.every((r) => r.status === "pending")) {
     return (
       <Card>
         <CardContent className='pt-6 pb-6 text-center'>
@@ -78,83 +99,144 @@ export function ResultViewer({ result }: ResultViewerProps) {
 
   return (
     <div className='space-y-6'>
-      {/* Header */}
+      {/* Order Header */}
       <Card>
         <CardHeader>
-          <div className='flex flex-col sm:flex-row items-start justify-between gap-4'>
-            <div className='flex-1'>
-              <CardTitle className='text-xl sm:text-2xl'>
-                {result.testName}
+          <div className='flex flex-col gap-4'>
+            <div>
+              <CardTitle className='text-xl sm:text-2xl mb-2'>
+                Test Results - Order #{order.id}
               </CardTitle>
-              <p className='text-sm sm:text-base text-muted-foreground mt-2'>
-                Completed on {formatDate(result.completedAt!)}
+              <p className='text-sm sm:text-base text-muted-foreground'>
+                Patient: {order.customerInfo.firstName}{" "}
+                {order.customerInfo.lastName}
+              </p>
+              <p className='text-sm text-muted-foreground'>
+                Date of Birth: {new Date(order.customerInfo.dateOfBirth).toLocaleDateString()}
               </p>
             </div>
-            <Button onClick={handleDownload} className='w-full sm:w-auto'>
-              <Download className='h-4 w-4 mr-2' />
-              Download PDF
-            </Button>
           </div>
         </CardHeader>
       </Card>
 
-      {/* Results Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className='text-lg sm:text-xl'>Test Results</CardTitle>
-        </CardHeader>
-        <CardContent className='overflow-x-auto'>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className='text-xs sm:text-sm'>Biomarker</TableHead>
-                <TableHead className='text-xs sm:text-sm'>
-                  Your Result
-                </TableHead>
-                <TableHead className='text-xs sm:text-sm hidden md:table-cell'>
-                  Reference Range
-                </TableHead>
-                <TableHead className='text-xs sm:text-sm'>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {result.biomarkers.map((biomarker, index) => (
-                <TableRow key={index}>
-                  <TableCell className='font-medium text-xs sm:text-sm'>
-                    {biomarker.name}
-                  </TableCell>
-                  <TableCell className='text-xs sm:text-sm'>
-                    <div className='flex items-center'>
-                      {getStatusIcon(biomarker.status)}
-                      <span className='ml-2'>
-                        {biomarker.value} {biomarker.unit}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className='text-muted-foreground text-xs sm:text-sm hidden md:table-cell'>
-                    {biomarker.referenceRange} {biomarker.unit}
-                  </TableCell>
-                  <TableCell className='text-xs sm:text-sm'>
-                    {getStatusBadge(biomarker.status)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* Individual Test Results */}
+      {results.map((result) => (
+        <div key={result.id} className='space-y-4'>
+          {/* Test Header */}
+          <Card>
+            <CardHeader>
+              <div className='flex flex-col sm:flex-row items-start justify-between gap-4'>
+                <div className='flex-1'>
+                  <CardTitle className='text-lg sm:text-xl'>
+                    {result.testName}
+                  </CardTitle>
+                  {result.completedAt && (
+                    <p className='text-sm sm:text-base text-muted-foreground mt-2'>
+                      Completed on {formatDate(result.completedAt)}
+                    </p>
+                  )}
+                  {result.status === "pending" && (
+                    <Badge variant="secondary" className="mt-2">
+                      Results Pending
+                    </Badge>
+                  )}
+                </div>
+                {result.status === "completed" && (
+                  <Button
+                    onClick={() => handleDownload(result)}
+                    disabled={isDownloading === result.id}
+                    className='w-full sm:w-auto'
+                  >
+                    {isDownloading === result.id ? (
+                      <>
+                        <Loader2 className='h-4 w-4 mr-2 animate-spin' />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Download className='h-4 w-4 mr-2' />
+                        Download PDF
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+          </Card>
 
-      {/* Interpretation */}
-      {result.interpretation && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Clinical Interpretation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className='text-muted-foreground'>{result.interpretation}</p>
-          </CardContent>
-        </Card>
-      )}
+          {result.status === "completed" && (
+            <>
+              {/* Results Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className='text-base sm:text-lg'>
+                    Biomarker Results
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='overflow-x-auto'>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className='text-xs sm:text-sm'>
+                          Biomarker
+                        </TableHead>
+                        <TableHead className='text-xs sm:text-sm'>
+                          Your Result
+                        </TableHead>
+                        <TableHead className='text-xs sm:text-sm hidden md:table-cell'>
+                          Reference Range
+                        </TableHead>
+                        <TableHead className='text-xs sm:text-sm'>
+                          Status
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {result.biomarkers.map((biomarker, index) => (
+                        <TableRow key={index}>
+                          <TableCell className='font-medium text-xs sm:text-sm'>
+                            {biomarker.name}
+                          </TableCell>
+                          <TableCell className='text-xs sm:text-sm'>
+                            <div className='flex items-center'>
+                              {getStatusIcon(biomarker.status)}
+                              <span className='ml-2'>
+                                {biomarker.value} {biomarker.unit}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className='text-muted-foreground text-xs sm:text-sm hidden md:table-cell'>
+                            {biomarker.referenceRange} {biomarker.unit}
+                          </TableCell>
+                          <TableCell className='text-xs sm:text-sm'>
+                            {getStatusBadge(biomarker.status)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+
+              {/* Interpretation */}
+              {result.interpretation && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className='text-base sm:text-lg'>
+                      Clinical Interpretation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className='text-muted-foreground'>
+                      {result.interpretation}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+        </div>
+      ))}
 
       {/* Disclaimer */}
       <Card className='border-orange-200 bg-orange-50'>

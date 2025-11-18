@@ -68,6 +68,7 @@ export function SiteFooter() {
 
   const quickLinks = [
     { href: "/tests", label: "Browse Tests" },
+    { href: "/find-lab-center", label: "Find a Lab Center" },
     { href: "/results", label: "View Results" },
     { href: "/cart", label: "Shopping Cart" },
     { href: "/transactions", label: "Order History" },
