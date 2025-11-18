@@ -27,25 +27,26 @@ export function TestManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    loadTests();
-  }, []);
+    const loadTests = async () => {
+      setLoading(true);
+      try {
+        const data = await getAllTests();
+        setTests(data);
+      } catch (error) {
+        console.error("Error loading tests:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load tests.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const loadTests = async () => {
-    setLoading(true);
-    try {
-      const data = await getAllTests();
-      setTests(data);
-    } catch (error) {
-      console.error("Error loading tests:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load tests.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadTests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAdd = () => {
     setEditingTest(null);

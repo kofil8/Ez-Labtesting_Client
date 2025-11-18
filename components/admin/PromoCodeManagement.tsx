@@ -27,25 +27,26 @@ export function PromoCodeManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    loadPromoCodes();
-  }, []);
+    const loadPromoCodes = async () => {
+      setLoading(true);
+      try {
+        const data = await getAllPromoCodes();
+        setPromoCodes(data);
+      } catch (error) {
+        console.error("Error loading promo codes:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load promo codes.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const loadPromoCodes = async () => {
-    setLoading(true);
-    try {
-      const data = await getAllPromoCodes();
-      setPromoCodes(data);
-    } catch (error) {
-      console.error("Error loading promo codes:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load promo codes.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadPromoCodes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAdd = () => {
     setEditingPromoCode(null);

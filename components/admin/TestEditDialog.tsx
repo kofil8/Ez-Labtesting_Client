@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import Image from 'next/image'
 import { Test } from '@/types/test'
 import { Upload, X } from 'lucide-react'
 // import { uploadImageToAzureBlob } from '@/lib/azure-blob' // Uncomment when Azure Blob is configured
@@ -308,9 +309,12 @@ export function TestEditDialog({ open, onOpenChange, test, onSave }: TestEditDia
               <div className="space-y-3">
                 {imagePreview ? (
                   <div className="relative inline-block">
-                    <img
+                    <Image
                       src={imagePreview}
                       alt="Preview"
+                      width={128}
+                      height={128}
+                      unoptimized
                       className="h-32 w-32 object-cover rounded-lg border-2 border-border"
                     />
                     <Button
