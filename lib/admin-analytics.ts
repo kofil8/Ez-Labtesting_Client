@@ -1,5 +1,23 @@
 // Utility functions for admin analytics
 
+export interface CustomerInfo {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  dateOfBirth: string
+  address: {
+    street: string
+    city: string
+    state: string
+    zipCode: string
+  }
+  notifications: {
+    email: boolean
+    sms: boolean
+  }
+}
+
 export interface Order {
   id: string
   userId: string
@@ -9,6 +27,7 @@ export interface Order {
   totalAmount: number
   discount?: number
   promoCode?: string
+  customerInfo?: CustomerInfo
   paymentMethod: string
   createdAt: string
   updatedAt?: string
