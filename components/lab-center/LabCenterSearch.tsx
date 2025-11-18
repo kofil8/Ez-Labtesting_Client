@@ -1,12 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Locate, SlidersHorizontal, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -14,6 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { AnimatePresence, motion } from "framer-motion";
+import { Locate, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface LabCenterSearchProps {
   onSearch: (
@@ -162,17 +162,23 @@ export function LabCenterSearch({
             size='lg'
             onClick={handleLocateMe}
             disabled={isLocating}
-            className='h-14 px-4 sm:px-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+            className='group h-14 px-4 sm:px-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 [&_svg]:!size-5'
           >
-            <Locate className={`h-5 w-5 ${isLocating ? "animate-spin" : ""}`} />
-            <span className='hidden sm:inline ml-2'>Use My Location</span>
+            <Locate
+              className={`flex-shrink-0 text-gray-700 dark:text-gray-300 ${
+                isLocating ? "animate-spin" : ""
+              }`}
+            />
+            <span className='inline-block max-w-0 overflow-hidden group-hover:max-w-[200px] group-hover:ml-2 whitespace-nowrap transition-all duration-300'>
+              Use My Location
+            </span>
           </Button>
-          <Button 
-            type='submit' 
-            size='lg' 
+          <Button
+            type='submit'
+            size='lg'
             className='h-14 px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all'
           >
-            <Search className='h-5 w-5' />
+            <Search className='h-5 w-5 flex-shrink-0' />
             <span className='hidden sm:inline ml-2'>Search</span>
           </Button>
           <Button
@@ -180,10 +186,12 @@ export function LabCenterSearch({
             variant='outline'
             size='lg'
             onClick={() => setShowFilters(!showFilters)}
-            className='h-14 px-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+            className='group h-14 px-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 [&_svg]:!size-5'
           >
-            <SlidersHorizontal className='h-5 w-5' />
-            <span className='hidden sm:inline ml-2'>Filters</span>
+            <SlidersHorizontal className='flex-shrink-0 text-gray-700 dark:text-gray-300' />
+            <span className='inline-block max-w-0 overflow-hidden group-hover:max-w-[100px] group-hover:ml-2 whitespace-nowrap transition-all duration-300'>
+              Filters
+            </span>
           </Button>
         </div>
       </form>
