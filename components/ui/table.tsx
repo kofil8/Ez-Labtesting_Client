@@ -48,7 +48,7 @@ export const TableHead = ({
   children,
   className,
   ...props
-}: React.HTMLAttributes<HTMLTableCellElement>) => {
+}: React.ThHTMLAttributes<HTMLTableCellElement>) => {
   return (
     <th className={cn("px-4 py-2 text-left font-semibold", className)} {...props}>
       {children}
@@ -60,7 +60,7 @@ export const TableCell = ({
   children,
   className,
   ...props
-}: React.HTMLAttributes<HTMLTableCellElement>) => {
+}: React.TdHTMLAttributes<HTMLTableCellElement>) => {
   return (
     <td className={cn("px-4 py-2", className)} {...props}>
       {children}
