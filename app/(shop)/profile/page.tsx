@@ -53,50 +53,50 @@ export default function ProfilePage() {
     <>
       <SiteHeader />
       <PageContainer>
-        <div className="py-12 px-4 md:px-8">
+        <div className="py-6 sm:py-8 md:py-12 px-2 sm:px-4 md:px-8">
           {/* Header Section */}
-          <div className="mb-12">
-            <h1 className="text-4xl font-bold mb-2">My Account</h1>
-            <p className="text-muted-foreground">
+          <div className="mb-6 sm:mb-8 md:mb-12">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">My Account</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage your profile, security settings, and preferences.
             </p>
           </div>
 
           {/* Main Content with Sidebar */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
             {/* Sidebar */}
-            <div>
+            <div className="md:col-span-1">
               <AccountSidebar />
             </div>
 
             {/* Main Content */}
-            <div className="md:col-span-3 space-y-8">
+            <div className="md:col-span-3 space-y-6 sm:space-y-8">
               {/* Personal Information Section */}
               <div>
-                <h2 className="text-2xl font-semibold mb-4 flex items-center">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 flex items-center">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full mr-2 sm:mr-3"></div>
                   Profile Information
                 </h2>
                 <ProfileForm />
               </div>
 
               {/* Account Security Section */}
-              <div className="pt-6 border-t">
-                <h2 className="text-2xl font-semibold mb-4 flex items-center">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+              <div className="pt-4 sm:pt-6 border-t">
+                <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 flex items-center">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full mr-2 sm:mr-3"></div>
                   Security & Password
                 </h2>
                 <ChangePasswordForm />
               </div>
 
               {/* Account Information Section */}
-              <div className="pt-6 border-t">
-                <h2 className="text-2xl font-semibold mb-4 flex items-center">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+              <div className="pt-4 sm:pt-6 border-t">
+                <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 flex items-center">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full mr-2 sm:mr-3"></div>
                   Account Information
                 </h2>
-                <div className="bg-muted rounded-lg p-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-muted rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <p className="text-sm text-muted-foreground mb-1">Email Address</p>
                       <p className="font-medium break-all">{displayUser?.email}</p>

@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Panel } from "@/types/panel";
-import { Test } from "@/types/test";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -12,11 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -24,9 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/utils";
+import { Panel } from "@/types/panel";
+import { Test } from "@/types/test";
 import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 interface PanelEditDialogProps {
   open: boolean;
@@ -117,7 +117,7 @@ export function PanelEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className='max-w-3xl max-h-[90vh] overflow-y-auto pb-0'>
         <DialogHeader>
           <DialogTitle>{panel ? "Edit Panel" : "Add New Panel"}</DialogTitle>
           <DialogDescription>
@@ -127,23 +127,23 @@ export function PanelEditDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Label htmlFor="name">Panel Name *</Label>
-              <Input id="name" {...register("name", { required: true })} />
+        <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='col-span-2 space-y-2'>
+              <Label htmlFor='name'>Panel Name *</Label>
+              <Input id='name' {...register("name", { required: true })} />
             </div>
 
-            <div className="col-span-2">
-              <Label htmlFor="description">Description *</Label>
+            <div className='col-span-2 space-y-2'>
+              <Label htmlFor='description'>Description *</Label>
               <Textarea
-                id="description"
+                id='description'
                 {...register("description", { required: true })}
                 rows={3}
               />
             </div>
 
-            <div className="col-span-2">
+            <div className='col-span-2 space-y-2'>
               <Label>Filter Tests by Category</Label>
               <Select
                 value={categoryFilter}
@@ -153,67 +153,67 @@ export function PanelEditDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="general">General Health</SelectItem>
-                  <SelectItem value="hormone">Hormone</SelectItem>
-                  <SelectItem value="std">STD Screening</SelectItem>
-                  <SelectItem value="thyroid">Thyroid</SelectItem>
-                  <SelectItem value="cardiac">Cardiac</SelectItem>
-                  <SelectItem value="metabolic">Metabolic</SelectItem>
-                  <SelectItem value="nutrition">Nutrition</SelectItem>
+                  <SelectItem value='all'>All Categories</SelectItem>
+                  <SelectItem value='general'>General Health</SelectItem>
+                  <SelectItem value='hormone'>Hormone</SelectItem>
+                  <SelectItem value='std'>STD Screening</SelectItem>
+                  <SelectItem value='thyroid'>Thyroid</SelectItem>
+                  <SelectItem value='cardiac'>Cardiac</SelectItem>
+                  <SelectItem value='metabolic'>Metabolic</SelectItem>
+                  <SelectItem value='nutrition'>Nutrition</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="col-span-2">
+            <div className='col-span-2 space-y-2'>
               <Label>Select Tests *</Label>
-              <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
+              <div className='border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2'>
                 {filteredTests.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className='text-sm text-muted-foreground'>
                     No tests available
                   </p>
                 ) : (
                   filteredTests.map((test) => (
                     <div
                       key={test.id}
-                      className="flex items-center justify-between p-2 hover:bg-accent rounded"
+                      className='flex items-center justify-between p-2 hover:bg-accent rounded'
                     >
-                      <div className="flex items-center space-x-2">
+                      <div className='flex items-center space-x-2'>
                         <Checkbox
                           checked={selectedTestIds.includes(test.id)}
                           onCheckedChange={() => toggleTest(test.id)}
                         />
                         <div>
-                          <p className="text-sm font-medium">{test.name}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className='text-sm font-medium'>{test.name}</p>
+                          <p className='text-xs text-muted-foreground'>
                             {formatCurrency(test.price)} • {test.category}
                           </p>
                         </div>
                       </div>
                       {selectedTestIds.includes(test.id) && (
-                        <Badge variant="secondary">Selected</Badge>
+                        <Badge variant='secondary'>Selected</Badge>
                       )}
                     </div>
                   ))
                 )}
               </div>
               {selectedTestIds.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className='mt-2 flex flex-wrap gap-2'>
                   {selectedTestIds.map((testId) => {
                     const test = tests.find((t) => t.id === testId);
                     return (
                       <Badge
                         key={testId}
-                        variant="secondary"
-                        className="flex items-center gap-1"
+                        variant='secondary'
+                        className='flex items-center gap-1'
                       >
                         {test?.name || testId}
                         <button
-                          type="button"
+                          type='button'
                           onClick={() => toggleTest(testId)}
-                          className="ml-1 hover:text-destructive"
+                          className='ml-1 hover:text-destructive'
                         >
-                          <X className="h-3 w-3" />
+                          <X className='h-3 w-3' />
                         </button>
                       </Badge>
                     );
@@ -222,30 +222,30 @@ export function PanelEditDialog({
               )}
             </div>
 
-            <div>
-              <Label htmlFor="originalPrice">Original Price ($) *</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='originalPrice'>Original Price ($) *</Label>
               <Input
-                id="originalPrice"
-                type="number"
-                step="0.01"
+                id='originalPrice'
+                type='number'
+                step='0.01'
                 {...register("originalPrice", {
                   required: true,
                   valueAsNumber: true,
                 })}
                 readOnly
-                className="bg-muted"
+                className='bg-muted'
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className='text-xs text-muted-foreground'>
                 Calculated from selected tests
               </p>
             </div>
 
-            <div>
-              <Label htmlFor="bundlePrice">Bundle Price ($) *</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='bundlePrice'>Bundle Price ($) *</Label>
               <Input
-                id="bundlePrice"
-                type="number"
-                step="0.01"
+                id='bundlePrice'
+                type='number'
+                step='0.01'
                 {...register("bundlePrice", {
                   required: true,
                   valueAsNumber: true,
@@ -253,44 +253,42 @@ export function PanelEditDialog({
               />
             </div>
 
-            <div>
-              <Label htmlFor="savings">Savings ($)</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='savings'>Savings ($)</Label>
               <Input
-                id="savings"
-                type="number"
-                step="0.01"
+                id='savings'
+                type='number'
+                step='0.01'
                 {...register("savings", { valueAsNumber: true })}
                 readOnly
-                className="bg-muted"
+                className='bg-muted'
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Auto-calculated
-              </p>
+              <p className='text-xs text-muted-foreground'>Auto-calculated</p>
             </div>
 
-            <div className="col-span-2 flex items-center space-x-2">
+            <div className='col-span-2 flex items-center space-x-2'>
               <Checkbox
-                id="enabled"
+                id='enabled'
                 checked={enabled}
                 onCheckedChange={(checked) =>
                   setValue("enabled", checked as boolean)
                 }
               />
-              <Label htmlFor="enabled" className="font-normal cursor-pointer">
+              <Label htmlFor='enabled' className='font-normal cursor-pointer'>
                 Panel is active and available for purchase
               </Label>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className='pt-4 pb-6'>
             <Button
-              type="button"
-              variant="outline"
+              type='button'
+              variant='outline'
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={selectedTestIds.length === 0}>
+            <Button type='submit' disabled={selectedTestIds.length === 0}>
               {panel ? "Update" : "Create"} Panel
             </Button>
           </DialogFooter>
@@ -299,4 +297,3 @@ export function PanelEditDialog({
     </Dialog>
   );
 }
-

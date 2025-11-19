@@ -109,13 +109,13 @@ export function EnhancedCheckoutForm() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       <CheckoutProgress currentStep={currentStep} steps={CHECKOUT_STEPS} />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Main Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Personal Information */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -129,8 +129,8 @@ export function EnhancedCheckoutForm() {
                     Personal Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label htmlFor="firstName">First Name *</Label>
                       <Input id="firstName" {...register('firstName')} />
@@ -198,18 +198,18 @@ export function EnhancedCheckoutForm() {
                     Address
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-4">
+                <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                   <div>
                     <Label htmlFor="street">Street Address *</Label>
-                    <Input id="street" {...register('street')} />
+                    <Input id="street" {...register('street')} className="text-sm sm:text-base" />
                     {errors.street && (
-                      <p className="text-sm text-destructive mt-1">
+                      <p className="text-xs sm:text-sm text-destructive mt-1">
                         {errors.street.message}
                       </p>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div className="sm:col-span-1">
                       <Label htmlFor="city">City *</Label>
                       <Input id="city" {...register('city')} />
@@ -255,28 +255,30 @@ export function EnhancedCheckoutForm() {
                     Notification Preferences
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-3">
-                  <div className="flex items-center space-x-2">
+                <CardContent className="p-4 sm:p-6 space-y-3">
+                  <div className="flex items-start space-x-2 sm:space-x-3">
                     <Checkbox
                       id="emailNotifications"
                       checked={watch('emailNotifications')}
                       onCheckedChange={(checked) =>
                         setValue('emailNotifications', checked as boolean)
                       }
+                      className="mt-1"
                     />
-                    <Label htmlFor="emailNotifications" className="font-normal cursor-pointer">
+                    <Label htmlFor="emailNotifications" className="font-normal cursor-pointer text-sm sm:text-base leading-relaxed">
                       Send me email notifications when results are ready
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-start space-x-2 sm:space-x-3">
                     <Checkbox
                       id="smsNotifications"
                       checked={watch('smsNotifications')}
                       onCheckedChange={(checked) =>
                         setValue('smsNotifications', checked as boolean)
                       }
+                      className="mt-1"
                     />
-                    <Label htmlFor="smsNotifications" className="font-normal cursor-pointer">
+                    <Label htmlFor="smsNotifications" className="font-normal cursor-pointer text-sm sm:text-base leading-relaxed">
                       Send me SMS notifications when results are ready
                     </Label>
                   </div>
@@ -356,42 +358,42 @@ export function EnhancedCheckoutForm() {
             className="lg:col-span-1"
           >
             <Card className="sticky top-20 glass-strong border-2">
-              <CardHeader className="bg-gradient-to-br from-primary/10 to-purple-500/10">
-                <CardTitle>Order Summary</CardTitle>
+              <CardHeader className="bg-gradient-to-br from-primary/10 to-purple-500/10 p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Order Summary</CardTitle>
               </CardHeader>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                 <div className="space-y-3">
                   {items.map((item) => (
                     <motion.div
                       key={item.testId}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex justify-between text-sm p-3 bg-muted/50 rounded-lg"
+                      className="flex justify-between text-xs sm:text-sm p-2 sm:p-3 bg-muted/50 rounded-lg gap-2"
                     >
-                      <span className="text-muted-foreground line-clamp-1 font-medium">
+                      <span className="text-muted-foreground line-clamp-1 font-medium flex-1 min-w-0">
                         {item.testName}
                       </span>
-                      <span className="font-semibold">{formatCurrency(item.price)}</span>
+                      <span className="font-semibold flex-shrink-0">{formatCurrency(item.price)}</span>
                     </motion.div>
                   ))}
                 </div>
 
-                <div className="pt-4 border-t space-y-2">
-                  <div className="flex justify-between text-sm">
+                <div className="pt-3 sm:pt-4 border-t space-y-2">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>{formatCurrency(subtotal)}</span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
+                    <div className="flex justify-between text-xs sm:text-sm text-green-600">
                       <span>Discount ({promoCode})</span>
                       <span>-{formatCurrency(discountAmount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-muted-foreground">Processing Fee</span>
                     <span>{formatCurrency(0)}</span>
                   </div>
-                  <div className="flex justify-between text-xl font-bold pt-2 border-t">
+                  <div className="flex justify-between text-lg sm:text-xl font-bold pt-2 border-t">
                     <span>Total</span>
                     <span className="text-primary">{formatCurrency(total)}</span>
                   </div>
@@ -400,7 +402,7 @@ export function EnhancedCheckoutForm() {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="w-full gradient-primary hover-lift"
+                  className="w-full gradient-primary hover-lift text-sm sm:text-base"
                   size="lg"
                 >
                   {submitting ? (

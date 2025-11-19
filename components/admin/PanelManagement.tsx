@@ -136,7 +136,7 @@ export function PanelManagement() {
       </div>
 
       <Card>
-        <CardContent className='p-0'>
+        <CardContent className='p-0 pb-0'>
           <Table>
             <TableHeader>
               <TableRow>

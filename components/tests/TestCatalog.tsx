@@ -1,7 +1,5 @@
 "use client";
 
-import { LocationDisplay } from "@/components/shared/LocationDisplay";
-import { LocationSelector } from "@/components/shared/LocationSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { searchTests } from "@/lib/api";
 import { Test } from "@/types/test";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronLeft,
   ChevronRight,
@@ -33,7 +30,6 @@ export function TestCatalog() {
   const [sortBy, setSortBy] = useState("name");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showLocationSelector, setShowLocationSelector] = useState(false);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -159,98 +155,38 @@ export function TestCatalog() {
   };
 
   return (
-    <div className='space-y-8'>
-      {/* Location Bar */}
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4'>
-        <LocationDisplay
-          showSelector={true}
-          onOpenSelector={() => setShowLocationSelector(true)}
-          className='w-full'
-        />
-      </div>
-
-      {/* Location Selector Modal */}
-      <AnimatePresence>
-        {showLocationSelector && (
-          <motion.div
-            className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setShowLocationSelector(false)}
-          >
-            <motion.div
-              className='bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto'
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className='p-6'>
-                <motion.div
-                  className='flex items-center justify-between mb-4'
-                  initial={{ y: -10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1, duration: 0.3 }}
-                >
-                  <h2 className='text-xl font-semibold'>Update Location</h2>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() => setShowLocationSelector(false)}
-                    className='h-8 w-8 p-0 hover:bg-gray-100'
-                  >
-                    ✕
-                  </Button>
-                </motion.div>
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                >
-                  <LocationSelector
-                    onLocationChange={() => setShowLocationSelector(false)}
-                  />
-                </motion.div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+    <div className='space-y-4 sm:space-y-6 md:space-y-8'>
       {/* Beautiful Search Bar */}
-      <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6'>
+      <div className='bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6'>
         <div className='relative flex-1'>
-          <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500' />
+          <Search className='absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500' />
           <Input
             type='search'
             placeholder='Search for tests, ingredients, or health conditions...'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className='pl-12 h-12 text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl'
+            className='pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg sm:rounded-xl'
           />
         </div>
       </div>
 
       {/* Category Bar - Horizontal Scrollable with Sort and Filter */}
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700'>
-        <div className='relative flex items-center gap-4 px-4'>
-          {/* Left Scroll Button - TEMP: Always visible */}
+      <div className='bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700'>
+        <div className='relative flex items-center gap-2 sm:gap-4 px-2 sm:px-4'>
+          {/* Left Scroll Button */}
           <button
             onClick={() => scrollCategories("left")}
             disabled={!canScrollLeft}
-            className='absolute left-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed'
+            className='absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-20 h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed'
             aria-label='Scroll left'
           >
-            <ChevronLeft className='h-4 w-4 text-gray-600 dark:text-gray-400' />
+            <ChevronLeft className='h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400' />
           </button>
 
           {/* Scrollable Category Container */}
           <div
             ref={categoryScrollRef}
-            className='flex items-center gap-5 overflow-x-scroll scrollbar-hide py-3 px-14 w-full'
+            className='flex items-center gap-3 sm:gap-5 overflow-x-scroll scrollbar-hide py-2 sm:py-3 px-10 sm:px-14 w-full'
           >
             {[
               { id: "all", name: "All Tests" },
@@ -266,7 +202,7 @@ export function TestCatalog() {
               <button
                 key={categoryItem.id}
                 onClick={() => setCategory(categoryItem.id)}
-                className={`flex-shrink-0 text-sm font-medium transition-colors pb-1 relative whitespace-nowrap ${
+                className={`flex-shrink-0 text-xs sm:text-sm font-medium transition-colors pb-1 relative whitespace-nowrap ${
                   category === categoryItem.id
                     ? "text-blue-600 dark:text-blue-400"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
@@ -280,29 +216,29 @@ export function TestCatalog() {
             ))}
           </div>
 
-          {/* Right Scroll Button - TEMP: Always visible */}
+          {/* Right Scroll Button */}
           <button
             onClick={() => scrollCategories("right")}
             disabled={!canScrollRight}
-            className='absolute right-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed'
+            className='absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-20 h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center shadow-md transition-all disabled:opacity-30 disabled:cursor-not-allowed'
             aria-label='Scroll right'
           >
-            <ChevronRight className='h-4 w-4 text-gray-600 dark:text-gray-400' />
+            <ChevronRight className='h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400' />
           </button>
         </div>
       </div>
 
       {/* Results Section */}
-      <div className='bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6'>
+      <div className='bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6'>
         {loading ? (
-          <div className='text-center py-16'>
+          <div className='text-center py-12 sm:py-16'>
             <div className='inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]' />
             <p className='text-gray-500 dark:text-gray-400 mt-4 text-sm'>
               Loading tests...
             </p>
           </div>
         ) : tests.length === 0 ? (
-          <div className='text-center py-16'>
+          <div className='text-center py-12 sm:py-16'>
             <p className='text-gray-500 dark:text-gray-400 text-sm'>
               No tests found matching your criteria.
             </p>
@@ -310,16 +246,16 @@ export function TestCatalog() {
         ) : (
           <>
             {/* Results Count with Sort and Filters */}
-            <div className='flex items-center justify-between mb-6 gap-4'>
-              <p className='text-sm text-gray-600 dark:text-gray-300 font-medium'>
+            <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4'>
+              <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium'>
                 {tests.length} {tests.length === 1 ? "test" : "tests"} found
                 {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
               </p>
 
-              <div className='flex items-center gap-3'>
+              <div className='flex items-center gap-2 sm:gap-3 w-full sm:w-auto'>
                 {/* Sort Dropdown */}
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className='w-[180px] h-10 border-gray-300 rounded-lg'>
+                  <SelectTrigger className='w-full sm:w-[140px] md:w-[180px] h-9 sm:h-10 border-gray-300 rounded-lg text-xs sm:text-sm'>
                     <SelectValue placeholder='Sort by' />
                   </SelectTrigger>
                   <SelectContent>
@@ -339,12 +275,12 @@ export function TestCatalog() {
                 {/* Filters Button */}
                 <Button
                   variant='outline'
-                  size='default'
+                  size='sm'
                   onClick={() => setShowFilters(!showFilters)}
-                  className='h-10 px-4 gap-2 border-gray-300 hover:border-blue-500 hover:text-blue-600 rounded-lg'
+                  className='h-9 sm:h-10 px-3 sm:px-4 gap-2 border-gray-300 hover:border-blue-500 hover:text-blue-600 rounded-lg text-xs sm:text-sm flex-shrink-0'
                 >
-                  <SlidersHorizontal className='h-4 w-4' />
-                  Filters
+                  <SlidersHorizontal className='h-3 w-3 sm:h-4 sm:w-4' />
+                  <span className='hidden sm:inline'>Filters</span>
                 </Button>
               </div>
             </div>
@@ -353,16 +289,17 @@ export function TestCatalog() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className='flex items-center justify-center gap-2 mt-8'>
+              <div className='flex items-center justify-center gap-1 sm:gap-2 mt-6 sm:mt-8 flex-wrap'>
                 <Button
                   variant='outline'
                   size='sm'
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className='gap-1'
+                  className='gap-1 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3'
                 >
-                  <ChevronLeft className='h-4 w-4' />
-                  Previous
+                  <ChevronLeft className='h-3 w-3 sm:h-4 sm:w-4' />
+                  <span className='hidden sm:inline'>Previous</span>
+                  <span className='sm:hidden'>Prev</span>
                 </Button>
 
                 <div className='flex items-center gap-1'>
@@ -383,7 +320,7 @@ export function TestCatalog() {
                         return (
                           <span
                             key={page}
-                            className='px-2 text-muted-foreground'
+                            className='px-1 sm:px-2 text-muted-foreground text-xs sm:text-sm'
                           >
                             ...
                           </span>
@@ -398,7 +335,7 @@ export function TestCatalog() {
                           variant={currentPage === page ? "default" : "outline"}
                           size='sm'
                           onClick={() => handlePageChange(page)}
-                          className='w-10'
+                          className='w-8 sm:w-10 h-8 sm:h-9 text-xs sm:text-sm'
                         >
                           {page}
                         </Button>
@@ -412,10 +349,11 @@ export function TestCatalog() {
                   size='sm'
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className='gap-1'
+                  className='gap-1 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3'
                 >
-                  Next
-                  <ChevronRight className='h-4 w-4' />
+                  <span className='hidden sm:inline'>Next</span>
+                  <span className='sm:hidden'>Next</span>
+                  <ChevronRight className='h-3 w-3 sm:h-4 sm:w-4' />
                 </Button>
               </div>
             )}

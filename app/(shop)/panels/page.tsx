@@ -15,7 +15,7 @@ export default function PanelsPage() {
       <SiteHeader />
 
       {/* Hero Section */}
-      <div className='relative min-h-[350px] bg-gradient-to-br from-purple-900 via-blue-800 to-cyan-800'>
+      <div className='relative min-h-[280px] bg-gradient-to-br from-purple-900 via-blue-800 to-cyan-800'>
         {/* Background Pattern */}
         <div
           className='absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20'
@@ -25,7 +25,7 @@ export default function PanelsPage() {
         />
 
         {/* Content */}
-        <div className='relative z-10 flex items-center justify-center min-h-[350px]'>
+        <div className='relative z-10 flex items-center justify-center min-h-[280px]'>
           <div className='text-center text-white px-4 max-w-4xl mx-auto'>
             <h1 className='text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-tight'>
               Test{" "}

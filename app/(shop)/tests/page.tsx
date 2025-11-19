@@ -14,7 +14,7 @@ export default function TestsPage() {
       <SiteHeader />
 
       {/* Hero Section with Background */}
-      <div className='relative min-h-[400px] bg-gradient-to-br from-blue-900 via-blue-800 to-teal-800'>
+      <div className='relative min-h-[320px] bg-gradient-to-br from-blue-900 via-blue-800 to-teal-800'>
         {/* Background Image Overlay */}
         <div
           className='absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20'
@@ -24,7 +24,7 @@ export default function TestsPage() {
         />
 
         {/* Content */}
-        <div className='relative z-10 flex items-center justify-center min-h-[400px]'>
+        <div className='relative z-10 flex items-center justify-center min-h-[320px]'>
           <div className='text-center text-white px-4 max-w-4xl mx-auto'>
             <h1 className='text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight'>
               Lab Tests

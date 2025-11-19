@@ -135,7 +135,7 @@ export function FeaturedBundles() {
               exit={{ opacity: 0, x: -100 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8'>
                 <AnimatePresence mode='wait'>
                   {displayPanels.map((panel, index) => (
                     <motion.div
@@ -237,20 +237,20 @@ export function FeaturedBundles() {
                 onClick={handlePrevious}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                className='absolute -left-5 sm:left-0 top-1/2 -translate-y-1/2 z-10 p-2.5 sm:p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white transition-all hover:bg-gray-50 dark:hover:bg-slate-700'
+                className='absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-2.5 md:p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white transition-all hover:bg-gray-50 dark:hover:bg-slate-700'
                 aria-label='Previous slide'
               >
-                <ChevronLeft className='h-5 w-5 sm:h-6 sm:w-6' />
+                <ChevronLeft className='h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6' />
               </motion.button>
 
               <motion.button
                 onClick={handleNext}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                className='absolute -right-5 sm:right-0 top-1/2 -translate-y-1/2 z-10 p-2.5 sm:p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white transition-all hover:bg-gray-50 dark:hover:bg-slate-700'
+                className='absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-2.5 md:p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white transition-all hover:bg-gray-50 dark:hover:bg-slate-700'
                 aria-label='Next slide'
               >
-                <ChevronRight className='h-5 w-5 sm:h-6 sm:w-6' />
+                <ChevronRight className='h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6' />
               </motion.button>
             </>
           )}

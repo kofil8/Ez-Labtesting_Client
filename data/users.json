@@ -1,0 +1,57 @@
+[
+  {
+    "id": "user-1",
+    "email": "john.doe@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "phone": "5551234567",
+    "dateOfBirth": "1990-05-15",
+    "role": "customer",
+    "createdAt": "2024-01-01T10:00:00Z",
+    "mfaEnabled": false
+  },
+  {
+    "id": "user-2",
+    "email": "jane.smith@example.com",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "phone": "5559876543",
+    "dateOfBirth": "1985-08-22",
+    "role": "customer",
+    "createdAt": "2024-01-05T14:30:00Z",
+    "mfaEnabled": true
+  },
+  {
+    "id": "user-3",
+    "email": "admin@ezlab.com",
+    "firstName": "Admin",
+    "lastName": "User",
+    "phone": "5551111111",
+    "dateOfBirth": "1980-01-01",
+    "role": "admin",
+    "createdAt": "2023-12-01T09:00:00Z",
+    "mfaEnabled": true
+  },
+  {
+    "id": "user-4",
+    "email": "michael.johnson@example.com",
+    "firstName": "Michael",
+    "lastName": "Johnson",
+    "phone": "5552222222",
+    "dateOfBirth": "1992-03-10",
+    "role": "customer",
+    "createdAt": "2024-01-10T11:20:00Z",
+    "mfaEnabled": false
+  },
+  {
+    "id": "user-5",
+    "email": "sarah.williams@example.com",
+    "firstName": "Sarah",
+    "lastName": "Williams",
+    "phone": "5553333333",
+    "dateOfBirth": "1988-11-25",
+    "role": "customer",
+    "createdAt": "2024-01-15T16:45:00Z",
+    "mfaEnabled": true
+  }
+]

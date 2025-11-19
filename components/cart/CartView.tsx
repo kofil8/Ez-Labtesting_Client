@@ -89,21 +89,21 @@ export function CartView() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       {/* Cart Items */}
-      <div className="lg:col-span-2 space-y-4">
+      <div className="lg:col-span-2 space-y-3 sm:space-y-4">
         {items.map((item) => (
           <Card key={item.testId}>
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h3 className="font-semibold">{item.testName}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
+            <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+              <div className="flex items-start justify-between gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm sm:text-base">{item.testName}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Lab Test
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold">{formatCurrency(item.price)}</p>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-semibold text-sm sm:text-base">{formatCurrency(item.price)}</p>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -114,10 +114,10 @@ export function CartView() {
                         description: `${item.testName} has been removed.`,
                       })
                     }}
-                    className="mt-2 text-destructive hover:text-destructive"
+                    className="mt-2 text-destructive hover:text-destructive text-xs sm:text-sm h-7 sm:h-8"
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Remove
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">Remove</span>
                   </Button>
                 </div>
               </div>
@@ -129,20 +129,20 @@ export function CartView() {
       {/* Order Summary */}
       <div className="lg:col-span-1">
         <Card className="sticky top-20">
-          <CardHeader>
-            <CardTitle>Order Summary</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">Order Summary</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
             {/* Promo Code */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Promo Code</label>
+              <label className="text-xs sm:text-sm font-medium">Promo Code</label>
               {appliedPromoCode ? (
-                <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-green-600">
+                <div className="flex items-center justify-between p-2 sm:p-3 bg-green-500/10 border border-green-500/20 rounded-lg gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-semibold text-green-600">
                       ✓ {appliedPromoCode} Applied
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">
                       {Math.round(storeDiscount * 100)}% discount
                     </p>
                   </div>
@@ -150,7 +150,7 @@ export function CartView() {
                     onClick={handleRemovePromo}
                     variant="ghost"
                     size="sm"
-                    className="text-xs"
+                    className="text-xs h-7 sm:h-8 flex-shrink-0"
                   >
                     Remove
                   </Button>
@@ -163,6 +163,7 @@ export function CartView() {
                       onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
                       placeholder="Enter code"
                       disabled={validating}
+                      className="text-xs sm:text-sm h-9 sm:h-10"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           handleApplyPromo()
@@ -173,6 +174,7 @@ export function CartView() {
                       onClick={handleApplyPromo}
                       disabled={!promoCodeInput.trim() || validating}
                       variant="secondary"
+                      className="text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 flex-shrink-0"
                     >
                       {validating ? 'Checking...' : 'Apply'}
                     </Button>
@@ -182,27 +184,27 @@ export function CartView() {
             </div>
 
             {/* Totals */}
-            <div className="space-y-2 pt-4 border-t">
-              <div className="flex justify-between text-sm">
+            <div className="space-y-2 pt-3 sm:pt-4 border-t">
+              <div className="flex justify-between text-xs sm:text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               {storeDiscount > 0 && (
-                <div className="flex justify-between text-sm text-green-600">
+                <div className="flex justify-between text-xs sm:text-sm text-green-600">
                   <span>Discount ({Math.round(storeDiscount * 100)}%)</span>
                   <span>-{formatCurrency(discountAmount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-lg font-semibold pt-2 border-t">
+              <div className="flex justify-between text-base sm:text-lg font-semibold pt-2 border-t">
                 <span>Total</span>
                 <span>{formatCurrency(total)}</span>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-2">
+          <CardFooter className="flex flex-col gap-2 p-4 sm:p-6">
             <Button
               onClick={() => router.push('/checkout')}
-              className="w-full"
+              className="w-full text-sm sm:text-base"
               size="lg"
             >
               Proceed to Checkout
@@ -210,7 +212,7 @@ export function CartView() {
             <Button
               variant="outline"
               asChild
-              className="w-full"
+              className="w-full text-sm sm:text-base"
             >
               <Link href="/tests">Continue Shopping</Link>
             </Button>

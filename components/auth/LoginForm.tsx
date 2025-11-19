@@ -91,38 +91,40 @@ export function LoginForm() {
   return (
     <Card>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className='pt-6 space-y-4'>
+        <CardContent className='pt-4 sm:pt-6 p-4 sm:p-6 space-y-3 sm:space-y-4'>
           <div>
-            <Label htmlFor='email'>Email</Label>
+            <Label htmlFor='email' className="text-sm sm:text-base">Email</Label>
             <Input
               id='email'
               type='email'
               placeholder='your@email.com'
               {...register("email")}
+              className="text-sm sm:text-base h-10 sm:h-11"
             />
             {errors.email && (
-              <p className='text-sm text-destructive mt-1'>
+              <p className='text-xs sm:text-sm text-destructive mt-1'>
                 {errors.email.message}
               </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor='password'>Password</Label>
+            <Label htmlFor='password' className="text-sm sm:text-base">Password</Label>
             <Input
               id='password'
               type='password'
               placeholder='••••••••'
               {...register("password")}
+              className="text-sm sm:text-base h-10 sm:h-11"
             />
             {errors.password && (
-              <p className='text-sm text-destructive mt-1'>
+              <p className='text-xs sm:text-sm text-destructive mt-1'>
                 {errors.password.message}
               </p>
             )}
           </div>
 
-          <div className='text-sm'>
+          <div className='text-xs sm:text-sm'>
             <Link
               href='/forgot-password'
               className='text-primary hover:underline'
@@ -131,23 +133,25 @@ export function LoginForm() {
             </Link>
           </div>
 
-          <Captcha
-            ref={recaptchaRef}
-            onChange={handleCaptchaChange}
-            onExpired={handleCaptchaExpired}
-          />
+          <div className="flex justify-center">
+            <Captcha
+              ref={recaptchaRef}
+              onChange={handleCaptchaChange}
+              onExpired={handleCaptchaExpired}
+            />
+          </div>
         </CardContent>
 
-        <CardFooter className='flex flex-col space-y-4'>
+        <CardFooter className='flex flex-col space-y-3 sm:space-y-4 p-4 sm:p-6'>
           <Button
             type='submit'
             disabled={loading || !captchaToken}
-            className='w-full'
+            className='w-full text-sm sm:text-base h-10 sm:h-11'
           >
             {loading ? "Signing in..." : "Sign In"}
           </Button>
 
-          <p className='text-sm text-center text-muted-foreground'>
+          <p className='text-xs sm:text-sm text-center text-muted-foreground'>
             Don&apos;t have an account?{" "}
             <Link
               href={(() => {

@@ -140,7 +140,7 @@ export default function FindLabCenterPage() {
         <SiteHeader />
         <main className="flex-1 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
           {/* Hero Section */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 sm:py-16">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-10 sm:py-12">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

@@ -89,8 +89,8 @@ export function ProfileForm() {
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <Label htmlFor="firstName">First name</Label>
               <Input
@@ -134,42 +134,44 @@ export function ProfileForm() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="phone">Phone number</Label>
+              <Label htmlFor="phone" className="text-sm sm:text-base">Phone number</Label>
               <Input
                 id="phone"
                 type="tel"
                 placeholder="1234567890"
                 {...register("phone")}
+                className="text-sm sm:text-base"
               />
               {errors.phone && (
-                <p className="text-sm text-destructive mt-1">
+                <p className="text-xs sm:text-sm text-destructive mt-1">
                   {errors.phone.message}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-muted-foreground mt-1 sm:mt-2">
                 Format: 10 digits
               </p>
             </div>
 
             <div>
-              <Label htmlFor="dateOfBirth">Date of birth</Label>
+              <Label htmlFor="dateOfBirth" className="text-sm sm:text-base">Date of birth</Label>
               <Input
                 id="dateOfBirth"
                 type="date"
                 {...register("dateOfBirth")}
+                className="text-sm sm:text-base"
               />
               {errors.dateOfBirth && (
-                <p className="text-sm text-destructive mt-1">
+                <p className="text-xs sm:text-sm text-destructive mt-1">
                   {errors.dateOfBirth.message}
                 </p>
               )}
             </div>
           </div>
         </CardContent>
-        <CardFooter>
-          <Button type="submit" disabled={loading} className="w-full">
+        <CardFooter className="p-4 sm:p-6">
+          <Button type="submit" disabled={loading} className="w-full text-sm sm:text-base">
             {loading ? "Saving..." : "Save changes"}
           </Button>
         </CardFooter>

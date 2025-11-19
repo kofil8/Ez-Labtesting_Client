@@ -3,11 +3,13 @@ import { Order } from '@/types/order'
 import { Result } from '@/types/result'
 import { Panel } from '@/types/panel'
 import { PromoCode } from '@/types/promo-code'
+import { User } from '@/types/user'
 import testsData from '@/data/tests.json'
 import ordersData from '@/data/orders.json'
 import resultsData from '@/data/results.json'
 import panelsData from '@/data/panels.json'
 import promoCodesData from '@/data/promo-codes.json'
+import usersData from '@/data/users.json'
 
 // Mock API functions that simulate async data fetching
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -254,6 +256,78 @@ export async function updateTest(id: string, testData: Partial<Test>): Promise<T
 }
 
 export async function deleteTest(id: string): Promise<void> {
+  await delay(500)
+  // In real app, would call API to delete
+}
+
+// User CRUD functions
+export async function getAllUsers(): Promise<User[]> {
+  await delay(300)
+  return usersData as User[]
+}
+
+export async function getUserById(id: string): Promise<User | null> {
+  await delay(200)
+  const users = usersData as User[]
+  return users.find(user => user.id === id) || null
+}
+
+export async function createUser(userData: Partial<User>): Promise<User> {
+  await delay(500)
+  const newUser: User = {
+    id: `user-${Date.now()}`,
+    email: userData.email || '',
+    firstName: userData.firstName || '',
+    lastName: userData.lastName || '',
+    phone: userData.phone,
+    dateOfBirth: userData.dateOfBirth,
+    role: userData.role || 'customer',
+    createdAt: new Date().toISOString(),
+    mfaEnabled: userData.mfaEnabled || false,
+    ...userData
+  } as User
+  
+  return newUser
+}
+
+export async function updateUser(id: string, userData: Partial<User>): Promise<User> {
+  await delay(500)
+  const users = usersData as User[]
+  const existingUser = users.find(u => u.id === id)
+  if (!existingUser) {
+    throw new Error('User not found')
+  }
+  
+  return { ...existingUser, ...userData } as User
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await delay(500)
+  // In real app, would call API to delete
+}
+
+// Order Management functions
+export async function getAllOrders(): Promise<Order[]> {
+  await delay(300)
+  return ordersData as Order[]
+}
+
+export async function updateOrder(id: string, orderData: Partial<Order>): Promise<Order> {
+  await delay(500)
+  const orders = ordersData as Order[]
+  const existingOrder = orders.find(o => o.id === id)
+  if (!existingOrder) {
+    throw new Error('Order not found')
+  }
+  
+  return { 
+    ...existingOrder, 
+    ...orderData,
+    updatedAt: new Date().toISOString()
+  } as Order
+}
+
+export async function deleteOrder(id: string): Promise<void> {
   await delay(500)
   // In real app, would call API to delete
 }
