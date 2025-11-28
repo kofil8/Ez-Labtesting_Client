@@ -118,35 +118,19 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsSending(true);
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: conversationForApi
-            .concat({ role: "user", content: trimmed })
-            .slice(-16),
-        }),
-      });
-      if (!res.ok) {
-        throw new Error("Chat request failed");
-      }
-      const data = (await res.json()) as { reply?: string };
-      const reply =
-        data.reply?.trim() || "Sorry, I ran into an issue answering that.";
-      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-    } catch (_) {
+    
+    // API integration removed
+    setTimeout(() => {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           content:
-            "Apologies—I'm having trouble reaching the assistant right now. Please try again in a moment.",
+            "Chat API integration has been removed. Please contact support directly for assistance.",
         },
       ]);
-    } finally {
       setIsSending(false);
-    }
+    }, 500);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

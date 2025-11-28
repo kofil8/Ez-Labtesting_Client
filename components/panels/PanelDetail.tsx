@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,29 +11,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import testsData from "@/data/tests.json";
+import { useToast } from "@/hook/use-toast";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatCurrency } from "@/lib/utils";
-import testsData from "@/data/tests.json";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
+  Beaker,
   Check,
   Clock,
+  Heart,
+  Info,
   Package,
+  Share2,
   ShoppingCart,
   Zap,
-  Heart,
-  Share2,
-  Info,
-  Beaker,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 interface Panel {
@@ -75,7 +70,10 @@ export function PanelDetail({ panel }: { panel: Panel }) {
     (panel.savings / panel.originalPrice) * 100
   );
 
-  const totalTurnaround = Math.max(...includedTests.map((t) => t.turnaroundDays), 1);
+  const totalTurnaround = Math.max(
+    ...includedTests.map((t) => t.turnaroundDays),
+    1
+  );
 
   const handleAddToCart = () => {
     // Add all tests in the bundle
@@ -117,7 +115,10 @@ export function PanelDetail({ panel }: { panel: Panel }) {
         animate={{ opacity: 1, x: 0 }}
         className='flex items-center gap-2 text-sm'
       >
-        <Link href='/panels' className='text-muted-foreground hover:text-foreground transition-colors'>
+        <Link
+          href='/panels'
+          className='text-muted-foreground hover:text-foreground transition-colors'
+        >
           Test Panels
         </Link>
         <span className='text-muted-foreground'>/</span>
@@ -139,7 +140,12 @@ export function PanelDetail({ panel }: { panel: Panel }) {
               <div className='absolute inset-0 opacity-30'>
                 <svg className='w-full h-full' viewBox='0 0 400 300'>
                   <defs>
-                    <pattern id='dots' width='30' height='30' patternUnits='userSpaceOnUse'>
+                    <pattern
+                      id='dots'
+                      width='30'
+                      height='30'
+                      patternUnits='userSpaceOnUse'
+                    >
                       <circle cx='15' cy='15' r='2' fill='white' />
                     </pattern>
                   </defs>
@@ -175,25 +181,33 @@ export function PanelDetail({ panel }: { panel: Panel }) {
               {/* Quick Stats */}
               <div className='grid grid-cols-2 sm:grid-cols-4 gap-4'>
                 <div className='p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800'>
-                  <div className='text-xs text-muted-foreground mb-1'>Tests</div>
+                  <div className='text-xs text-muted-foreground mb-1'>
+                    Tests
+                  </div>
                   <div className='text-2xl font-bold text-blue-600 dark:text-blue-400'>
                     {includedTests.length}
                   </div>
                 </div>
                 <div className='p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800'>
-                  <div className='text-xs text-muted-foreground mb-1'>You Save</div>
+                  <div className='text-xs text-muted-foreground mb-1'>
+                    You Save
+                  </div>
                   <div className='text-2xl font-bold text-purple-600 dark:text-purple-400'>
                     {savingsPercentage}%
                   </div>
                 </div>
                 <div className='p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800'>
-                  <div className='text-xs text-muted-foreground mb-1'>Savings</div>
+                  <div className='text-xs text-muted-foreground mb-1'>
+                    Savings
+                  </div>
                   <div className='text-2xl font-bold text-green-600 dark:text-green-400'>
                     {formatCurrency(panel.savings)}
                   </div>
                 </div>
                 <div className='p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800'>
-                  <div className='text-xs text-muted-foreground mb-1'>Turnaround</div>
+                  <div className='text-xs text-muted-foreground mb-1'>
+                    Turnaround
+                  </div>
                   <div className='text-2xl font-bold text-orange-600 dark:text-orange-400'>
                     {totalTurnaround}d
                   </div>
@@ -203,7 +217,11 @@ export function PanelDetail({ panel }: { panel: Panel }) {
           </Card>
 
           {/* Tabs Section */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className='w-full'>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className='w-full'
+          >
             <TabsList className='grid w-full grid-cols-3 mb-6'>
               <TabsTrigger value='overview' className='flex items-center gap-2'>
                 <Info className='h-4 w-4' />
@@ -211,7 +229,9 @@ export function PanelDetail({ panel }: { panel: Panel }) {
               </TabsTrigger>
               <TabsTrigger value='tests' className='flex items-center gap-2'>
                 <Beaker className='h-4 w-4' />
-                <span className='hidden sm:inline'>Tests ({includedTests.length})</span>
+                <span className='hidden sm:inline'>
+                  Tests ({includedTests.length})
+                </span>
               </TabsTrigger>
               <TabsTrigger value='benefits' className='flex items-center gap-2'>
                 <Zap className='h-4 w-4' />
@@ -230,16 +250,18 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                 >
                   <Card>
                     <CardHeader>
-                    <CardTitle className='flex items-center gap-2'>
-                      <Package className='h-5 w-5 text-purple-600 dark:text-purple-400' />
-                      What&apos;s Included
-                    </CardTitle>
+                      <CardTitle className='flex items-center gap-2'>
+                        <Package className='h-5 w-5 text-purple-600 dark:text-purple-400' />
+                        What&apos;s Included
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className='space-y-3'>
                       <div className='space-y-2'>
                         <div className='flex items-center gap-2'>
                           <Zap className='h-4 w-4 text-yellow-500' />
-                          <span>{includedTests.length} comprehensive lab tests</span>
+                          <span>
+                            {includedTests.length} comprehensive lab tests
+                          </span>
                         </div>
                         <div className='flex items-center gap-2'>
                           <Check className='h-4 w-4 text-green-500' />
@@ -247,7 +269,10 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                         </div>
                         <div className='flex items-center gap-2'>
                           <Clock className='h-4 w-4 text-blue-500' />
-                          <span>Fast results in {totalTurnaround} business day{totalTurnaround !== 1 ? 's' : ''}</span>
+                          <span>
+                            Fast results in {totalTurnaround} business day
+                            {totalTurnaround !== 1 ? "s" : ""}
+                          </span>
                         </div>
                         <div className='flex items-center gap-2'>
                           <ShoppingCart className='h-4 w-4 text-purple-500' />
@@ -285,7 +310,10 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                                   <h4 className='font-semibold group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-1'>
                                     {test.name}
                                   </h4>
-                                  <Badge variant='outline' className='shrink-0 text-xs'>
+                                  <Badge
+                                    variant='outline'
+                                    className='shrink-0 text-xs'
+                                  >
                                     {test.category}
                                   </Badge>
                                 </div>
@@ -344,7 +372,9 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                         },
                         {
                           title: "Maximum Savings",
-                          description: `Save ${formatCurrency(panel.savings)} ({savingsPercentage}%) compared to individual test pricing`,
+                          description: `Save ${formatCurrency(
+                            panel.savings
+                          )} ({savingsPercentage}%) compared to individual test pricing`,
                           icon: "💰",
                         },
                         {
@@ -355,12 +385,15 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                         },
                         {
                           title: "Fast Results",
-                          description: `Get results in as little as ${totalTurnaround} business day${totalTurnaround !== 1 ? "s" : ""}`,
+                          description: `Get results in as little as ${totalTurnaround} business day${
+                            totalTurnaround !== 1 ? "s" : ""
+                          }`,
                           icon: "⚡",
                         },
                         {
                           title: "Secure & Confidential",
-                          description: "Your health data is encrypted and protected",
+                          description:
+                            "Your health data is encrypted and protected",
                           icon: "🔒",
                         },
                         {
@@ -377,9 +410,13 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                           transition={{ delay: index * 0.05 }}
                           className='flex gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors'
                         >
-                          <div className='text-2xl shrink-0'>{benefit.icon}</div>
+                          <div className='text-2xl shrink-0'>
+                            {benefit.icon}
+                          </div>
                           <div className='flex-1 min-w-0'>
-                            <h4 className='font-semibold text-sm'>{benefit.title}</h4>
+                            <h4 className='font-semibold text-sm'>
+                              {benefit.title}
+                            </h4>
                             <p className='text-sm text-muted-foreground'>
                               {benefit.description}
                             </p>
@@ -427,7 +464,9 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                     >
                       −
                     </button>
-                    <div className='flex-1 text-center font-semibold'>{quantity}</div>
+                    <div className='flex-1 text-center font-semibold'>
+                      {quantity}
+                    </div>
                     <button
                       onClick={() => setQuantity(quantity + 1)}
                       className='px-3 py-2 hover:bg-muted transition-colors'
@@ -488,13 +527,13 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                 <div>
                   <div className='font-semibold mb-1'>Sample Types</div>
                   <div className='flex flex-wrap gap-2'>
-                    {Array.from(new Set(includedTests.map((t) => t.sampleType))).map(
-                      (type) => (
-                        <Badge key={type} variant='secondary' className='text-xs'>
-                          {type}
-                        </Badge>
-                      )
-                    )}
+                    {Array.from(
+                      new Set(includedTests.map((t) => t.sampleType))
+                    ).map((type) => (
+                      <Badge key={type} variant='secondary' className='text-xs'>
+                        {type}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
                 <Separator />
@@ -502,7 +541,11 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                   <div className='font-semibold mb-2'>Preparation Required</div>
                   <ul className='space-y-1.5 text-muted-foreground'>
                     {Array.from(
-                      new Set(includedTests.map((t) => t.preparation || "No preparation required"))
+                      new Set(
+                        includedTests.map(
+                          (t) => t.preparation || "No preparation required"
+                        )
+                      )
                     )
                       .slice(0, 3)
                       .map((prep, index) => (
@@ -520,7 +563,8 @@ export function PanelDetail({ panel }: { panel: Panel }) {
             <Card className='bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border-purple-200 dark:border-purple-800'>
               <CardContent className='pt-6'>
                 <p className='text-sm text-center mb-3'>
-                  <span className='font-semibold'>✓ Questions?</span> Our health advisors are here to help
+                  <span className='font-semibold'>✓ Questions?</span> Our health
+                  advisors are here to help
                 </p>
                 <Button variant='outline' className='w-full' asChild>
                   <a href='#contact'>Contact Us</a>
@@ -533,4 +577,3 @@ export function PanelDetail({ panel }: { panel: Panel }) {
     </div>
   );
 }
-

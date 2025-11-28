@@ -1,68 +1,54 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Check if auth bypass is enabled for testing
-const BYPASS_AUTH =
-  process.env.BYPASS_AUTH === "true" ||
-  process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
+// Public routes (no auth required)
+const PUBLIC_ROUTES = [
+  "/",
+  "/login",
+  "/register",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/mfa",
+  "/verify-otp",
+  "/tests",
+  "/panels",
+  "/cart",
+  "/find-lab-center",
+  "/results",
+  "/admin",
+];
 
-// Define which routes are public (no auth required)
+// Check if route is public
 function isPublicPath(pathname: string) {
-  // Home and marketing-style pages
-  if (pathname === "/") return true;
-
-  // Auth pages
-  if (pathname.startsWith("/login")) return true;
-  if (pathname.startsWith("/signup")) return true;
-  if (pathname.startsWith("/mfa")) return true;
-  if (pathname.startsWith("/forgot-password")) return true;
-  if (pathname.startsWith("/reset-password")) return true;
-
-  // Catalog / browsing pages
-  if (pathname.startsWith("/tests")) return true; // tests list + detail
-  if (pathname.startsWith("/panels")) return true; // panels list + detail
-  if (pathname.startsWith("/cart")) return true; // allow cart without auth
-  if (pathname.startsWith("/find-lab-center")) return true; // lab center finder
-  if (pathname.startsWith("/results")) return true; // results page (public for demo)
-  if (pathname.startsWith("/admin")) return true; // admin page (public for demo)
-  if (pathname.startsWith("/profile")) return true; // profile page (public for demo)
-
-  // // Profile page is public when auth is bypassed for testing
-  // if (BYPASS_AUTH && pathname.startsWith("/profile")) return true;
-
-  return false;
+  return PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route)
+  );
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-
-  // Skip all auth checks if bypass is enabled
-  if (BYPASS_AUTH) {
-    return NextResponse.next();
-  }
 
   // Skip auth check for public routes
   if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
-  const authToken = req.cookies.get("auth_token")?.value;
+  // Read access token from cookie (not HttpOnly)
+  const accessToken = req.cookies.get("accessToken")?.value;
 
-  if (!authToken) {
+  // If no access token, redirect to login
+  if (!accessToken) {
     const loginUrl = req.nextUrl.clone();
     loginUrl.pathname = "/login";
-
-    // Preserve the original destination so we can send the user back after login
-    const from = `${pathname}${search}`;
-    loginUrl.searchParams.set("from", from);
-
+    loginUrl.searchParams.set("from", `${pathname}${search}`);
     return NextResponse.redirect(loginUrl);
   }
 
+  // Token exists, allow access (no backend verification)
   return NextResponse.next();
 }
 
-// Run middleware on all pages except API routes and Next.js assets
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

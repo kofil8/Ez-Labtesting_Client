@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -11,11 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { getAllUsers, createUser, updateUser, deleteUser } from "@/lib/api";
+import { useToast } from "@/hook/use-toast";
+import { createUser, deleteUser, getAllUsers, updateUser } from "@/lib/api";
 import { User } from "@/types/user";
-import { Pencil, Plus, Trash2, Search } from "lucide-react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { UserEditDialog } from "./UserEditDialog";
 
@@ -204,9 +204,7 @@ export function UserManagement() {
                       <span className='text-sm'>{user.email}</span>
                     </TableCell>
                     <TableCell>
-                      <span className='text-sm'>
-                        {user.phone || "N/A"}
-                      </span>
+                      <span className='text-sm'>{user.phone || "N/A"}</span>
                     </TableCell>
                     <TableCell>
                       {user.role === "admin" ? (
@@ -262,4 +260,3 @@ export function UserManagement() {
     </div>
   );
 }
-

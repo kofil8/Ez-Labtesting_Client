@@ -3,14 +3,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -19,8 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { getAllOrders, updateOrder, deleteOrder } from "@/lib/api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from "@/hook/use-toast";
+import { deleteOrder, getAllOrders, updateOrder } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { Order } from "@/types/order";
 import { Eye, Search, Trash2 } from "lucide-react";
@@ -184,10 +184,7 @@ export function OrderManagement() {
                 className='pl-8'
               />
             </div>
-            <Select
-              value={statusFilter}
-              onValueChange={setStatusFilter}
-            >
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className='w-[180px]'>
                 <SelectValue placeholder='Filter by status' />
               </SelectTrigger>
@@ -305,4 +302,3 @@ export function OrderManagement() {
     </div>
   );
 }
-

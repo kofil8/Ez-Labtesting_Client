@@ -23,6 +23,11 @@ export function AccountSidebar() {
       icon: <User className="w-4 h-4" />,
     },
     {
+      label: "Change Password",
+      href: "/change-password",
+      icon: <Lock className="w-4 h-4" />,
+    },
+    {
       label: "Orders",
       href: "/results",
       icon: <ShoppingBag className="w-4 h-4" />,

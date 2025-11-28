@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getAllPromoCodes } from "@/lib/api";
-import { PromoCode } from "@/types/promo-code";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -13,17 +11,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hook/use-toast";
+import { getAllPromoCodes } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { PromoCode } from "@/types/promo-code";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { PromoCodeEditDialog } from "./PromoCodeEditDialog";
 
 export function PromoCodeManagement() {
   const { toast } = useToast();
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingPromoCode, setEditingPromoCode] = useState<PromoCode | null>(null);
+  const [editingPromoCode, setEditingPromoCode] = useState<PromoCode | null>(
+    null
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -60,9 +62,7 @@ export function PromoCodeManagement() {
 
   const handleDelete = async (promoCode: PromoCode) => {
     if (
-      confirm(
-        `Are you sure you want to delete promo code "${promoCode.code}"?`
-      )
+      confirm(`Are you sure you want to delete promo code "${promoCode.code}"?`)
     ) {
       try {
         // In real app, would call API to delete
@@ -126,26 +126,26 @@ export function PromoCodeManagement() {
   };
 
   if (loading) {
-    return <div className="text-center py-12">Loading promo codes...</div>;
+    return <div className='text-center py-12'>Loading promo codes...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className='space-y-6'>
+      <div className='flex justify-between items-center'>
         <div>
-          <h2 className="text-2xl font-bold">Promo Codes</h2>
-          <p className="text-muted-foreground">
+          <h2 className='text-2xl font-bold'>Promo Codes</h2>
+          <p className='text-muted-foreground'>
             Manage discount codes and promotions
           </p>
         </div>
         <Button onClick={handleAdd}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className='h-4 w-4 mr-2' />
           Add Promo Code
         </Button>
       </div>
 
       <Card>
-        <CardContent className="p-0">
+        <CardContent className='p-0'>
           <Table>
             <TableHeader>
               <TableRow>
@@ -165,37 +165,37 @@ export function PromoCodeManagement() {
                 return (
                   <TableRow key={promoCode.id}>
                     <TableCell>
-                      <span className="font-mono font-semibold">
+                      <span className='font-mono font-semibold'>
                         {promoCode.code}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted-foreground">
+                      <span className='text-sm text-muted-foreground'>
                         {promoCode.description || "-"}
                       </span>
                     </TableCell>
                     <TableCell>
                       {promoCode.discountType === "percentage" ? (
-                        <span className="font-medium">
+                        <span className='font-medium'>
                           {promoCode.discountValue}%
                         </span>
                       ) : (
-                        <span className="font-medium">
+                        <span className='font-medium'>
                           {formatCurrency(promoCode.discountValue)}
                         </span>
                       )}
                       {promoCode.minPurchaseAmount && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className='text-xs text-muted-foreground'>
                           Min: {formatCurrency(promoCode.minPurchaseAmount)}
                         </p>
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">
+                      <div className='text-sm'>
                         <p>
                           {new Date(promoCode.validFrom).toLocaleDateString()}
                         </p>
-                        <p className="text-muted-foreground">
+                        <p className='text-muted-foreground'>
                           to{" "}
                           {new Date(promoCode.validUntil).toLocaleDateString()}
                         </p>
@@ -203,42 +203,42 @@ export function PromoCodeManagement() {
                     </TableCell>
                     <TableCell>
                       {promoCode.usageLimit ? (
-                        <span className="text-sm">
+                        <span className='text-sm'>
                           {promoCode.usageCount || 0} / {promoCode.usageLimit}
                         </span>
                       ) : (
-                        <span className="text-sm text-muted-foreground">
+                        <span className='text-sm text-muted-foreground'>
                           Unlimited
                         </span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
+                      <Badge variant='secondary'>
                         {promoCode.applicableTo || "all"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       {isValid ? (
-                        <Badge className="bg-green-500">Active</Badge>
+                        <Badge className='bg-green-500'>Active</Badge>
                       ) : (
-                        <Badge variant="secondary">Inactive</Badge>
+                        <Badge variant='secondary'>Inactive</Badge>
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-end gap-2">
+                      <div className='flex justify-end gap-2'>
                         <Button
-                          variant="ghost"
-                          size="icon"
+                          variant='ghost'
+                          size='icon'
                           onClick={() => handleEdit(promoCode)}
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className='h-4 w-4' />
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="icon"
+                          variant='ghost'
+                          size='icon'
                           onClick={() => handleDelete(promoCode)}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className='h-4 w-4 text-destructive' />
                         </Button>
                       </div>
                     </TableCell>
@@ -259,4 +259,3 @@ export function PromoCodeManagement() {
     </div>
   );
 }
-

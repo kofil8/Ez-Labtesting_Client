@@ -1,28 +1,25 @@
 "use client";
 
+import { registerUser } from "@/app/actions/register-user";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/hook/use-toast";
 import { SignupFormData, signupSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useRef } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { Captcha } from "@/components/ui/captcha";
-import ReCAPTCHA from "react-google-recaptcha";
+import { toast } from "sonner";
 
 export function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
-  const { signup } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const { toast: toastHook } = useToast();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
 
   const {
     register,
@@ -32,62 +29,58 @@ export function SignupForm() {
     resolver: zodResolver(signupSchema),
   });
 
-  const onSubmit = async (data: SignupFormData) => {
-    if (!captchaToken) {
-      toast({
-        title: "Verification required",
-        description: "Please complete the captcha verification.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await signup({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        password: data.password,
-      }, captchaToken);
-
-      toast({
-        title: "Account created!",
-        description: "Welcome to Ez LabTesting.",
-      });
-      const fromParam = searchParams.get("from");
-      const safeFrom =
-        fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
-          ? fromParam
-          : null;
-      router.push(safeFrom || "/tests");
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unable to create account. Please try again.";
-      toast({
-        title: "Signup failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      recaptchaRef.current?.reset();
-      setCaptchaToken(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCaptchaChange = (token: string | null) => {
-    setCaptchaToken(token);
-  };
-
-  const handleCaptchaExpired = () => {
-    setCaptchaToken(null);
-    toast({
-      title: "Verification expired",
-      description: "Please complete the captcha again.",
-      variant: "destructive",
+  const handleAction = (formData: FormData) => {
+    setError("");
+    startTransition(async () => {
+      try {
+        const res = await registerUser(formData);
+        if (res?.success) {
+          toast.success(
+            "Account created! Please verify your email to activate your account."
+          );
+          const email = res.email || (formData.get("email") as string);
+          // Store email in sessionStorage for OTP verification
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("otp_email", email);
+          }
+          setTimeout(() => {
+            router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
+          }, 1000);
+        }
+      } catch (err: any) {
+        const errorMessage =
+          err.message || "Unable to create account. Please try again.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
     });
   };
+
+  const onSubmit = async (data: SignupFormData) => {
+    const formData = new FormData();
+    formData.append("firstName", data.firstName);
+    formData.append("lastName", data.lastName);
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    if (data.phone) {
+      formData.append("phoneNumber", data.phone);
+    }
+    handleAction(formData);
+  };
+
+  // TODO: Re-enable reCAPTCHA handlers
+  // const handleCaptchaChange = (token: string | null) => {
+  //   setCaptchaToken(token);
+  // };
+
+  // const handleCaptchaExpired = () => {
+  //   setCaptchaToken(null);
+  //   toast({
+  //     title: "Verification expired",
+  //     description: "Please complete the captcha again.",
+  //     variant: "destructive",
+  //   });
+  // };
 
   return (
     <Card>
@@ -95,7 +88,9 @@ export function SignupForm() {
         <CardContent className='pt-6 space-y-4'>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             <div>
-              <Label htmlFor='firstName' className='text-sm'>First Name</Label>
+              <Label htmlFor='firstName' className='text-sm'>
+                First Name
+              </Label>
               <Input
                 id='firstName'
                 placeholder='John'
@@ -109,7 +104,9 @@ export function SignupForm() {
             </div>
 
             <div>
-              <Label htmlFor='lastName' className='text-sm'>Last Name</Label>
+              <Label htmlFor='lastName' className='text-sm'>
+                Last Name
+              </Label>
               <Input
                 id='lastName'
                 placeholder='Doe'
@@ -178,16 +175,20 @@ export function SignupForm() {
             )}
           </div>
 
-          <Captcha
+          {/* TODO: Re-enable reCAPTCHA */}
+          {/* <Captcha
             ref={recaptchaRef}
             onChange={handleCaptchaChange}
             onExpired={handleCaptchaExpired}
-          />
+          /> */}
         </CardContent>
 
         <CardFooter className='flex flex-col space-y-4'>
-          <Button type='submit' disabled={loading || !captchaToken} className='w-full'>
-            {loading ? "Creating account..." : "Create Account"}
+          {error && (
+            <p className='text-sm text-destructive text-center'>{error}</p>
+          )}
+          <Button type='submit' disabled={isPending} className='w-full'>
+            {isPending ? "Creating account..." : "Create Account"}
           </Button>
 
           <p className='text-sm text-center text-muted-foreground'>
@@ -196,7 +197,9 @@ export function SignupForm() {
               href={(() => {
                 const fromParam = searchParams.get("from");
                 const safeFrom =
-                  fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
+                  fromParam &&
+                  fromParam.startsWith("/") &&
+                  !fromParam.startsWith("//")
                     ? fromParam
                     : null;
                 return safeFrom

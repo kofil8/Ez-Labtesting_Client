@@ -1,28 +1,28 @@
 "use client";
 
+import { loginUser } from "@/app/actions/login-user";
+import { resendOtp } from "@/app/actions/resend-otp";
 import { Button } from "@/components/ui/button";
-import { Captcha } from "@/components/ui/captcha";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import { getPushToken } from "@/lib/firebase/getPushToken";
 import { LoginFormData, loginSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
-  const { login } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const authContext = useAuth();
+
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
 
   const {
     register,
@@ -32,99 +32,127 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginFormData) => {
-    if (!captchaToken) {
-      toast({
-        title: "Verification required",
-        description: "Please complete the captcha verification.",
-        variant: "destructive",
-      });
-      return;
-    }
+  // -------------------------
+  //  MAIN LOGIN HANDLER
+  // -------------------------
+  const handleAction = (formData: FormData) => {
+    setError("");
 
-    setLoading(true);
-    try {
-      const result = await login(data.email, data.password, captchaToken);
-      const fromParam = searchParams.get("from");
-      const safeFrom =
-        fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
-          ? fromParam
-          : null;
+    startTransition(async () => {
+      try {
+        // 🔥 Get push token before sending login
+        const pushToken = await getPushToken();
+        if (pushToken) {
+          formData.append("pushToken", pushToken);
+          formData.append("platform", "web");
+        }
 
-      if (result.requiresMFA) {
-        // Preserve the original destination through the MFA step
-        router.push(safeFrom ? `/mfa?from=${encodeURIComponent(safeFrom)}` : "/mfa");
-      } else {
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
-        });
-        router.push(safeFrom || "/results");
+        const res = await loginUser(formData);
+
+        // ---------------------------
+        // SUCCESS
+        // ---------------------------
+        if (res?.success) {
+          await authContext.refreshAuth();
+          toast.success("Login successful!");
+
+          const fromParam = searchParams.get("from");
+          const safeFrom =
+            fromParam &&
+            fromParam.startsWith("/") &&
+            !fromParam.startsWith("//")
+              ? fromParam
+              : null;
+
+          setTimeout(() => {
+            router.push(safeFrom || "/");
+          }, 800);
+
+          return;
+        }
+
+        // ---------------------------
+        // EMAIL NOT VERIFIED
+        // ---------------------------
+        if (res?.requiresVerification) {
+          const email = res.email || (formData.get("email") as string);
+
+          // Save email locally for OTP page
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("otp_email", email);
+          }
+
+          toast.info("Please verify your email.");
+
+          // Auto resend OTP
+          try {
+            const resendForm = new FormData();
+            resendForm.append("email", email);
+            await resendOtp(resendForm);
+            toast.success("A new OTP has been sent.");
+          } catch {}
+
+          const fromParam = searchParams.get("from");
+          const safeFrom =
+            fromParam &&
+            fromParam.startsWith("/") &&
+            !fromParam.startsWith("//")
+              ? fromParam
+              : null;
+
+          const redirectUrl = safeFrom
+            ? `/verify-otp?email=${encodeURIComponent(
+                email
+              )}&from=${encodeURIComponent(safeFrom)}&fromLogin=true`
+            : `/verify-otp?email=${encodeURIComponent(email)}&fromLogin=true`;
+
+          setTimeout(() => router.push(redirectUrl), 1200);
+          return;
+        }
+      } catch (err: any) {
+        const msg = err.message || "Login failed";
+        setError(msg);
+        toast.error(msg);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Invalid email or password.";
-      toast({
-        title: "Login failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      recaptchaRef.current?.reset();
-      setCaptchaToken(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCaptchaChange = (token: string | null) => {
-    setCaptchaToken(token);
-  };
-
-  const handleCaptchaExpired = () => {
-    setCaptchaToken(null);
-    toast({
-      title: "Verification expired",
-      description: "Please complete the captcha again.",
-      variant: "destructive",
     });
+  };
+
+  // -------------------------
+  //  FORM SUBMISSION
+  // -------------------------
+  const onSubmit = async (data: LoginFormData) => {
+    const formData = new FormData();
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+
+    handleAction(formData);
   };
 
   return (
     <Card>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className='pt-4 sm:pt-6 p-4 sm:p-6 space-y-3 sm:space-y-4'>
+        <CardContent className='pt-4 p-4 space-y-4'>
+          {/* Email */}
           <div>
-            <Label htmlFor='email' className="text-sm sm:text-base">Email</Label>
-            <Input
-              id='email'
-              type='email'
-              placeholder='your@email.com'
-              {...register("email")}
-              className="text-sm sm:text-base h-10 sm:h-11"
-            />
+            <Label htmlFor='email'>Email</Label>
+            <Input id='email' type='email' {...register("email")} />
             {errors.email && (
-              <p className='text-xs sm:text-sm text-destructive mt-1'>
-                {errors.email.message}
-              </p>
+              <p className='text-xs text-destructive'>{errors.email.message}</p>
             )}
           </div>
 
+          {/* Password */}
           <div>
-            <Label htmlFor='password' className="text-sm sm:text-base">Password</Label>
-            <Input
-              id='password'
-              type='password'
-              placeholder='••••••••'
-              {...register("password")}
-              className="text-sm sm:text-base h-10 sm:h-11"
-            />
+            <Label htmlFor='password'>Password</Label>
+            <Input id='password' type='password' {...register("password")} />
             {errors.password && (
-              <p className='text-xs sm:text-sm text-destructive mt-1'>
+              <p className='text-xs text-destructive'>
                 {errors.password.message}
               </p>
             )}
           </div>
 
-          <div className='text-xs sm:text-sm'>
+          <div className='text-xs'>
             <Link
               href='/forgot-password'
               className='text-primary hover:underline'
@@ -132,40 +160,18 @@ export function LoginForm() {
               Forgot password?
             </Link>
           </div>
-
-          <div className="flex justify-center">
-            <Captcha
-              ref={recaptchaRef}
-              onChange={handleCaptchaChange}
-              onExpired={handleCaptchaExpired}
-            />
-          </div>
         </CardContent>
 
-        <CardFooter className='flex flex-col space-y-3 sm:space-y-4 p-4 sm:p-6'>
-          <Button
-            type='submit'
-            disabled={loading || !captchaToken}
-            className='w-full text-sm sm:text-base h-10 sm:h-11'
-          >
-            {loading ? "Signing in..." : "Sign In"}
+        <CardFooter className='flex flex-col space-y-3 p-4'>
+          {error && <p className='text-sm text-destructive'>{error}</p>}
+
+          <Button type='submit' disabled={isPending} className='w-full'>
+            {isPending ? "Signing in..." : "Sign In"}
           </Button>
 
-          <p className='text-xs sm:text-sm text-center text-muted-foreground'>
-            Don&apos;t have an account?{" "}
-            <Link
-              href={(() => {
-                const fromParam = searchParams.get("from");
-                const safeFrom =
-                  fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
-                    ? fromParam
-                    : null;
-                return safeFrom
-                  ? `/signup?from=${encodeURIComponent(safeFrom)}`
-                  : "/signup";
-              })()}
-              className='text-primary hover:underline'
-            >
+          <p className='text-xs text-center text-muted-foreground'>
+            Don't have an account?{" "}
+            <Link href='/signup' className='text-primary hover:underline'>
               Sign up
             </Link>
           </p>

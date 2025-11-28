@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hook/use-toast";
 import { getAllPanels, getAllTests } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { Panel } from "@/types/panel";

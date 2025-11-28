@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hook/use-toast";
 import { validatePromoCode } from "@/lib/api";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatCurrency } from "@/lib/utils";
@@ -134,7 +134,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           >
             {/* Header */}
             <div className='flex items-center justify-between p-4 sm:p-5 md:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0'>
-              <h2 className='text-lg sm:text-xl md:text-2xl font-bold'>Your Cart</h2>
+              <h2 className='text-lg sm:text-xl md:text-2xl font-bold'>
+                Your Cart
+              </h2>
               <Button
                 variant='ghost'
                 size='icon'
@@ -162,7 +164,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       router.push("/tests");
                     }}
                     className='mt-4 text-sm sm:text-base'
-                    size="sm"
+                    size='sm'
                   >
                     Browse Tests
                   </Button>
@@ -213,7 +215,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
                   {/* Promo Code Section */}
                   <div className='space-y-2 sm:space-y-3'>
-                    <label className='text-xs sm:text-sm font-semibold'>Promo Code</label>
+                    <label className='text-xs sm:text-sm font-semibold'>
+                      Promo Code
+                    </label>
                     {appliedPromoCode ? (
                       <div className='flex items-center justify-between p-2.5 sm:p-3 bg-green-500/10 border border-green-500/20 rounded-lg gap-2'>
                         <div className='flex-1 min-w-0'>
@@ -238,21 +242,21 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       <div className='flex gap-2'>
                         <Input
                           value={promoCodeInput}
-                          onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                          onChange={(e) =>
+                            setPromoCodeInput(e.target.value.toUpperCase())
+                          }
                           placeholder='Enter code'
                           disabled={validating}
                           className='text-xs sm:text-sm h-9 sm:h-10 flex-1'
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleApplyPromo()
+                            if (e.key === "Enter") {
+                              handleApplyPromo();
                             }
                           }}
                         />
                         <Button
                           onClick={handleApplyPromo}
-                          disabled={
-                            !promoCodeInput.trim() || validating
-                          }
+                          disabled={!promoCodeInput.trim() || validating}
                           variant='secondary'
                           size='sm'
                           className='text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 flex-shrink-0'
@@ -279,7 +283,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   </div>
                   {storeDiscount > 0 && (
                     <div className='flex justify-between text-xs sm:text-sm text-green-600'>
-                      <span className='truncate pr-2'>Discount ({Math.round(storeDiscount * 100)}%)</span>
+                      <span className='truncate pr-2'>
+                        Discount ({Math.round(storeDiscount * 100)}%)
+                      </span>
                       <span className='font-medium flex-shrink-0'>
                         -{formatCurrency(discountAmount)}
                       </span>
@@ -287,7 +293,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   )}
                   <div className='flex justify-between text-sm sm:text-base font-bold pt-2 border-t border-gray-200 dark:border-gray-700'>
                     <span>Total</span>
-                    <span className='text-base sm:text-lg'>{formatCurrency(total)}</span>
+                    <span className='text-base sm:text-lg'>
+                      {formatCurrency(total)}
+                    </span>
                   </div>
                 </div>
 

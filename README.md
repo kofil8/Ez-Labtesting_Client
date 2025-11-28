@@ -34,7 +34,7 @@ npm install
 yarn install
 
 # Set up environment variables
-# Create a .env.local file and add your Google Maps API key:
+# Create a .env.local file and add your API keys:
 # NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
 
 # Run development server
@@ -49,6 +49,15 @@ npm run build
 npm start
 ```
 
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# Google Maps API Key (optional - for lab center finder feature)
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
+```
+
 ### Google Maps API Setup
 
 To enable the lab center finder feature with full functionality:
@@ -58,8 +67,7 @@ To enable the lab center finder feature with full functionality:
    - **Maps JavaScript API** (Required - for map display)
    - **Places API** (Required - for location autocomplete)
    - Geocoding API (Optional - for future features)
-3. Create a `.env.local` file in the root directory
-4. Add your API key: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here`
+3. Add your API key to `.env.local`: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here`
 
 See `GOOGLE_MAPS_SETUP.md` for detailed setup instructions.
 
@@ -174,11 +182,7 @@ npm run build
 
 ## 📝 Environment Variables
 
-Create a `.env.local` file for future API integration:
-
-```env
-NEXT_PUBLIC_API_URL=your_api_url_here
-```
+No API environment variables are currently required. The application uses mock data.
 
 ## 🧪 Testing
 

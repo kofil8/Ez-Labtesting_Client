@@ -1,7 +1,9 @@
 "use client";
 
-import { forwardRef, useEffect, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+// TODO: Re-enable reCAPTCHA
+import { forwardRef } from "react";
+// import { forwardRef, useEffect, useState } from "react";
+// import ReCAPTCHA from "react-google-recaptcha";
 
 interface CaptchaProps {
   onChange: (token: string | null) => void;
@@ -9,8 +11,13 @@ interface CaptchaProps {
   onError?: () => void;
 }
 
-export const Captcha = forwardRef<ReCAPTCHA, CaptchaProps>(
+// TODO: Re-enable reCAPTCHA - uncomment the code below
+export const Captcha = forwardRef<any, CaptchaProps>(
   ({ onChange, onExpired, onError }, ref) => {
+    // Temporarily disabled - returns null
+    return null;
+
+    /* TODO: Re-enable reCAPTCHA - uncomment below
     const [siteKey, setSiteKey] = useState<string>("");
     const [isMounted, setIsMounted] = useState(false);
 
@@ -62,6 +69,7 @@ export const Captcha = forwardRef<ReCAPTCHA, CaptchaProps>(
         />
       </div>
     );
+    */
   }
 );
 
