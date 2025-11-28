@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { MFAForm } from "@/components/auth/MFAForm";
+import { VerifyOTPForm } from "@/components/auth/VerifyOTPForm";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
@@ -33,7 +33,7 @@ export default function MFAPage() {
                 </div>
               }
             >
-              <MFAForm />
+              <VerifyOTPForm />
             </Suspense>
           </div>
         </PageContainer>
@@ -43,3 +43,4 @@ export default function MFAPage() {
     </div>
   );
 }
+
