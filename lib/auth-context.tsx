@@ -50,12 +50,12 @@ const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
  */
 function getOrCreateToken(): string {
   if (typeof window === "undefined") return "authenticated";
-  
+
   const existingToken = localStorage.getItem(AUTH_TOKEN_KEY);
   if (existingToken) {
     return existingToken;
   }
-  
+
   // Create a placeholder token to indicate authenticated state
   // The actual auth is handled by httpOnly cookies
   const placeholderToken = "authenticated";
