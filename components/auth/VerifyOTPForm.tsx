@@ -15,6 +15,36 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+// Separate component for OTP Input to manage refs properly
+function OTPInputField({
+  inputRefs,
+  index,
+  isPending,
+  onChangeOtp,
+  onBackspace,
+}: {
+  inputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
+  index: number;
+  isPending: boolean;
+  onChangeOtp: (index: number, value: string) => void;
+  onBackspace: (index: number, e: any) => void;
+}) {
+  return (
+    <Input
+      key={index}
+      ref={(el) => {
+        if (inputRefs.current) inputRefs.current[index] = el;
+      }}
+      maxLength={1}
+      disabled={isPending}
+      className='w-12 h-12 text-center text-xl font-bold border rounded-lg 
+                 focus-visible:ring-2 focus-visible:ring-primary'
+      onChange={(e) => onChangeOtp(index, e.target.value)}
+      onKeyDown={(e) => onBackspace(index, e)}
+    />
+  );
+}
+
 export function VerifyOTPForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,12 +60,8 @@ export function VerifyOTPForm() {
   // Skeleton UI
   const [loadingUI, setLoadingUI] = useState(true);
 
-  // OTP Input Refs - moved outside of conditional rendering
-  const inputRefsContainer = useRef<(HTMLInputElement | null)[]>([]);
-  if (inputRefsContainer.current.length === 0) {
-    inputRefsContainer.current = Array(6).fill(null);
-  }
-  const inputRefs = inputRefsContainer.current;
+  // OTP Input Refs - properly initialized
+  const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
 
   // Delay UI mount for skeleton effect
   useEffect(() => {
@@ -84,7 +110,7 @@ export function VerifyOTPForm() {
     newCode[index] = value;
     setValue("code", newCode.join(""));
 
-    if (value && index < 5) inputRefs[index + 1].current?.focus();
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
 
     // Auto-submit when 6 digits filled
     if (newCode.join("").length === 6) handleSubmit(onSubmit)();
@@ -92,7 +118,7 @@ export function VerifyOTPForm() {
 
   const handleBackspace = (index: number, e: any) => {
     if (e.key === "Backspace" && !e.target.value && index > 0) {
-      inputRefs[index - 1].current?.focus();
+      inputRefs.current[index - 1]?.focus();
     }
   };
 
@@ -185,17 +211,13 @@ export function VerifyOTPForm() {
 
             <div className='flex justify-center gap-2'>
               {Array.from({ length: 6 }).map((_, index) => (
-                <Input
+                <OTPInputField
                   key={index}
-                  ref={(el) => {
-                    if (el) inputRefs[index] = el;
-                  }}
-                  maxLength={1}
-                  disabled={isPending}
-                  className='w-12 h-12 text-center text-xl font-bold border rounded-lg 
-                             focus-visible:ring-2 focus-visible:ring-primary'
-                  onChange={(e) => handleOtpChange(index, e.target.value)}
-                  onKeyDown={(e) => handleBackspace(index, e)}
+                  inputRefs={inputRefs}
+                  index={index}
+                  isPending={isPending}
+                  onChangeOtp={handleOtpChange}
+                  onBackspace={handleBackspace}
                 />
               ))}
             </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -10,6 +8,61 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+
+// Separate component for OTP Input to avoid hook issues
+function OTPInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
+
+  const handleChange = (index: number, digit: string) => {
+    if (!/^[0-9]?$/.test(digit)) return;
+
+    const newVal = value.split("");
+    newVal[index] = digit;
+    onChange(newVal.join(""));
+
+    if (digit && inputRefs.current[index + 1]) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (
+      e.key === "Backspace" &&
+      !value[index] &&
+      inputRefs.current[index - 1]
+    ) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  return (
+    <div className='flex gap-2 justify-center mt-2'>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <input
+          key={i}
+          ref={(el) => {
+            if (inputRefs.current) inputRefs.current[i] = el;
+          }}
+          maxLength={1}
+          value={value[i] || ""}
+          onChange={(e) => handleChange(i, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          className='
+            w-12 h-14 text-center text-2xl font-semibold
+            border rounded-lg bg-background
+            focus:ring-2 focus:ring-primary focus:border-primary
+          '
+        />
+      ))}
+    </div>
+  );
+}
 
 export function MFAForm() {
   const router = useRouter();
@@ -34,61 +87,6 @@ export function MFAForm() {
   } = useForm<MFAFormData>({
     resolver: zodResolver(mfaSchema),
   });
-
-  // Create refs at the top level, not inside callback
-  const inputRefsContainer = useRef<(HTMLInputElement | null)[]>([]);
-  if (inputRefsContainer.current.length === 0) {
-    inputRefsContainer.current = Array(6).fill(null);
-  }
-
-  // 💡 Modern 6-Box OTP Component
-  const OTPInput = ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-  }) => {
-    const refs = inputRefsContainer.current;
-
-    const handleChange = (index: number, digit: string) => {
-      if (!/^[0-9]?$/.test(digit)) return;
-
-      const newVal = value.split("");
-      newVal[index] = digit;
-      onChange(newVal.join(""));
-
-      if (digit && refs[index + 1]) refs[index + 1].current?.focus();
-    };
-
-    const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-      if (e.key === "Backspace" && !value[index] && refs[index - 1]) {
-        refs[index - 1].current?.focus();
-      }
-    };
-
-    return (
-      <div className='flex gap-2 justify-center mt-2'>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <input
-            key={i}
-            ref={(el) => {
-              if (el) refs[i] = el;
-            }}
-            maxLength={1}
-            value={value[i] || ""}
-            onChange={(e) => handleChange(i, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(i, e)}
-            className='
-              w-12 h-14 text-center text-2xl font-semibold
-              border rounded-lg bg-background
-              focus:ring-2 focus:ring-primary focus:border-primary
-            '
-          />
-        ))}
-      </div>
-    );
-  };
 
   const onSubmit = async (data: MFAFormData) => {
     if (!email) {

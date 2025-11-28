@@ -170,7 +170,7 @@ export function LoginForm() {
           </Button>
 
           <p className='text-xs text-center text-muted-foreground'>
-            Don&apos;t have an account?{" "}
+            Don&#39;t have an account?{" "}
             <Link href='/signup' className='text-primary hover:underline'>
               Sign up
             </Link>

@@ -232,6 +232,7 @@ export function ProfileForm() {
             <div className='relative'>
               <div className='w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg'>
                 {previewUrl || profileImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={previewUrl || profileImage || ""}
                     alt='Profile'

@@ -1,5 +1,6 @@
 "use client";
 
+import { updateProfile } from "@/app/actions/update-profile";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,9 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { getProfileImageUrl } from "@/lib/utils";
-import { Camera, X, Loader2 } from "lucide-react";
+import { Camera, Loader2, X } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
-import { updateProfile } from "@/app/actions/update-profile";
 import { toast } from "sonner";
 
 interface ProfileImageEditDialogProps {
@@ -128,10 +128,12 @@ export function ProfileImageEditDialog({
             : "An error occurred. Please try again.";
         setError(errorMessage);
         toast.error(errorMessage);
-        
+
         // If session expired, close dialog (user will need to login again)
-        if (errorMessage.toLowerCase().includes("session has expired") ||
-            errorMessage.toLowerCase().includes("not authenticated")) {
+        if (
+          errorMessage.toLowerCase().includes("session has expired") ||
+          errorMessage.toLowerCase().includes("not authenticated")
+        ) {
           setTimeout(() => {
             onOpenChange(false);
             // Optionally redirect to login - but let user see the error first
@@ -176,7 +178,8 @@ export function ProfileImageEditDialog({
                   const imageUrl =
                     previewUrl || getProfileImageUrl(user.profileImage);
                   const showImage = imageUrl && !imageError;
-                  ) : showImage ? (
+                  return showImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={imageUrl}
                       alt='Profile'
@@ -210,7 +213,10 @@ export function ProfileImageEditDialog({
 
             {/* Upload Button */}
             <div className='flex flex-col items-center space-y-2 w-full'>
-              <Label htmlFor='profile-image-upload' className='cursor-pointer w-full'>
+              <Label
+                htmlFor='profile-image-upload'
+                className='cursor-pointer w-full'
+              >
                 <div className='flex items-center justify-center space-x-2 px-5 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg w-full'>
                   <Camera className='w-5 h-5' />
                   <span className='text-sm font-medium'>
@@ -262,4 +268,3 @@ export function ProfileImageEditDialog({
     </Dialog>
   );
 }
-
