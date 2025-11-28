@@ -236,6 +236,8 @@ export function ProfileForm() {
                     src={previewUrl || profileImage || ""}
                     alt='Profile'
                     className='w-full h-full object-cover'
+                    loading='lazy'
+                    decoding='async'
                   />
                 ) : (
                   <span className='text-3xl sm:text-4xl font-bold text-white'>

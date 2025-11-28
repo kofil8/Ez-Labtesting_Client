@@ -30,10 +30,12 @@ export function VerifyOTPForm() {
   // Skeleton UI
   const [loadingUI, setLoadingUI] = useState(true);
 
-  // OTP Input Refs
-  const inputRefs = Array.from({ length: 6 }, () =>
-    useRef<HTMLInputElement>(null)
-  );
+  // OTP Input Refs - moved outside of conditional rendering
+  const inputRefsContainer = useRef<(HTMLInputElement | null)[]>([]);
+  if (inputRefsContainer.current.length === 0) {
+    inputRefsContainer.current = Array(6).fill(null);
+  }
+  const inputRefs = inputRefsContainer.current;
 
   // Delay UI mount for skeleton effect
   useEffect(() => {
@@ -185,7 +187,9 @@ export function VerifyOTPForm() {
               {Array.from({ length: 6 }).map((_, index) => (
                 <Input
                   key={index}
-                  ref={inputRefs[index]}
+                  ref={(el) => {
+                    if (el) inputRefs[index] = el;
+                  }}
                   maxLength={1}
                   disabled={isPending}
                   className='w-12 h-12 text-center text-xl font-bold border rounded-lg 

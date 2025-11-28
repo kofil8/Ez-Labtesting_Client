@@ -39,7 +39,6 @@ export function ProfileImageEditDialog({
   useEffect(() => {
     if (!open) {
       setSelectedFile(null);
-      setPreviewUrl(null);
       setImageError(false);
       setError("");
       // Cleanup preview URL
@@ -48,7 +47,7 @@ export function ProfileImageEditDialog({
         setPreviewUrl(null);
       }
     }
-  }, [open]);
+  }, [open, previewUrl]);
 
   // Cleanup preview URL on unmount
   useEffect(() => {
@@ -177,7 +176,7 @@ export function ProfileImageEditDialog({
                   const imageUrl =
                     previewUrl || getProfileImageUrl(user.profileImage);
                   const showImage = imageUrl && !imageError;
-                  return showImage ? (
+                  ) : showImage ? (
                     <img
                       src={imageUrl}
                       alt='Profile'
@@ -188,6 +187,7 @@ export function ProfileImageEditDialog({
                       }}
                       loading='lazy'
                       decoding='async'
+                      suppressHydrationWarning
                     />
                   ) : (
                     <span className='text-5xl font-bold text-white'>

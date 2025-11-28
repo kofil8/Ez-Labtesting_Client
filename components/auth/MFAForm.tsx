@@ -35,6 +35,12 @@ export function MFAForm() {
     resolver: zodResolver(mfaSchema),
   });
 
+  // Create refs at the top level, not inside callback
+  const inputRefsContainer = useRef<(HTMLInputElement | null)[]>([]);
+  if (inputRefsContainer.current.length === 0) {
+    inputRefsContainer.current = Array(6).fill(null);
+  }
+
   // 💡 Modern 6-Box OTP Component
   const OTPInput = ({
     value,
@@ -43,9 +49,7 @@ export function MFAForm() {
     value: string;
     onChange: (v: string) => void;
   }) => {
-    const refs = Array.from({ length: 6 }, () =>
-      useRef<HTMLInputElement | null>(null)
-    );
+    const refs = inputRefsContainer.current;
 
     const handleChange = (index: number, digit: string) => {
       if (!/^[0-9]?$/.test(digit)) return;
@@ -68,7 +72,9 @@ export function MFAForm() {
         {Array.from({ length: 6 }).map((_, i) => (
           <input
             key={i}
-            ref={refs[i]}
+            ref={(el) => {
+              if (el) refs[i] = el;
+            }}
             maxLength={1}
             value={value[i] || ""}
             onChange={(e) => handleChange(i, e.target.value)}

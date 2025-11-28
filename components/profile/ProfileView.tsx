@@ -45,9 +45,11 @@ export function ProfileView() {
         hasFetchedRef.current = false;
         // Redirect to login if not authenticated or session expired
         const errorMessage = error?.message || "";
-        if (errorMessage.includes("Session expired") || 
-            errorMessage.includes("Not authenticated") ||
-            errorMessage.includes("log in")) {
+        if (
+          errorMessage.includes("Session expired") ||
+          errorMessage.includes("Not authenticated") ||
+          errorMessage.includes("log in")
+        ) {
           router.push("/login?from=/profile&expired=true");
         } else {
           router.push("/login?from=/profile");
@@ -154,7 +156,10 @@ export function ProfileView() {
                           // Silently handle image load errors - fallback to initials
                           // Only log in development for debugging
                           if (process.env.NODE_ENV === "development") {
-                            console.warn("[ProfileView] Image failed to load, showing initials:", imageUrl);
+                            console.warn(
+                              "[ProfileView] Image failed to load, showing initials:",
+                              imageUrl
+                            );
                           }
                           setImageError(true);
                         }}
@@ -168,6 +173,7 @@ export function ProfileView() {
                         }}
                         loading='lazy'
                         decoding='async'
+                        suppressHydrationWarning
                       />
                     ) : (
                       <span className='text-5xl font-bold'>
