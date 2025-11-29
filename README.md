@@ -130,7 +130,6 @@ The application uses mock authentication stored in localStorage for development.
 
 - **Customer**: Any email without "admin"
 - **Admin**: Email containing "admin"
-- **MFA**: Email containing "mfa"
 - **Password**: Any 8+ character password
 
 ## 🛒 Shopping Flow
