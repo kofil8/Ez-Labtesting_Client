@@ -1,0 +1,37 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run remote deploy script on EC2
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            echo "===> Deploy started on $(date)"
+            cd ${{ secrets.APP_DIR }}
+            # Pull latest code and force reset to remote main
+            git fetch --all
+            git reset --hard origin/main
+            export NODE_ENV=production
+            yarn install --frozen-lockfile
+            yarn build
+            pm2 restart ${{ secrets.PM2_PROCESS }} || pm2 start ecosystem.config.js --env production
+            pm2 save
+            echo "===> Deploy finished on $(date)"
