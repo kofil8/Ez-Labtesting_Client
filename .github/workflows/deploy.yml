@@ -16,7 +16,8 @@ jobs:
           fetch-depth: 1
 
       - name: Run remote deploy script on EC2
-        uses: appleboy/ssh-action@v0.1.9
+        id: deploy
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
@@ -26,12 +27,29 @@ jobs:
             set -e
             echo "===> Deploy started on $(date)"
             cd ${{ secrets.APP_DIR }}
-            # Pull latest code and force reset to remote main
-            git fetch --all
-            git reset --hard origin/main
+            # Pull latest code safely
+            git fetch origin main
+            git checkout -B main origin/main
             export NODE_ENV=production
-            yarn install
-            yarn build
-            pm2 restart ${{ secrets.PM2_PROCESS }} || pm2 start ecosystem.config.js --env production
+            # Install dependencies with error handling
+            yarn install --frozen-lockfile || { echo "Failed to install dependencies"; exit 1; }
+            # Build with error handling
+            yarn build || { echo "Failed to build application"; exit 1; }
+            # Restart PM2 process
+            if pm2 describe ${{ secrets.PM2_PROCESS }} > /dev/null 2>&1; then
+              pm2 restart ${{ secrets.PM2_PROCESS }}
+            else
+              pm2 start ecosystem.config.js --env production --name ${{ secrets.PM2_PROCESS }}
+            fi
             pm2 save
             echo "===> Deploy finished on $(date)"
+
+      - name: Deployment notification
+        if: always()
+        run: |
+          if [ "${{ steps.deploy.outcome }}" == "success" ]; then
+            echo "✅ Deployment successful"
+          else
+            echo "❌ Deployment failed"
+            exit 1
+          fi
