@@ -30,7 +30,7 @@ jobs:
             git fetch --all
             git reset --hard origin/main
             export NODE_ENV=production
-            yarn install --frozen-lockfile
+            yarn install --immutable
             yarn build
             pm2 restart ${{ secrets.PM2_PROCESS }} || pm2 start ecosystem.config.js --env production
             pm2 save
