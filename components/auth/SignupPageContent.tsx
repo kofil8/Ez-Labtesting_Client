@@ -141,8 +141,9 @@ export function SignupPageContent() {
             </div>
             <div className='flex-1'>
               <p className='text-white mb-2 italic'>
-                "Ez LabTesting made it incredibly easy to get my annual health
-                checkup done. The results were detailed and easy to understand."
+                &quot;Ez LabTesting made it incredibly easy to get my annual
+                health checkup done. The results were detailed and easy to
+                understand.&quot;
               </p>
               <div className='text-teal-50 text-sm font-medium'>
                 Sarah Johnson

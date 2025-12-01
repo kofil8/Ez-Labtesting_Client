@@ -168,7 +168,7 @@ export function HeroSection() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className='text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed font-normal px-4 sm:px-0'
           >
-            Order confidential lab tests online without a doctor's visit.
+            Order confidential lab tests online without a doctor{"'"}s visit.
             <br className='hidden sm:block' />
             <span className='font-semibold text-cyan-600 dark:text-cyan-400'>
               HIPAA-secure, CLIA-certified labs,
