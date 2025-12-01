@@ -36,33 +36,33 @@ export function TestCard({ test }: TestCardProps) {
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       hormone:
-        "bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400 border-purple-200 dark:border-purple-800",
-      std: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border-red-200 dark:border-red-800",
+        "bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400 border-purple-300 dark:border-purple-800/50",
+      std: "bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400 border-rose-300 dark:border-rose-800/50",
       general:
-        "bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+        "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-cyan-300 dark:border-cyan-800/50",
       nutrition:
-        "bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 border-green-200 dark:border-green-800",
+        "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/50",
       thyroid:
-        "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800",
+        "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400 border-indigo-300 dark:border-indigo-800/50",
       cardiac:
-        "bg-pink-50 text-pink-700 dark:bg-pink-950/30 dark:text-pink-400 border-pink-200 dark:border-pink-800",
+        "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border-red-300 dark:border-red-800/50",
       metabolic:
-        "bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400 border-orange-200 dark:border-orange-800",
+        "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border-amber-300 dark:border-amber-800/50",
     };
     return colors[category] || colors.general;
   };
 
   return (
     <Link href={`/tests/${test.id}`}>
-      <Card className='h-full group hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 transition-all duration-300 border-border/50 hover:border-border cursor-pointer flex flex-col overflow-hidden'>
+      <Card className='h-full group hover:shadow-xl hover:shadow-blue-100/40 dark:hover:shadow-cyan-900/30 transition-all duration-200 cursor-pointer flex flex-col overflow-hidden hover:-translate-y-1 gpu-accelerated'>
         {/* Image */}
         {test.image && (
-          <div className='relative w-full h-48 bg-gradient-to-br from-primary/5 to-primary/10 overflow-hidden'>
+          <div className='relative w-full h-48 bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-teal-950/30 overflow-hidden'>
             <Image
               src={test.image}
               alt={test.name}
               fill
-              className='object-cover group-hover:scale-105 transition-transform duration-300'
+              className='object-cover group-hover:scale-110 transition-transform duration-300 gpu-accelerated'
             />
           </div>
         )}
@@ -73,18 +73,18 @@ export function TestCard({ test }: TestCardProps) {
             <div className='flex-1 min-w-0'>
               <Badge
                 variant='outline'
-                className={`text-xs font-medium mb-2 ${getCategoryColor(
+                className={`text-xs font-semibold mb-2 border-2 ${getCategoryColor(
                   test.category
                 )}`}
               >
                 {test.category.charAt(0).toUpperCase() + test.category.slice(1)}
               </Badge>
-              <h3 className='font-semibold text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors'>
+              <h3 className='font-bold text-base leading-snug line-clamp-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors'>
                 {test.name}
               </h3>
             </div>
             <div className='text-right shrink-0'>
-              <div className='text-lg font-semibold'>
+              <div className='text-lg font-bold text-cyan-600 dark:text-cyan-400'>
                 {formatCurrency(test.price)}
               </div>
             </div>

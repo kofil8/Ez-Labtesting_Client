@@ -51,10 +51,17 @@ export function SiteHeader() {
   }, []);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 10);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -85,10 +92,10 @@ export function SiteHeader() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full border-b transition-all duration-500 ${
+        className={`sticky top-0 z-50 w-full border-b-2 transition-all duration-200 gpu-accelerated ${
           isScrolled
-            ? "bg-kalles-card-strong border-gray-200/50 dark:border-gray-700/50 shadow-lg backdrop-blur-md"
-            : "bg-kalles-card border-gray-200/30 dark:border-gray-700/30 backdrop-blur-sm"
+            ? "bg-white/95 dark:bg-gray-900/95 border-blue-100 dark:border-cyan-900/50 shadow-lg shadow-blue-50/30 dark:shadow-cyan-900/20 backdrop-blur-xl"
+            : "bg-white/80 dark:bg-gray-900/80 border-blue-50 dark:border-cyan-900/30 backdrop-blur-md"
         }`}
       >
         <div className='container mx-auto px-3 sm:px-4 md:px-6 lg:px-8'>
@@ -114,7 +121,7 @@ export function SiteHeader() {
                   unoptimized
                 />
               </motion.div>
-              <span className='text-base sm:text-lg md:text-xl lg:text-2xl font-black awsmd-gradient-text truncate'>
+              <span className='text-base sm:text-lg md:text-xl lg:text-2xl font-black text-gradient-medical truncate'>
                 Ez LabTesting
               </span>
             </Link>
@@ -147,7 +154,7 @@ export function SiteHeader() {
                         initial={false}
                       />
                     )}
-                    <span className='absolute inset-0 awsmd-rounded bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 scale-0 group-hover:scale-100 transition-all duration-300' />
+                    <span className='absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 scale-0 group-hover:scale-100 transition-all duration-300' />
                   </Link>
                 );
               })}
@@ -226,13 +233,14 @@ export function SiteHeader() {
                     <Button
                       variant='ghost'
                       asChild
-                      className='hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 awsmd-rounded font-bold'
+                      className='hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 dark:hover:from-cyan-900/20 dark:hover:to-blue-900/20 rounded-lg font-bold'
                     >
                       <Link href='/login'>Sign In</Link>
                     </Button>
                     <Button
                       asChild
-                      className='awsmd-gradient-cosmic text-white hover:opacity-90 transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold px-6 button-shine'
+                      variant='medical'
+                      className='text-white hover:opacity-95 transition-all shadow-lg hover:shadow-xl rounded-lg font-bold px-6'
                     >
                       <Link href='/signup' className='flex items-center gap-2'>
                         <Sparkles className='h-5 w-5 group-hover:rotate-12 transition-transform' />
@@ -307,7 +315,7 @@ export function SiteHeader() {
                       unoptimized
                     />
                   </div>
-                  <span className='text-lg sm:text-xl font-black awsmd-gradient-text'>
+                  <span className='text-lg sm:text-xl font-black text-gradient-medical'>
                     Menu
                   </span>
                 </div>
@@ -432,7 +440,10 @@ export function SiteHeader() {
                         transition={{ delay: 0.25 }}
                       >
                         <Link href='/signup' onClick={handleLinkClick}>
-                          <Button className='w-full h-12 sm:h-14 text-base sm:text-lg font-semibold awsmd-gradient-cosmic text-white shadow-xl hover:shadow-2xl touch-manipulation'>
+                          <Button
+                            variant='medical'
+                            className='w-full h-12 sm:h-14 text-base sm:text-lg font-semibold text-white shadow-xl hover:shadow-2xl touch-manipulation'
+                          >
                             <Sparkles className='h-5 w-5 sm:h-6 sm:w-6 mr-2' />
                             Register
                           </Button>

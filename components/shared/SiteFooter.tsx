@@ -104,12 +104,12 @@ export function SiteFooter() {
   };
 
   return (
-    <footer className='relative border-t bg-gradient-to-br from-blue-50 via-purple-50 via-pink-50 to-blue-50 dark:from-slate-950 dark:via-purple-950/40 dark:via-blue-950/40 dark:to-slate-950'>
-      {/* Subtle cosmic gradient background blobs - Awsmd style */}
-      <div className='absolute inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-10'>
-        <div className='absolute top-0 left-1/4 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl animate-blob' />
-        <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400/30 rounded-full blur-3xl animate-blob animation-delay-2000' />
-        <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-400/30 rounded-full blur-3xl animate-blob animation-delay-4000' />
+    <footer className='relative border-t-2 border-blue-100 dark:border-cyan-900/40 bg-gradient-to-br from-cyan-50/50 via-blue-50/30 to-teal-50/50 dark:from-slate-950 dark:via-cyan-950/20 dark:to-slate-950'>
+      {/* Subtle medical gradient background blobs */}
+      <div className='absolute inset-0 overflow-hidden pointer-events-none opacity-15 dark:opacity-10'>
+        <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-400/30 rounded-full blur-3xl animate-blob' />
+        <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl animate-blob animation-delay-2000' />
+        <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-400/30 rounded-full blur-3xl animate-blob animation-delay-4000' />
       </div>
 
       <div className='relative container mx-auto px-4 sm:px-6 lg:px-8'>
@@ -121,17 +121,15 @@ export function SiteFooter() {
           className='py-16 relative'
         >
           {/* Gradient border bottom */}
-          <div className='absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-blue-400/30 via-purple-400/30 to-pink-400/30' />
+          <div className='absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-cyan-400/30 via-blue-400/30 to-teal-400/30' />
           <div className='max-w-4xl mx-auto text-center px-4 sm:px-0'>
-            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 awsmd-rounded bg-white border-2 border-gray-500 text-gray-700 text-xs font-bold mb-4 shadow-lg'>
+            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/50 dark:to-blue-950/50 border-2 border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 text-xs font-bold mb-4 shadow-md'>
               <Sparkles className='h-3 w-3 sm:h-4 sm:w-4 animate-pulse' />
               <span>Stay Updated</span>
             </div>
-            <h3 className='text-xl sm:text-2xl md:text-3xl mb-4 text-gradient-cosmic text-center'>
-              <span className='bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-bold'>
-                Subscribe
-              </span>
-              <span className='text-gray-900 dark:text-gray-100'>
+            <h3 className='text-xl sm:text-2xl md:text-3xl mb-4 text-center'>
+              <span className='text-gradient-medical font-bold'>Subscribe</span>
+              <span className='text-gray-900 dark:text-gray-100 font-bold'>
                 {" "}
                 to Our Newsletter
               </span>
@@ -153,14 +151,15 @@ export function SiteFooter() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className='pl-10 h-11 awsmd-rounded bg-white dark:bg-gray-900 border-2 border-purple-300 dark:border-purple-700 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 text-sm font-medium'
+                  className='pl-10 h-11 rounded-lg bg-white dark:bg-gray-900 text-sm font-medium'
                 />
               </div>
               <Button
                 type='submit'
                 size='default'
+                variant='medical'
                 disabled={isSubmitting}
-                className='h-11 px-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white transition-all shadow-xl hover:shadow-2xl awsmd-rounded font-bold text-sm'
+                className='h-11 px-6 text-white transition-all shadow-xl hover:shadow-2xl rounded-lg font-bold text-sm'
               >
                 {isSubmitting ? (
                   "Subscribing..."
@@ -181,7 +180,7 @@ export function SiteFooter() {
           initial='hidden'
           whileInView='visible'
           viewport={{ once: true }}
-          className='py-8 sm:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 bg-gradient-to-br from-blue-100 via-purple-100 via-pink-100 to-blue-100 dark:from-blue-950/30 dark:via-purple-950/30 dark:via-pink-950/20 dark:to-blue-950/30'
+          className='py-8 sm:py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8 bg-gradient-to-br from-cyan-100/50 via-blue-100/40 to-teal-100/50 dark:from-cyan-950/20 dark:via-blue-950/20 dark:to-teal-950/20'
         >
           {/* Company Info - Awsmd style */}
           <motion.div
@@ -189,7 +188,7 @@ export function SiteFooter() {
             className='sm:col-span-2 lg:col-span-2 p-6 sm:p-8'
           >
             <Link href='/' className='inline-flex items-center gap-2 mb-4'>
-              <div className='w-8 h-8 sm:w-10 sm:h-10 awsmd-rounded awsmd-gradient-cosmic flex items-center justify-center shadow-xl'>
+              <div className='w-8 h-8 sm:w-10 sm:h-10 rounded-xl gradient-medical flex items-center justify-center shadow-xl'>
                 <Image
                   className='w-full h-full object-cover'
                   src='https://ik.imagekit.io/an6uwgksy/logo.png'
@@ -199,7 +198,7 @@ export function SiteFooter() {
                   unoptimized
                 />
               </div>
-              <span className='text-lg sm:text-xl font-black awsmd-gradient-text'>
+              <span className='text-lg sm:text-xl font-black text-gradient-medical'>
                 Ez LabTesting
               </span>
             </Link>
@@ -209,30 +208,30 @@ export function SiteFooter() {
               CLIA-certified, and trusted by thousands.
             </p>
 
-            {/* Trust Badges - Awsmd style */}
+            {/* Trust Badges - Medical style */}
             <div className='flex flex-wrap gap-2 mb-6'>
-              <div className='flex items-center gap-1.5 px-3 py-2 awsmd-rounded awsmd-glass-card border-2 border-blue-300 dark:border-blue-700 hover:scale-105 transition-transform bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/50 dark:to-purple-950/50'>
-                <Shield className='h-4 w-4 text-blue-600 dark:text-blue-400' />
-                <span className='text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+              <div className='flex items-center gap-1.5 px-3 py-2 rounded-lg glass-card border-2 border-cyan-300 dark:border-cyan-700 hover:scale-105 transition-transform bg-gradient-to-r from-cyan-50/50 to-blue-50/50 dark:from-cyan-950/50 dark:to-blue-950/50'>
+                <Shield className='h-4 w-4 text-cyan-600 dark:text-cyan-400' />
+                <span className='text-xs font-bold text-gradient-medical'>
                   HIPAA Secure
                 </span>
               </div>
-              <div className='flex items-center gap-1.5 px-3 py-2 awsmd-rounded awsmd-glass-card border-2 border-purple-300 dark:border-purple-700 hover:scale-105 transition-transform bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-950/50 dark:to-pink-950/50'>
-                <Award className='h-4 w-4 text-purple-600 dark:text-purple-400' />
-                <span className='text-xs font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'>
+              <div className='flex items-center gap-1.5 px-3 py-2 rounded-lg glass-card border-2 border-emerald-300 dark:border-emerald-700 hover:scale-105 transition-transform bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/50 dark:to-teal-950/50'>
+                <Award className='h-4 w-4 text-emerald-600 dark:text-emerald-400' />
+                <span className='text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent'>
                   CLIA Certified
                 </span>
               </div>
             </div>
 
-            {/* Social Links - Awsmd style */}
+            {/* Social Links - Medical style */}
             <div className='flex flex-wrap gap-2 sm:gap-3'>
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className={`w-8 h-8 sm:w-9 sm:h-9 awsmd-rounded awsmd-glass-card border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center transition-all hover:scale-110 hover:-translate-y-2 ${social.color} hover:border-current shadow-lg hover:shadow-xl`}
+                  className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg glass-card border-2 border-blue-200 dark:border-cyan-800 flex items-center justify-center transition-all hover:scale-110 hover:-translate-y-2 ${social.color} hover:border-current shadow-md hover:shadow-lg`}
                 >
                   <social.icon className='h-3 w-3 sm:h-4 sm:w-4' />
                 </a>

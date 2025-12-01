@@ -8,6 +8,10 @@ export const metadata = {
   description: "Complete your order",
 };
 
+// The checkout page relies on client-only state (cart) and navigation.
+// Force dynamic rendering to avoid static generation during build.
+export const dynamic = "force-dynamic";
+
 export default function CheckoutPage() {
   return (
     <div className='flex min-h-screen flex-col bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-blue-950'>

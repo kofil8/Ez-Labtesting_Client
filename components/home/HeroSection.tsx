@@ -95,10 +95,10 @@ export function HeroSection() {
       <div className='absolute inset-0 bg-kalles-pattern opacity-10 z-0' />
       <div className='absolute inset-0 bg-kalles-dots opacity-8 z-0' />
 
-      {/* Subtle animated gradient accents - Kalles style */}
+      {/* Subtle animated gradient accents - Optimized */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute -top-40 -right-40 w-[500px] h-[500px] awsmd-gradient-purple-pink rounded-full blur-3xl opacity-20 awsmd-float' />
-        <div className='absolute -bottom-40 -left-40 w-[600px] h-[600px] awsmd-gradient-blue-purple rounded-full blur-3xl opacity-15 awsmd-float-delay-1' />
+        <div className='absolute -top-40 -right-40 w-[500px] h-[500px] awsmd-gradient-purple-pink rounded-full blur-3xl opacity-20 animate-blob gpu-accelerated' />
+        <div className='absolute -bottom-40 -left-40 w-[600px] h-[600px] awsmd-gradient-blue-purple rounded-full blur-3xl opacity-15 animate-blob animation-delay-2000 gpu-accelerated' />
       </div>
 
       {/* Background video element - Optimized for performance */}
@@ -146,17 +146,19 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-6 sm:mb-8 leading-tight font-bold px-4 sm:px-0'
+            className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mb-6 sm:mb-8 leading-tight font-extrabold px-4 sm:px-0'
           >
-            <span className='block mb-2 sm:mb-4'>We create</span>
+            <span className='block mb-2 sm:mb-4 text-gray-900 dark:text-white'>
+              Professional
+            </span>
             <span className='relative inline-block'>
-              <span className='awsmd-gradient-text animate-gradient'>
-                Amazing
+              <span className='text-gradient-medical animate-gradient'>
+                Lab Testing
               </span>
             </span>
             <br />
-            <span className='block mt-2 sm:mt-4 text-gray-900 dark:text-white'>
-              Health Tests
+            <span className='block mt-2 sm:mt-4 text-gray-800 dark:text-gray-100'>
+              Made Simple
             </span>
           </motion.h1>
 
@@ -164,14 +166,14 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className='text-base sm:text-xl md:text-2xl lg:text-3xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed font-light px-4 sm:px-0'
+            className='text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed font-normal px-4 sm:px-0'
           >
-            Data driven. User focused. Value based.
+            Order confidential lab tests online without a doctor's visit.
             <br className='hidden sm:block' />
-            <span className='font-bold text-gray-900 dark:text-white'>
-              HIPAA-secure, CLIA-certified,
+            <span className='font-semibold text-cyan-600 dark:text-cyan-400'>
+              HIPAA-secure, CLIA-certified labs,
             </span>{" "}
-            and completely confidential.
+            results in 24-48 hours.
           </motion.p>
 
           <motion.div
@@ -181,19 +183,20 @@ export function HeroSection() {
             className='flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-10 sm:mb-16 px-4 sm:px-0'
           >
             <Button
-              size='lg'
-              className='awsmd-gradient-cosmic text-white hover:opacity-90 transition-all shadow-2xl group awsmd-rounded px-6 py-6 sm:px-8 sm:py-7 text-base sm:text-lg font-bold button-shine awsmd-hover-lift'
+              size='xl'
+              variant='medical'
+              className='text-white hover:opacity-95 transition-all shadow-2xl group rounded-xl px-8 py-6 sm:px-10 sm:py-7 text-base sm:text-lg font-bold'
               asChild
             >
               <Link href='/tests'>
-                Browse Tests
-                <ArrowRight className='ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-2 transition-transform' />
+                Browse Lab Tests
+                <ArrowRight className='ml-2 h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-2 transition-transform' />
               </Link>
             </Button>
             <Button
-              size='lg'
-              variant='outline'
-              className='awsmd-glass-card hover:scale-105 transition-transform shadow-xl border-2 awsmd-rounded px-6 py-6 sm:px-8 sm:py-7 text-base sm:text-lg font-bold'
+              size='xl'
+              variant='glass'
+              className='hover:scale-[1.02] transition-all shadow-xl rounded-xl px-8 py-6 sm:px-10 sm:py-7 text-base sm:text-lg font-bold'
               asChild
             >
               <Link href='/login'>Sign In</Link>
@@ -212,25 +215,25 @@ export function HeroSection() {
                 icon: Shield,
                 title: "HIPAA Secure",
                 description: "Bank-level encryption protects your health data",
-                gradient: "from-blue-500 via-blue-600 to-cyan-600",
-                bgGradient: "bg-red-500",
+                gradient: "from-blue-500 via-cyan-500 to-blue-600",
+                bgGradient: "gradient-medical",
                 iconColor: "text-white",
               },
               {
                 icon: Award,
                 title: "CLIA Certified",
                 description: "Processed by certified laboratories nationwide",
-                gradient: "from-purple-500 via-pink-600 to-purple-600",
-                bgGradient: "awsmd-gradient-purple-pink",
+                gradient: "from-emerald-500 via-teal-500 to-green-600",
+                bgGradient: "gradient-health",
                 iconColor: "text-white",
               },
               {
                 icon: Zap,
                 title: "Fast Results",
                 description:
-                  "Get your results in just 24-48 hours with our fast and reliable service",
-                gradient: "from-orange-500 via-pink-500 to-purple-600",
-                bgGradient: "awsmd-gradient-cosmic",
+                  "Get your results in 24-48 hours with our reliable service",
+                gradient: "from-cyan-500 via-blue-500 to-indigo-600",
+                bgGradient: "gradient-lab",
                 iconColor: "text-white",
               },
             ].map((item, index) => (

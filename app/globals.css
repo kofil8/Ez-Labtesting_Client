@@ -4,55 +4,67 @@
 
 @layer base {
   :root {
-    --background: 250 20% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 20% 98%;
+    --foreground: 210 24% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 24% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 210 24% 16%;
+    --primary: 199 89% 48%; /* Medical Blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 152 69% 31%; /* Medical Green */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 12% 46%;
+    --accent: 199 89% 96%;
+    --accent-foreground: 199 89% 48%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 1rem;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 20% 90%;
+    --input: 210 20% 94%;
+    --ring: 199 89% 48%;
+    --radius: 0.75rem;
 
-    /* Awsmd-inspired colors */
-    --awsmd-purple: 270 70% 65%;
-    --awsmd-pink: 330 70% 70%;
-    --awsmd-blue: 220 80% 60%;
-    --awsmd-gradient-start: 270 70% 65%;
-    --awsmd-gradient-end: 330 70% 70%;
+    /* Lab Testing Theme Colors */
+    --lab-blue: 199 89% 48%;
+    --lab-green: 152 69% 31%;
+    --lab-teal: 187 85% 43%;
+    --lab-cyan: 194 100% 47%;
+    --lab-purple: 258 90% 66%;
+    --lab-orange: 24 95% 53%;
+    --success: 152 69% 31%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
   }
 
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --background: 210 30% 8%;
+    --foreground: 210 20% 96%;
+    --card: 210 24% 12%;
+    --card-foreground: 210 20% 96%;
+    --popover: 210 24% 12%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 199 89% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 152 69% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 24% 16%;
+    --muted-foreground: 210 12% 65%;
+    --accent: 210 24% 16%;
+    --accent-foreground: 199 89% 55%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 24% 20%;
+    --input: 210 24% 16%;
+    --ring: 199 89% 55%;
+
+    /* Lab Testing Theme Colors - Dark Mode */
+    --lab-blue: 199 89% 55%;
+    --lab-green: 152 69% 40%;
+    --lab-teal: 187 85% 50%;
+    --lab-cyan: 194 100% 55%;
+    --lab-purple: 258 90% 70%;
+    --lab-orange: 24 95% 60%;
   }
 }
 
@@ -61,74 +73,87 @@
     @apply border-border;
   }
   body {
-    @apply bg-gradient-to-br from-blue-50 via-purple-50 via-pink-50 to-blue-50 dark:from-slate-950 dark:via-purple-950/30 dark:via-blue-950/40 dark:to-slate-950 text-foreground;
+    @apply bg-gradient-to-br from-blue-50/50 via-cyan-50/30 to-teal-50/50 dark:from-slate-950 dark:via-cyan-950/20 dark:to-slate-950 text-foreground;
     background-attachment: fixed;
     min-height: 100vh;
   }
 }
 
 @layer utilities {
-  /* Glassmorphism utilities */
+  /* Glassmorphism utilities - Medical Clean Style */
   .glass {
-    @apply backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/20 dark:border-gray-700/20 shadow-lg;
+    @apply backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border border-blue-100/40 dark:border-cyan-900/30 shadow-lg shadow-blue-100/20;
   }
 
   .glass-strong {
-    @apply backdrop-blur-2xl bg-white/80 dark:bg-gray-900/80 border border-white/30 dark:border-gray-700/30 shadow-xl;
+    @apply backdrop-blur-2xl bg-white/90 dark:bg-gray-900/90 border border-blue-100/60 dark:border-cyan-900/40 shadow-xl shadow-blue-100/30;
   }
 
   .glass-card {
-    @apply backdrop-blur-md bg-white/60 dark:bg-gray-900/60 border border-white/10 dark:border-gray-700/10 shadow-2xl;
+    @apply backdrop-blur-md bg-white/75 dark:bg-gray-900/75 border border-blue-50/30 dark:border-cyan-900/20 shadow-2xl shadow-blue-50/30;
   }
 
-  /* Enhanced Gradient backgrounds */
+  /* Medical Card Style */
+  .medical-card {
+    @apply bg-white dark:bg-gray-900 border-2 border-blue-100 dark:border-cyan-900/40 rounded-xl shadow-lg shadow-blue-50/30 dark:shadow-cyan-900/10;
+  }
+
+  .medical-card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/40 hover:border-blue-200 dark:hover:border-cyan-800;
+  }
+
+  /* Enhanced Gradient backgrounds - Medical Theme */
   .gradient-primary {
-    @apply bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600;
+    @apply bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600;
   }
 
   .gradient-primary-light {
-    @apply bg-gradient-to-br from-blue-400 via-blue-500 to-indigo-500;
+    @apply bg-gradient-to-br from-blue-400 via-cyan-400 to-blue-500;
   }
 
   .gradient-success {
-    @apply bg-gradient-to-br from-green-500 via-green-600 to-emerald-600;
+    @apply bg-gradient-to-br from-emerald-500 via-teal-500 to-green-600;
   }
 
   .gradient-warning {
-    @apply bg-gradient-to-br from-yellow-500 via-orange-500 to-red-500;
+    @apply bg-gradient-to-br from-amber-500 via-orange-500 to-orange-600;
   }
 
-  .gradient-purple {
-    @apply bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600;
+  .gradient-medical {
+    @apply bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500;
   }
 
-  .gradient-cosmic {
-    @apply bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600;
+  .gradient-lab {
+    @apply bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-500;
+  }
+
+  .gradient-health {
+    @apply bg-gradient-to-br from-teal-500 via-emerald-500 to-green-500;
   }
 
   .gradient-ocean {
-    @apply bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600;
-  }
-
-  .gradient-sunset {
-    @apply bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600;
+    @apply bg-gradient-to-br from-cyan-400 via-blue-500 to-blue-600;
   }
 
   .gradient-forest {
     @apply bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600;
   }
 
-  /* Text gradients */
+  /* Text gradients - Medical Theme */
   .text-gradient-primary {
-    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 bg-clip-text text-transparent;
   }
 
   .text-gradient-success {
-    @apply bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 bg-clip-text text-transparent;
   }
 
-  .text-gradient-cosmic {
-    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent;
+  .text-gradient-medical {
+    @apply bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-lab {
+    @apply bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent;
   }
 
   /* Grid background patterns */
@@ -150,22 +175,23 @@
     background-size: 20px 20px;
   }
 
-  /* Blob animations */
+  /* Blob animations - Optimized with GPU acceleration */
   @keyframes blob {
     0%,
     100% {
-      transform: translate(0px, 0px) scale(1);
+      transform: translate3d(0px, 0px, 0) scale(1);
     }
     33% {
-      transform: translate(30px, -50px) scale(1.1);
+      transform: translate3d(30px, -50px, 0) scale(1.1);
     }
     66% {
-      transform: translate(-20px, 20px) scale(0.9);
+      transform: translate3d(-20px, 20px, 0) scale(0.9);
     }
   }
 
   .animate-blob {
-    animation: blob 7s infinite;
+    animation: blob 7s ease-in-out infinite;
+    will-change: transform;
   }
 
   .animation-delay-2000 {
@@ -197,19 +223,20 @@
     background-size: 1000px 100%;
   }
 
-  /* Float animation */
+  /* Float animation - Optimized with GPU acceleration */
   @keyframes float {
     0%,
     100% {
-      transform: translateY(0px);
+      transform: translate3d(0, 0, 0);
     }
     50% {
-      transform: translateY(-20px);
+      transform: translate3d(0, -20px, 0);
     }
   }
 
   .animate-float {
     animation: float 6s ease-in-out infinite;
+    will-change: transform;
   }
 
   /* Pulse glow animation */
@@ -243,51 +270,61 @@
     animation: gradient-shift 3s ease infinite;
   }
 
-  /* Glow effects */
+  /* Glow effects - Medical Theme */
   .glow-primary {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5),
-      0 0 40px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.4),
+      0 0 40px rgba(6, 182, 212, 0.15);
   }
 
   .glow-success {
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.5), 0 0 40px rgba(34, 197, 94, 0.2);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4),
+      0 0 40px rgba(16, 185, 129, 0.15);
   }
 
   .glow-warning {
-    box-shadow: 0 0 20px rgba(251, 146, 60, 0.5),
-      0 0 40px rgba(251, 146, 60, 0.2);
+    box-shadow: 0 0 20px rgba(251, 146, 60, 0.4),
+      0 0 40px rgba(251, 146, 60, 0.15);
   }
 
-  .glow-purple {
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5),
-      0 0 40px rgba(168, 85, 247, 0.2);
+  .glow-medical {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 40px rgba(6, 182, 212, 0.2),
+      0 0 60px rgba(6, 182, 212, 0.1);
   }
 
-  /* Hover lift effect */
+  .glow-lab {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4),
+      0 0 40px rgba(59, 130, 246, 0.15), inset 0 0 20px rgba(59, 130, 246, 0.05);
+  }
+
+  /* Hover lift effect - Optimized */
   .hover-lift {
-    @apply transition-all duration-300 ease-out;
+    @apply transition-all duration-200 ease-out;
+    will-change: transform, box-shadow;
   }
 
   .hover-lift:hover {
-    @apply -translate-y-2 shadow-2xl;
+    transform: translate3d(0, -8px, 0);
+    @apply shadow-2xl;
   }
 
-  /* Hover glow effect */
+  /* Hover glow effect - Optimized */
   .hover-glow {
-    @apply transition-all duration-300;
+    @apply transition-all duration-200;
+    will-change: box-shadow;
   }
 
   .hover-glow:hover {
     @apply shadow-lg shadow-primary/50;
   }
 
-  /* Hover scale effect */
+  /* Hover scale effect - Optimized */
   .hover-scale {
-    @apply transition-transform duration-300 ease-out;
+    @apply transition-transform duration-200 ease-out;
+    will-change: transform;
   }
 
   .hover-scale:hover {
-    @apply scale-105;
+    transform: scale3d(1.05, 1.05, 1);
   }
 
   /* Border gradient animation */
@@ -305,6 +342,29 @@
   /* Smooth scrolling */
   .smooth-scroll {
     scroll-behavior: smooth;
+  }
+
+  /* Performance optimization utilities */
+  .gpu-accelerated {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  .optimize-animations {
+    will-change: transform, opacity;
+  }
+
+  /* Reduce motion for accessibility and performance */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 
   /* Custom scrollbar */
@@ -588,34 +648,34 @@
     scroll-behavior: smooth;
   }
 
-  /* Kalles-style background utilities */
+  /* Medical/Lab background utilities */
   .bg-kalles {
-    @apply bg-[#fafafa] dark:bg-[#0a0a0a];
+    @apply bg-[#fafbfc] dark:bg-[#0a0e12];
   }
 
   .bg-kalles-pattern {
     background-image: linear-gradient(
         to right,
-        rgba(0, 0, 0, 0.03) 1px,
+        rgba(6, 182, 212, 0.02) 1px,
         transparent 1px
       ),
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      linear-gradient(to bottom, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
   .dark .bg-kalles-pattern {
     background-image: linear-gradient(
         to right,
-        rgba(255, 255, 255, 0.05) 1px,
+        rgba(6, 182, 212, 0.06) 1px,
         transparent 1px
       ),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      linear-gradient(to bottom, rgba(6, 182, 212, 0.06) 1px, transparent 1px);
   }
 
   .bg-kalles-dots {
     background-image: radial-gradient(
       circle,
-      rgba(0, 0, 0, 0.02) 1px,
+      rgba(6, 182, 212, 0.03) 1px,
       transparent 1px
     );
     background-size: 24px 24px;
@@ -624,9 +684,34 @@
   .dark .bg-kalles-dots {
     background-image: radial-gradient(
       circle,
-      rgba(255, 255, 255, 0.04) 1px,
+      rgba(6, 182, 212, 0.05) 1px,
       transparent 1px
     );
+  }
+
+  /* Medical grid pattern */
+  .bg-medical-grid {
+    background-image: linear-gradient(
+        to right,
+        rgba(6, 182, 212, 0.03) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+      linear-gradient(to right, rgba(6, 182, 212, 0.01) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(6, 182, 212, 0.01) 1px, transparent 1px);
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  }
+
+  .dark .bg-medical-grid {
+    background-image: linear-gradient(
+        to right,
+        rgba(6, 182, 212, 0.05) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+      linear-gradient(to right, rgba(6, 182, 212, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
+    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
   }
 
   /* Clean card backgrounds like Kalles */

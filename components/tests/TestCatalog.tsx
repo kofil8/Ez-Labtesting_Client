@@ -26,6 +26,7 @@ export function TestCatalog() {
   const [tests, setTests] = useState<Test[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [showFilters, setShowFilters] = useState(false);
@@ -34,17 +35,25 @@ export function TestCatalog() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
+  // Debounce search query for performance
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const loadTests = useCallback(async () => {
     setLoading(true);
     try {
-      const results = await searchTests(searchQuery, category, sortBy);
+      const results = await searchTests(debouncedSearch, category, sortBy);
       setTests(results);
     } catch (error) {
       console.error("Error loading tests:", error);
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, category, sortBy]);
+  }, [debouncedSearch, category, sortBy]);
 
   useEffect(() => {
     loadTests();

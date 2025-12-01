@@ -130,12 +130,12 @@ export function FeaturedBundles() {
     return (
       <motion.div
         key={panel.id}
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        initial={{ opacity: 0, y: 10, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 20, scale: 0.98 }}
-        transition={{ delay: index * 0.06, duration: 0.35 }}
-        whileHover={{ y: -6 }}
-        className='h-full'
+        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+        transition={{ delay: index * 0.04, duration: 0.25, ease: "easeOut" }}
+        whileHover={{ y: -6, transition: { duration: 0.2 } }}
+        className='h-full gpu-accelerated'
       >
         <Card className='flex flex-col h-full hover-lift border-2 relative overflow-hidden group'>
           <div className='absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
@@ -253,10 +253,11 @@ export function FeaturedBundles() {
               {/* single child: slide wrapper */}
               <motion.div
                 key={currentIndex}
-                initial={{ opacity: 0, x: 80 }}
+                initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -80 }}
-                transition={{ duration: 0.42, ease: "easeInOut" }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className='gpu-accelerated'
               >
                 <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8'>
                   {displayPanels.length > 0
@@ -280,9 +281,10 @@ export function FeaturedBundles() {
             <>
               <motion.button
                 onClick={previous}
-                whileHover={{ scale: 1.06 }}
-                whileTap={{ scale: 0.96 }}
-                className='absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-2.5 md:p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white transition-all hover:bg-gray-50 dark:hover:bg-slate-700'
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className='absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-2.5 md:p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white transition-all duration-200 hover:bg-gray-50 dark:hover:bg-slate-700 gpu-accelerated'
                 aria-label='Previous slide'
               >
                 <ChevronLeft className='h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6' />
@@ -290,9 +292,10 @@ export function FeaturedBundles() {
 
               <motion.button
                 onClick={next}
-                whileHover={{ scale: 1.06 }}
-                whileTap={{ scale: 0.96 }}
-                className='absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-2.5 md:p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white transition-all hover:bg-gray-50 dark:hover:bg-slate-700'
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className='absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-2.5 md:p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg hover:shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white transition-all duration-200 hover:bg-gray-50 dark:hover:bg-slate-700 gpu-accelerated'
                 aria-label='Next slide'
               >
                 <ChevronRight className='h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6' />
@@ -312,13 +315,14 @@ export function FeaturedBundles() {
                 <motion.button
                   key={idx}
                   onClick={() => goTo(idx)}
-                  className={`transition-all duration-300 ${
+                  className={`transition-all duration-200 ${
                     idx === currentIndex
                       ? "bg-gradient-to-r from-blue-500 to-purple-500 w-8 h-2.5 sm:w-10 sm:h-3"
                       : "bg-gray-300 dark:bg-gray-600 w-2.5 h-2.5 sm:w-3 sm:h-3"
-                  } rounded-full`}
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.95 }}
+                  } rounded-full gpu-accelerated`}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ duration: 0.15 }}
                   aria-label={`Go to slide ${idx + 1}`}
                   aria-pressed={idx === currentIndex}
                 />
