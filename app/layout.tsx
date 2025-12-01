@@ -1,10 +1,10 @@
 import { CartSidebarWrapper } from "@/components/cart/CartSidebarWrapper";
+import { ClientInit } from "@/components/ClientInit";
 import { KallesBackground } from "@/components/shared/KallesBackground";
 import { LocationInitializer } from "@/components/shared/LocationInitializer";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartSidebarProvider } from "@/lib/cart-sidebar-context";
-import { ClientInit } from "@/components/ClientInit";
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en' className='smooth-scroll'>
+    <html lang='en' className='smooth-scroll' suppressHydrationWarning>
       <body
         className={`${manrope.className} antialiased custom-scrollbar`}
         suppressHydrationWarning

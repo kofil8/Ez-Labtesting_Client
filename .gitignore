@@ -37,3 +37,7 @@ yarn-error.log*
 next-env.d.ts
 
 nul
+
+kofil.pem
+github_deploy_key.pub
+github_deploy_key
