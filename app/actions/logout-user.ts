@@ -9,7 +9,8 @@ export async function logoutUser(pushToken?: string) {
   try {
     await fetch(
       `${
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1"
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://ezlabtesting-api.com/api/v1"
       }/auth/logout`,
       {
         method: "POST",

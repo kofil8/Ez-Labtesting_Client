@@ -14,7 +14,7 @@ export function NotificationTestButton() {
 
     try {
       const res = await fetch(
-        "http://localhost:7001/api/v1/notifications/test-user",
+        "https://ezlabtesting-api.com/api/v1/notifications/test-user",
         {
           method: "POST",
           credentials: "include",

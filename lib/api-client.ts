@@ -1,6 +1,7 @@
 "use client";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://ezlabtesting-api.com/api/v1";
 
 /**
  * Client-side API helper that automatically handles token refresh
@@ -50,7 +51,8 @@ export async function clientFetch(
       if (typeof window !== "undefined") {
         window.location.href = "/login?expired=true";
       }
-      const errorMessage = refreshError.message || "Session expired. Please log in again.";
+      const errorMessage =
+        refreshError.message || "Session expired. Please log in again.";
       throw new Error(errorMessage);
     }
   }
@@ -66,4 +68,3 @@ export function getApiUrl(endpoint: string): string {
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
   return `${API_BASE_URL}/${cleanEndpoint}`;
 }
-

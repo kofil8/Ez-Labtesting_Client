@@ -8,7 +8,10 @@ export async function forgotPassword(formData: FormData) {
   }
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1"}/auth/forgot-password`,
+    `${
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://ezlabtesting-api.com/api/v1"
+    }/auth/forgot-password`,
     {
       method: "POST",
       headers: {
@@ -27,4 +30,3 @@ export async function forgotPassword(formData: FormData) {
 
   return { success: true };
 }
-

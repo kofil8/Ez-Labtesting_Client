@@ -14,7 +14,8 @@ export async function loginUser(formData: FormData) {
 
   const res = await fetch(
     `${
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1"
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://api.ezlabtesting.com/api/v1"
     }/auth/login`,
     {
       method: "POST",

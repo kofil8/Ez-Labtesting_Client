@@ -23,13 +23,16 @@ export async function updateProfile(formData: FormData) {
     // Create FormData for multipart/form-data request
     const requestFormData = new FormData();
     requestFormData.append("data", JSON.stringify(dataObj));
-    
+
     if (file && file.size > 0) {
       requestFormData.append("file", file);
     }
 
     const res = await authenticatedFetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1"}/profile`,
+      `${
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://ezlabtesting-api.com/api/v1"
+      }/profile`,
       {
         method: "PATCH",
         body: requestFormData,
@@ -46,7 +49,8 @@ export async function updateProfile(formData: FormData) {
         if (res.status === 401) {
           errorMessage = "Your session has expired. Please log in again.";
         } else if (res.status === 413) {
-          errorMessage = "File size too large. Please select an image smaller than 5MB.";
+          errorMessage =
+            "File size too large. Please select an image smaller than 5MB.";
         } else if (res.status >= 500) {
           errorMessage = "Server error. Please try again later.";
         }
@@ -65,4 +69,3 @@ export async function updateProfile(formData: FormData) {
     throw error;
   }
 }
-

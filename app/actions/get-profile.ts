@@ -15,7 +15,8 @@ export async function getProfile() {
 
     const res = await authenticatedFetch(
       `${
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1"
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://ezlabtesting-api.com/api/v1"
       }/profile`,
       {
         method: "GET",
@@ -26,10 +27,10 @@ export async function getProfile() {
     );
 
     if (!res.ok) {
-      const error = await res.json().catch(() => ({ 
-        message: "Failed to fetch profile" 
+      const error = await res.json().catch(() => ({
+        message: "Failed to fetch profile",
       }));
-      
+
       // If 401 after refresh attempt, session is expired
       if (res.status === 401) {
         // Clear cookies
@@ -37,7 +38,7 @@ export async function getProfile() {
         cookieStore.delete("refreshToken");
         throw new Error("Session expired. Please log in again.");
       }
-      
+
       throw new Error(error.message || "Failed to fetch profile");
     }
 
@@ -46,8 +47,10 @@ export async function getProfile() {
     return { success: true, profile: data?.data || data };
   } catch (error: any) {
     // Re-throw with a user-friendly message
-    if (error.message.includes("Session expired") || 
-        error.message.includes("Not authenticated")) {
+    if (
+      error.message.includes("Session expired") ||
+      error.message.includes("Not authenticated")
+    ) {
       throw new Error("Session expired. Please log in again.");
     }
     throw error;

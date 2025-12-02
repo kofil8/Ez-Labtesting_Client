@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://ezlabtesting-api.com/api/v1";
 
 /**
  * Helper function to refresh the access token using the refresh token cookie

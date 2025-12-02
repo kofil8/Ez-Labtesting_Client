@@ -12,7 +12,10 @@ export async function changePassword(formData: FormData) {
     }
 
     const res = await authenticatedFetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1"}/profile/change-password`,
+      `${
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://ezlabtesting-api.com/api/v1"
+      }/profile/change-password`,
       {
         method: "POST",
         headers: {
@@ -36,4 +39,3 @@ export async function changePassword(formData: FormData) {
     throw error;
   }
 }
-

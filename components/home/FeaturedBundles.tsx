@@ -34,21 +34,23 @@ export function FeaturedBundles() {
   const [panels, setPanels] = useState<Panel[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoplay, setIsAutoplay] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const autoplayRef = useRef<number | null>(null);
   const pauseRef = useRef(false);
   const addItem = useCartStore((state) => state.addItem);
   const { toast } = useToast();
 
-  // Responsive items per slide (simple approach)
+  // Responsive items per slide - defaults to 3 until mounted to prevent hydration mismatch
   const itemsPerSlide = useMemo(() => {
-    if (typeof window === "undefined") return 3;
+    if (!isMounted) return 3;
     const width = window.innerWidth;
     if (width < 640) return 1; // sm
     if (width < 1024) return 2; // md
     return 3; // lg+
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
+    setIsMounted(true);
     setPanels(panelsData as Panel[]);
   }, []);
 

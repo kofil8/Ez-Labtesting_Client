@@ -12,7 +12,10 @@ export async function registerUser(formData: FormData) {
   }
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1"}/auth/register`,
+    `${
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://ezlabtesting-api.com/api/v1"
+    }/auth/register`,
     {
       method: "POST",
       headers: {
@@ -39,4 +42,3 @@ export async function registerUser(formData: FormData) {
 
   return { success: true, email: data?.data?.email || email };
 }
-

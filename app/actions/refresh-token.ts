@@ -2,7 +2,8 @@
 
 import { cookies } from "next/headers";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://ezlabtesting-api.com/api/v1";
 
 export async function refreshToken() {
   const cookieStore = await cookies();
@@ -23,14 +24,16 @@ export async function refreshToken() {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ message: "Token refresh failed" }));
-    
+    const error = await res
+      .json()
+      .catch(() => ({ message: "Token refresh failed" }));
+
     // If refresh token is also expired, clear both cookies
     if (res.status === 401) {
       cookieStore.delete("accessToken");
       cookieStore.delete("refreshToken");
     }
-    
+
     throw new Error(error.message || "Token refresh failed");
   }
 
@@ -66,4 +69,3 @@ export async function refreshToken() {
 
   return { success: true, accessToken: data?.data?.accessToken };
 }
-
