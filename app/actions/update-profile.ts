@@ -17,13 +17,15 @@ export async function updateProfile(formData: FormData) {
     if (firstName !== null) dataObj.firstName = firstName;
     if (lastName !== null) dataObj.lastName = lastName;
     if (bio !== null) dataObj.bio = bio;
-    if (phone !== null) dataObj.phone = phone;
+    if (phone !== null) dataObj.phoneNumber = phone;
     if (dateOfBirth !== null) dataObj.dateOfBirth = dateOfBirth;
 
     // Create FormData for multipart/form-data request
     const requestFormData = new FormData();
-    requestFormData.append("data", JSON.stringify(dataObj));
+    // Backend expects data as "parseBodyData" (JSON string)
+    requestFormData.append("bodyData", JSON.stringify(dataObj));
 
+    // Backend expects image file as "profileImage"
     if (file && file.size > 0) {
       requestFormData.append("file", file);
     }
