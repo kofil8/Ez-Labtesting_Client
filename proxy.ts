@@ -26,7 +26,7 @@ function isPublicPath(pathname: string) {
   );
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   // Skip auth check for public routes

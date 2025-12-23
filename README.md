@@ -28,6 +28,9 @@ A modern, full-featured lab testing platform built with Next.js 14, TypeScript, 
 ## 📦 Installation
 
 ```bash
+
+
+
 # Install dependencies
 npm install
 # or
@@ -47,6 +50,8 @@ npm run build
 
 # Start production server
 npm start
+
+#
 ```
 
 ### Environment Variables

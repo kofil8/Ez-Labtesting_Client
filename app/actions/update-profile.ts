@@ -18,14 +18,16 @@ export async function updateProfile(formData: FormData) {
     if (lastName !== null) dataObj.lastName = lastName;
     if (bio !== null) dataObj.bio = bio;
     if (phone !== null) dataObj.phoneNumber = phone;
-    if (dateOfBirth !== null) dataObj.dateOfBirth = dateOfBirth;
+    if (dateOfBirth !== null) {
+      // Convert "YYYY-MM-DD" to ISO-8601 DateTime format
+      dataObj.dateOfBirth = new Date(dateOfBirth).toISOString();
+    }
 
     // Create FormData for multipart/form-data request
     const requestFormData = new FormData();
-    // Backend expects data as "parseBodyData" (JSON string)
     requestFormData.append("bodyData", JSON.stringify(dataObj));
 
-    // Backend expects image file as "profileImage"
+    // Backend expects image file as "file"
     if (file && file.size > 0) {
       requestFormData.append("file", file);
     }

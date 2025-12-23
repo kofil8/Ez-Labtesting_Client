@@ -1,20 +1,77 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { ArrowRight, Award, Shield, Sparkles, Zap } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  Shield,
+  Sparkles,
+  Zap,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+
+// Lab test carousel images - local images from public folder
+const MEDICAL_CAROUSEL_SLIDES = [
+  {
+    id: 1,
+    url: "/images/Pipetting.jpeg",
+    alt: "Lab technician pipetting samples for diagnostic testing",
+    title: "Pipetting Diagnostic Samples",
+  },
+  {
+    id: 2,
+    url: "/images/Blood-Vial.webp",
+    alt: "Blood vials organized for laboratory analysis",
+    title: "Blood Vial Processing",
+  },
+  {
+    id: 3,
+    url: "/images/Manual-testing.webp",
+    alt: "Automated analyzer running clinical chemistry tests",
+    title: "Automated Analyzer",
+  },
+  {
+    id: 4,
+    url: "/images/analyzing.webp",
+    alt: "Scientist using microscope for lab diagnostics",
+    title: "Microscope Diagnostics",
+  },
+  {
+    id: 5,
+    url: "/images/consulting.jpeg",
+    alt: "Sample racks prepared for clinical lab testing",
+    title: "Sample Rack Prep",
+  },
+  {
+    id: 6,
+    url: "/images/collect-blood.webp",
+    alt: "Technician loading samples into automated lab equipment",
+    title: "Loading Automated Equipment",
+  },
+];
 
 export function HeroSection() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [shuffledSlides, setShuffledSlides] = useState(MEDICAL_CAROUSEL_SLIDES);
+  const [isHydrated, setIsHydrated] = useState(false);
 
+  // Initialize shuffled slides and hydration state on mount
   useEffect(() => {
-    // Check for reduced motion preference
+    const slides = [...MEDICAL_CAROUSEL_SLIDES];
+    const start = Math.floor(Math.random() * slides.length);
+    setShuffledSlides(slides.slice(start).concat(slides.slice(0, start)));
+    setIsHydrated(true);
+  }, []);
+
+  // Check for reduced motion preference
+  useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mediaQuery.matches);
 
@@ -24,70 +81,51 @@ export function HeroSection() {
 
     mediaQuery.addEventListener("change", handleMediaChange);
 
-    // For hero section (typically above fold), load immediately but with delay
-    // This prevents blocking initial page load
-    const loadTimer = setTimeout(() => {
-      if (!shouldLoadVideo) {
-        setShouldLoadVideo(true);
-      }
-    }, 100); // Small delay to let page content load first
-
-    const sectionElement = sectionRef.current;
-
-    if (!sectionElement) {
-      return () => {
-        clearTimeout(loadTimer);
-        mediaQuery.removeEventListener("change", handleMediaChange);
-      };
-    }
-
-    // Intersection Observer as fallback for when section scrolls into view
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !shouldLoadVideo) {
-            setShouldLoadVideo(true);
-          }
-        });
-      },
-      {
-        rootMargin: "100px", // Start loading before it's visible
-        threshold: 0.01,
-      }
-    );
-
-    observer.observe(sectionElement);
-
     return () => {
-      clearTimeout(loadTimer);
       mediaQuery.removeEventListener("change", handleMediaChange);
-      observer.unobserve(sectionElement);
     };
-  }, [shouldLoadVideo]);
+  }, []);
 
+  // Carousel auto-play logic
   useEffect(() => {
-    // Handle video load and play
-    if (videoRef.current && shouldLoadVideo && !prefersReducedMotion) {
-      const video = videoRef.current;
+    if (!isAutoPlaying || prefersReducedMotion) return;
 
-      const handleLoadedData = () => {
-        setIsVideoLoaded(true);
-        video.play().catch(() => {
-          // Silently handle autoplay restrictions
-        });
-      };
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) =>
+        prev === shuffledSlides.length - 1 ? 0 : prev + 1
+      );
+    }, 5500); // Change image every 5.5 seconds (2.5s transition + 3s display)
 
-      video.addEventListener("loadeddata", handleLoadedData);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, prefersReducedMotion, shuffledSlides.length]);
 
-      return () => {
-        video.removeEventListener("loadeddata", handleLoadedData);
-      };
-    }
-  }, [shouldLoadVideo, prefersReducedMotion]);
+  const goToNextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === shuffledSlides.length - 1 ? 0 : prev + 1
+    );
+    setIsAutoPlaying(false);
+    // Resume autoplay after 10 seconds of inactivity
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  const goToPreviousImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? shuffledSlides.length - 1 : prev - 1
+    );
+    setIsAutoPlaying(false);
+    // Resume autoplay after 10 seconds of inactivity
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  const goToImage = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsAutoPlaying(false);
+    // Resume autoplay after 10 seconds of inactivity
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
 
   return (
     <section
-      ref={sectionRef}
       data-hero-section
       className='relative overflow-hidden bg-kalles-card awsmd-section'
     >
@@ -101,30 +139,174 @@ export function HeroSection() {
         <div className='absolute -bottom-40 -left-40 w-[600px] h-[600px] awsmd-gradient-blue-purple rounded-full blur-3xl opacity-15 animate-blob animation-delay-2000 gpu-accelerated' />
       </div>
 
-      {/* Background video element - Optimized for performance */}
+      {/* Medical Image Carousel - Main Background */}
       <div className='absolute inset-0 w-full h-full overflow-hidden z-0'>
-        {shouldLoadVideo && !prefersReducedMotion ? (
-          <video
-            ref={videoRef}
-            preload='metadata'
-            aria-label='Hero background video'
-            muted
-            loop
-            playsInline
-            className='w-full h-full object-cover absolute inset-0'
-            style={{
-              opacity: isVideoLoaded ? 1 : 0,
-              transition: "opacity 0.5s ease-in",
+        <AnimatePresence mode='popLayout'>
+          {/* Current Image */}
+          <motion.div
+            key={`img-${currentImageIndex}`}
+            initial={{ opacity: 1, filter: "blur(0px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{
+              opacity: 0,
+              filter: "blur(30px)",
+              scale: 0.9,
             }}
+            transition={{
+              duration: prefersReducedMotion ? 0 : 2.5,
+              ease: "easeInOut",
+            }}
+            className='absolute inset-0 w-full h-full'
           >
-            <source
-              src='https://ik.imagekit.io/an6uwgksy/Hero.mp4'
-              type='video/mp4'
+            <Image
+              src={shuffledSlides[currentImageIndex].url}
+              alt={shuffledSlides[currentImageIndex].alt}
+              fill
+              className='object-cover'
+              priority={currentImageIndex === 0}
+              sizes='100vw'
+              quality={85}
             />
-          </video>
-        ) : null}
-        {/* Fallback gradient background */}
-        <div className='absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-purple-900/20' />
+            {/* Dark overlay for text readability */}
+            <div className='absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60' />
+          </motion.div>
+
+          {/* Advanced Shatter Glass Effect with Image Pieces */}
+          <motion.div
+            key={`shatter-${currentImageIndex}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 1 }}
+            transition={{
+              duration: prefersReducedMotion ? 0 : 2.5,
+              ease: "easeInOut",
+            }}
+            className='absolute inset-0 w-full h-full overflow-hidden'
+            style={{ pointerEvents: "none" }}
+          >
+            {/* Grid of shatter pieces with image background */}
+            {Array.from({ length: 24 }).map((_, i) => {
+              const row = Math.floor(i / 6);
+              const col = i % 6;
+              const randomRotation = Math.random() * 360;
+              const randomDelay = i * 0.08;
+              const staggerDirection = i % 2 === 0 ? 1 : -1;
+
+              // Map piece position to background position for image continuity
+              const bgPositionX = (col / 6) * 100;
+              const bgPositionY = (row / 4) * 100;
+
+              return (
+                <motion.div
+                  key={i}
+                  initial={{
+                    opacity: 1,
+                    x: 0,
+                    y: 0,
+                    rotate: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    x: (col - 2.5) * staggerDirection * 150,
+                    y: (row - 2) * staggerDirection * 150,
+                    rotate: randomRotation,
+                    scale: 0.1,
+                  }}
+                  transition={{
+                    duration: prefersReducedMotion ? 0 : 2.2,
+                    delay: randomDelay,
+                    ease: "easeInOut",
+                  }}
+                  className='absolute w-1/6 h-1/4 border-2 border-cyan-400/80 backdrop-blur-md shadow-2xl'
+                  style={{
+                    left: `${col * 16.666}%`,
+                    top: `${row * 25}%`,
+                    backgroundImage: `url('${shuffledSlides[currentImageIndex].url}')`,
+                    backgroundSize: "600% 400%",
+                    backgroundPosition: `${bgPositionX}% ${bgPositionY}%`,
+                    boxShadow:
+                      "0 0 30px rgba(34, 211, 238, 0.8), inset 0 0 15px rgba(168, 85, 247, 0.4)",
+                  }}
+                />
+              );
+            })}
+
+            {/* Radial burst lines */}
+            {Array.from({ length: 8 }).map((_, i) => {
+              const angle = (i / 8) * Math.PI * 2;
+              const distance = 200;
+              const x = Math.cos(angle) * distance;
+              const y = Math.sin(angle) * distance;
+
+              return (
+                <motion.div
+                  key={`burst-${i}`}
+                  initial={{
+                    opacity: 0.8,
+                    scaleX: 0,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    scaleX: 1,
+                  }}
+                  transition={{
+                    duration: prefersReducedMotion ? 0 : 1.8,
+                    delay: i * 0.15,
+                    ease: "easeOut",
+                  }}
+                  className='absolute h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-transparent origin-left'
+                  style={{
+                    width: "400px",
+                    left: "50%",
+                    top: "50%",
+                    transform: `translate(-50%, -50%) rotate(${
+                      angle * (180 / Math.PI)
+                    }deg)`,
+                    boxShadow: "0 0 40px rgba(34, 211, 238, 0.9)",
+                  }}
+                />
+              );
+            })}
+
+            {/* Particle explosion */}
+            {Array.from({ length: 30 }).map((_, i) => {
+              const angle = (i / 30) * Math.PI * 2;
+              const velocity = 250 + Math.random() * 150;
+              const x = Math.cos(angle) * velocity;
+              const y = Math.sin(angle) * velocity;
+
+              return (
+                <motion.div
+                  key={`particle-${i}`}
+                  initial={{
+                    opacity: 1,
+                    x: 0,
+                    y: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    x,
+                    y,
+                    scale: 0,
+                  }}
+                  transition={{
+                    duration: prefersReducedMotion ? 0 : 2,
+                    delay: Math.random() * 0.4,
+                    ease: "easeOut",
+                  }}
+                  className='absolute w-2 h-2 rounded-full bg-gradient-to-r from-cyan-300 to-purple-500 blur-sm'
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                    boxShadow: "0 0 20px rgba(34, 211, 238, 0.9)",
+                  }}
+                />
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10'>
@@ -148,16 +330,16 @@ export function HeroSection() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mb-6 sm:mb-8 leading-tight font-extrabold px-4 sm:px-0'
           >
-            <span className='block mb-2 sm:mb-4 text-gray-900 dark:text-white'>
+            <span className='block mb-2 sm:mb-4 text-white drop-shadow-lg'>
               Professional
             </span>
             <span className='relative inline-block'>
-              <span className='text-gradient-medical animate-gradient'>
+              <span className='text-gradient-medical animate-gradient drop-shadow-lg'>
                 Lab Testing
               </span>
             </span>
             <br />
-            <span className='block mt-2 sm:mt-4 text-gray-800 dark:text-gray-100'>
+            <span className='block mt-2 sm:mt-4 text-white drop-shadow-lg'>
               Made Simple
             </span>
           </motion.h1>
@@ -166,11 +348,11 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className='text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed font-normal px-4 sm:px-0'
+            className='text-base sm:text-lg md:text-xl lg:text-2xl text-white drop-shadow-lg max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed font-normal px-4 sm:px-0'
           >
             Order confidential lab tests online without a doctor{"'"}s visit.
             <br className='hidden sm:block' />
-            <span className='font-semibold text-cyan-600 dark:text-cyan-400'>
+            <span className='font-semibold text-cyan-300 drop-shadow-md'>
               HIPAA-secure, CLIA-certified labs,
             </span>{" "}
             results in 24-48 hours.
@@ -265,6 +447,70 @@ export function HeroSection() {
                 </div>
               </motion.div>
             ))}
+          </motion.div>
+
+          {/* Carousel Controls - Dots and Navigation Arrows */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 1 }}
+            className='mt-12 sm:mt-16 md:mt-20 flex flex-col items-center gap-6'
+          >
+            {/* Navigation Arrows */}
+            <div className='flex items-center gap-4 sm:gap-6'>
+              <motion.button
+                onClick={goToPreviousImage}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className='p-2 sm:p-3 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 transition-all duration-300 text-white'
+                aria-label='Previous image'
+              >
+                <ChevronLeft className='h-5 w-5 sm:h-6 sm:w-6' />
+              </motion.button>
+
+              {/* Dot Indicators */}
+              <div className='flex gap-2 sm:gap-3'>
+                {shuffledSlides.map((_, index) => (
+                  <motion.button
+                    key={index}
+                    onClick={() => goToImage(index)}
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={`h-2 sm:h-3 rounded-full transition-all duration-300 ${
+                      index === currentImageIndex
+                        ? "bg-white w-8 sm:w-10"
+                        : "bg-white/50 w-2 sm:w-3 hover:bg-white/70"
+                    }`}
+                    aria-label={`Go to image ${index + 1}`}
+                    aria-current={index === currentImageIndex}
+                  />
+                ))}
+              </div>
+
+              <motion.button
+                onClick={goToNextImage}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className='p-2 sm:p-3 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 transition-all duration-300 text-white'
+                aria-label='Next image'
+              >
+                <ChevronRight className='h-5 w-5 sm:h-6 sm:w-6' />
+              </motion.button>
+            </div>
+
+            {/* Slide Title/Caption */}
+            <AnimatePresence mode='wait'>
+              <motion.div
+                key={currentImageIndex}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.3 }}
+                className='text-white/80 text-sm sm:text-base font-medium drop-shadow-md'
+              >
+                {shuffledSlides[currentImageIndex].title}
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
