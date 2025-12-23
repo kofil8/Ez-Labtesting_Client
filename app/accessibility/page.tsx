@@ -1,12 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Heart,
-  Monitor,
   Keyboard,
-  Phone,
   Mail,
   MessageCircle,
+  Monitor,
+  Phone,
 } from "lucide-react";
 import Link from "next/link";
 

@@ -5,7 +5,6 @@ import {
   ArrowRight,
   Award,
   Facebook,
-  Heart,
   Instagram,
   Linkedin,
   Mail,

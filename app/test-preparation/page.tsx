@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Card,
   CardContent,
@@ -5,14 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
   Coffee,
   Droplet,
   Pill,
-  Clock,
-  AlertCircle,
-  CheckCircle,
 } from "lucide-react";
 import Link from "next/link";
 
