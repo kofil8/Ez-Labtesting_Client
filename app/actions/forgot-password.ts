@@ -25,7 +25,10 @@ export async function forgotPassword(formData: FormData) {
 
   if (!res.ok) {
     const error = await res.json();
-    throw new Error(error.message || "Failed to send password reset OTP");
+    throw new Error(
+      error.message ||
+        "Unable to send password reset code. Please verify your email and try again."
+    );
   }
 
   return { success: true };

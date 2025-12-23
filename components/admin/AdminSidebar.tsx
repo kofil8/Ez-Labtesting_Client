@@ -1,123 +1,183 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import { LayoutDashboard, TestTube2, Users, Settings, Home, Menu, X, Package, Ticket, ShoppingCart } from 'lucide-react'
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  Home,
+  LayoutDashboard,
+  Menu,
+  Package,
+  ShoppingCart,
+  TestTube2,
+  Ticket,
+  Users,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const navItems = [
   {
-    title: 'Dashboard',
-    href: '/admin',
-    icon: LayoutDashboard,
+    title: "Overview",
+    items: [
+      {
+        title: "Dashboard",
+        href: "/admin",
+        icon: LayoutDashboard,
+      },
+    ],
   },
   {
-    title: 'Tests',
-    href: '/admin/tests',
-    icon: TestTube2,
+    title: "Content Management",
+    items: [
+      {
+        title: "Tests",
+        href: "/admin/tests",
+        icon: TestTube2,
+      },
+      {
+        title: "Test Panels",
+        href: "/admin/panels",
+        icon: Package,
+      },
+      {
+        title: "Promo Codes",
+        href: "/admin/promo-codes",
+        icon: Ticket,
+      },
+    ],
   },
   {
-    title: 'Test Panels',
-    href: '/admin/panels',
-    icon: Package,
+    title: "User Management",
+    items: [
+      {
+        title: "Users",
+        href: "/admin/users",
+        icon: Users,
+      },
+      {
+        title: "Orders",
+        href: "/admin/orders",
+        icon: ShoppingCart,
+      },
+    ],
   },
-  {
-    title: 'Promo Codes',
-    href: '/admin/promo-codes',
-    icon: Ticket,
-  },
-  {
-    title: 'Users',
-    href: '/admin/users',
-    icon: Users,
-  },
-  {
-    title: 'Orders',
-    href: '/admin/orders',
-    icon: ShoppingCart,
-  },
-]
+];
 
 export function AdminSidebar() {
-  const pathname = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <>
       {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-3 sm:top-4 left-3 sm:left-4 z-50">
+      <div className='lg:hidden fixed top-3 sm:top-4 left-3 sm:left-4 z-50'>
         <Button
-          variant="outline"
-          size="icon"
+          variant='outline'
+          size='icon'
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="bg-background h-9 w-9 sm:h-10 sm:w-10"
+          className='bg-background h-10 w-10 shadow-lg'
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         >
-          {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          {isMobileMenuOpen ? (
+            <X className='h-4 w-4' />
+          ) : (
+            <Menu className='h-4 w-4' />
+          )}
         </Button>
       </div>
 
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+          className='lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40'
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={cn(
-        "fixed left-0 top-0 h-screen w-56 sm:w-64 border-r bg-muted/40 p-4 sm:p-6 z-40 transition-transform duration-300",
-        "lg:translate-x-0",
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
-        <div className="mb-6 sm:mb-8">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-base sm:text-lg md:text-xl font-bold text-primary">Kevin Lab</span>
+      <div
+        className={cn(
+          "fixed left-0 top-0 h-screen w-64 border-r bg-card p-6 z-40 transition-transform duration-300 overflow-y-auto",
+          "lg:translate-x-0",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Branding */}
+        <div className='mb-8'>
+          <Link href='/' className='flex items-center gap-2 group'>
+            <span className='text-xl font-bold text-gradient-medical'>
+              Ez LabTesting
+            </span>
           </Link>
-          <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground mt-1">Admin Panel</p>
+          <p className='text-xs text-muted-foreground mt-1 font-medium'>
+            Admin Panel
+          </p>
         </div>
 
-        <nav className="space-y-1 sm:space-y-2">
+        <nav className='space-y-6'>
+          {/* Back to Site Link */}
           <Link
-            href="/"
+            href='/'
             onClick={() => setIsMobileMenuOpen(false)}
             className={cn(
-              'flex items-center space-x-2 sm:space-x-3 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium hover:bg-accent',
-              'text-muted-foreground'
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+              "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
-            <Home className="h-3 w-3 sm:h-4 sm:w-4" />
+            <Home className='h-4 w-4' />
             <span>Back to Site</span>
           </Link>
 
-          <div className="pt-3 sm:pt-4 border-t">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-              
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    'flex items-center space-x-2 sm:space-x-3 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium hover:bg-accent transition-colors',
-                    isActive
-                      ? 'bg-accent text-accent-foreground'
-                      : 'text-muted-foreground'
-                  )}
-                >
-                  <Icon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="truncate">{item.title}</span>
-                </Link>
-              )
-            })}
+          <div className='border-t pt-4'>
+            {/* Navigation Groups */}
+            {navItems.map((group) => (
+              <div key={group.title} className='mb-6'>
+                {/* Group Header */}
+                <div className='px-3 mb-2'>
+                  <h3 className='text-xs font-bold text-muted-foreground uppercase tracking-wider'>
+                    {group.title}
+                  </h3>
+                </div>
+
+                {/* Group Items */}
+                <div className='space-y-1'>
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive =
+                      pathname === item.href ||
+                      (item.href !== "/admin" &&
+                        pathname.startsWith(item.href + "/"));
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all",
+                          isActive
+                            ? "bg-primary/10 text-primary border-l-4 border-primary shadow-sm"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "h-4 w-4 flex-shrink-0 transition-colors",
+                            isActive ? "text-primary" : "text-muted-foreground"
+                          )}
+                        />
+                        <span>{item.title}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </nav>
       </div>
     </>
-  )
+  );
 }
-

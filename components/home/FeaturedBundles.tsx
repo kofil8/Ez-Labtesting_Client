@@ -98,6 +98,9 @@ export function FeaturedBundles() {
           testId: test.id,
           testName: test.name,
           price: test.price,
+          cptCode: test.cptCodes?.[0],
+          labCode: test.labCode,
+          labName: test.labName,
         });
       }
     });
@@ -129,69 +132,82 @@ export function FeaturedBundles() {
 
   // Small internal card component for readability
   function BundleCard({ panel, index }: { panel: Panel; index: number }) {
+    const savingsPercent = Math.round(
+      (panel.savings / panel.originalPrice) * 100
+    );
+
     return (
       <motion.div
         key={panel.id}
-        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+        initial={{ opacity: 0, y: 15, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 10, scale: 0.98 }}
-        transition={{ delay: index * 0.04, duration: 0.25, ease: "easeOut" }}
-        whileHover={{ y: -6, transition: { duration: 0.2 } }}
+        exit={{ opacity: 0, y: 15, scale: 0.97 }}
+        transition={{ delay: index * 0.05, duration: 0.3, ease: "easeOut" }}
+        whileHover={{ y: -8, transition: { duration: 0.25 } }}
         className='h-full gpu-accelerated'
       >
-        <Card className='flex flex-col h-full hover-lift border-2 relative overflow-hidden group'>
-          <div className='absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+        <Card className='flex flex-col h-full bg-white dark:bg-slate-800/90 backdrop-blur-sm border border-gray-200 dark:border-slate-700 shadow-lg shadow-gray-100/50 dark:shadow-none hover:shadow-xl hover:shadow-purple-100/30 dark:hover:shadow-none hover:border-purple-200 dark:hover:border-purple-800/50 relative overflow-hidden group transition-all duration-300'>
+          {/* Subtle hover gradient */}
+          <div className='absolute inset-0 bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
 
-          <CardHeader className='relative p-4 sm:p-5'>
-            <div className='flex items-start justify-between gap-2 mb-2'>
-              <div className='p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 shadow-lg group-hover:shadow-xl transition-shadow'>
+          <CardHeader className='relative p-5 sm:p-6 pb-3'>
+            <div className='flex items-start justify-between gap-3 mb-4'>
+              <div className='p-3 rounded-xl bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30 group-hover:shadow-xl group-hover:scale-105 transition-all duration-300'>
                 <Package className='h-5 w-5 sm:h-6 sm:w-6 text-white' />
               </div>
               {panel.savings > 0 && (
                 <motion.div
-                  initial={{ scale: 0, rotate: -25 }}
+                  initial={{ scale: 0, rotate: -15 }}
                   whileInView={{ scale: 1, rotate: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 + 0.18, type: "spring" }}
+                  transition={{
+                    delay: index * 0.05 + 0.15,
+                    type: "spring",
+                    stiffness: 200,
+                  }}
                 >
-                  <Badge className='bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg px-2.5 py-0.5 text-xs sm:text-sm'>
-                    💰 Save {formatCurrency(panel.savings)}
+                  <Badge className='bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-md px-3 py-1.5 text-sm font-bold'>
+                    Save {savingsPercent}%
                   </Badge>
                 </motion.div>
               )}
             </div>
 
-            <CardTitle className='text-lg sm:text-xl mb-1.5 group-hover:text-primary transition-colors'>
+            <CardTitle className='text-xl sm:text-2xl font-bold mb-2 group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors'>
               {panel.name}
             </CardTitle>
-            <CardDescription className='text-sm'>
+            <CardDescription className='text-sm text-gray-600 dark:text-gray-400 leading-relaxed'>
               {panel.description}
             </CardDescription>
           </CardHeader>
 
-          <CardContent className='flex-1 relative p-4 pt-0 sm:p-5 sm:pt-0'>
-            <div className='space-y-3'>
-              <div className='flex items-center justify-between p-2.5 rounded-lg bg-muted/50'>
-                <span className='text-sm text-muted-foreground'>
+          <CardContent className='flex-1 relative px-5 sm:px-6 pb-4'>
+            <div className='space-y-4'>
+              {/* Tests count indicator */}
+              <div className='flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50'>
+                <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
                   Tests included
                 </span>
-                <span className='font-bold text-base'>
+                <span className='inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-bold text-sm'>
                   {panel.testIds.length}
                 </span>
               </div>
 
-              <div className='space-y-1.5'>
-                <div className='flex justify-between text-sm'>
-                  <span className='text-muted-foreground line-through'>
+              {/* Pricing section with clear hierarchy */}
+              <div className='space-y-2 pt-2'>
+                <div className='flex justify-between items-center text-sm'>
+                  <span className='text-gray-500 dark:text-gray-500'>
                     Regular Price
                   </span>
-                  <span className='text-muted-foreground line-through'>
+                  <span className='text-gray-400 dark:text-gray-600 line-through font-medium'>
                     {formatCurrency(panel.originalPrice)}
                   </span>
                 </div>
-                <div className='flex justify-between items-center text-base font-bold pt-2 border-t'>
-                  <span className='text-gradient-cosmic'>Bundle Price</span>
-                  <span className='text-gradient-cosmic'>
+                <div className='flex justify-between items-center pt-3 border-t border-gray-100 dark:border-slate-700/50'>
+                  <span className='text-base font-semibold text-gray-900 dark:text-white'>
+                    Bundle Price
+                  </span>
+                  <span className='text-2xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent'>
                     {formatCurrency(panel.bundlePrice)}
                   </span>
                 </div>
@@ -199,13 +215,13 @@ export function FeaturedBundles() {
             </div>
           </CardContent>
 
-          <CardFooter className='relative p-4 pt-0 sm:p-5 sm:pt-0'>
+          <CardFooter className='relative px-5 sm:px-6 pb-5 sm:pb-6 pt-2'>
             <Button
               onClick={() => handleAddBundle(panel)}
-              className='w-full gradient-blue-purple hover:scale-105 transition-transform shadow-lg group/btn'
-              size='default'
+              className='w-full h-12 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 hover:from-purple-700 hover:via-pink-700 hover:to-orange-600 text-white font-semibold shadow-lg shadow-purple-200/50 dark:shadow-purple-900/30 hover:shadow-xl hover:scale-[1.02] transition-all duration-200 group/btn'
+              size='lg'
             >
-              <ShoppingCart className='h-4 w-4 mr-2 group-hover/btn:animate-pulse' />
+              <ShoppingCart className='h-5 w-5 mr-2 group-hover/btn:scale-110 transition-transform' />
               Add Bundle to Cart
             </Button>
           </CardFooter>
@@ -215,24 +231,28 @@ export function FeaturedBundles() {
   }
 
   return (
-    <section className='py-12 sm:py-16 md:py-20 border-t bg-kalles-card relative overflow-hidden'>
-      <div className='absolute inset-0 bg-kalles-pattern opacity-50' />
+    <section className='py-16 sm:py-20 md:py-24 bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 relative overflow-hidden'>
+      <div className='absolute inset-0 bg-kalles-pattern opacity-30' />
+      <div className='absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent' />
 
       <div className='container mx-auto px-4 sm:px-6 lg:px-8 relative'>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className='text-center mb-10 sm:mb-12 md:mb-16'
+          className='text-center mb-12 sm:mb-14 md:mb-16'
         >
-          <div className='inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium mb-3 sm:mb-4'>
-            <Package className='h-3 w-3 sm:h-4 sm:w-4' />
+          <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-semibold mb-4'>
+            <Package className='h-4 w-4' />
             <span>Special Offers</span>
           </div>
-          <h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-4 sm:px-0'>
-            Featured Test <span className='text-gradient-cosmic'>Panels</span>
+          <h2 className='text-3xl sm:text-4xl md:text-5xl font-bold mb-4'>
+            Featured Test{" "}
+            <span className='bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent'>
+              Panels
+            </span>
           </h2>
-          <p className='text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0'>
+          <p className='text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed'>
             Save money with our curated test bundles designed for common health
             needs
           </p>

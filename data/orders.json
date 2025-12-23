@@ -115,6 +115,35 @@
     "createdAt": "2024-02-10T16:45:00Z",
     "updatedAt": "2024-02-15T11:45:00Z",
     "completedAt": "2024-02-15T11:45:00Z"
+  },
+  {
+    "id": "order-test-webhook",
+    "userId": "user-local",
+    "tests": [
+      {
+        "testId": "test-001",
+        "testName": "Complete Blood Count (CBC)",
+        "price": 29.99
+      }
+    ],
+    "status": "pending",
+    "subtotal": 29.99,
+    "totalAmount": 29.99,
+    "customerInfo": {
+      "firstName": "Webhook",
+      "lastName": "Tester",
+      "email": "webhook@test.local",
+      "phone": "5550000000",
+      "dateOfBirth": "1990-01-01",
+      "address": {
+        "street": "1 Test Ave",
+        "city": "Testville",
+        "state": "TS",
+        "zipCode": "00000"
+      },
+      "notifications": { "email": true, "sms": false }
+    },
+    "paymentMethod": "card",
+    "createdAt": "2025-12-23T00:00:00Z"
   }
 ]
-

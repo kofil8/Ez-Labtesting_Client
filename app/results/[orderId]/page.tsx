@@ -2,7 +2,7 @@ import { ResultViewer } from "@/components/results/ResultViewer";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
-import { getResultsByOrderId, getOrderById } from "@/lib/api";
+import { getOrderById, getResultsByOrderId } from "@/lib/api";
 import { notFound } from "next/navigation";
 
 export const metadata = {
@@ -19,7 +19,7 @@ export default async function ResultViewerPage({
 
   const [results, order] = await Promise.all([
     getResultsByOrderId(orderId),
-    getOrderById(orderId)
+    getOrderById(orderId),
   ]);
 
   if (!results || results.length === 0 || !order) {
@@ -29,7 +29,7 @@ export default async function ResultViewerPage({
   return (
     <div className='flex min-h-screen flex-col'>
       <SiteHeader />
-      <main className='flex-1'>
+      <main id='main-content' className='flex-1'>
         <PageContainer>
           <div className='py-8'>
             <ResultViewer results={results} order={order} />

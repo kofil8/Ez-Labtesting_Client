@@ -16,7 +16,7 @@ export default function CheckoutPage() {
   return (
     <div className='flex min-h-screen flex-col bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-blue-950'>
       <SiteHeader />
-      <main className='flex-1'>
+      <main id='main-content' className='flex-1'>
         <PageContainer>
           <div className='py-6 sm:py-8'>
             <div className='text-center mb-6 sm:mb-8'>

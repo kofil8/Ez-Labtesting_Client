@@ -12,7 +12,7 @@ export default function CartPage() {
   return (
     <div className='flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'>
       <SiteHeader />
-      <main className='flex-1'>
+      <main id='main-content' className='flex-1'>
         <PageContainer>
           <div className='py-6 sm:py-8 md:py-12'>
             <div className='relative mb-6 sm:mb-8'>

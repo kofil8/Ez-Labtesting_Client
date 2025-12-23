@@ -8,11 +8,15 @@ export interface User {
   dateOfBirth?: string;
   profileImage?: string;
   bio?: string;
-  role: "customer" | "admin";
+  role: "customer" | "admin" | "lab_partner";
   createdAt: string;
   updatedAt?: string;
   isVerified?: boolean;
   mfaEnabled?: boolean;
+  // Lab Partner specific fields
+  labName?: string;
+  labLocation?: string;
+  labCertifications?: string[];
 }
 
 export interface AuthState {

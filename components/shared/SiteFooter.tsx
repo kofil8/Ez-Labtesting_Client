@@ -1,8 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hook/use-toast";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -14,36 +11,13 @@ import {
   Mail,
   MapPin,
   Phone,
-  Send,
   Shield,
-  Sparkles,
   Twitter,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 
 export function SiteFooter() {
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    toast({
-      title: "Successfully subscribed!",
-      description: "Thank you for subscribing to our newsletter.",
-    });
-
-    setEmail("");
-    setIsSubmitting(false);
-  };
-
   const socialLinks = [
     {
       icon: Facebook,
@@ -75,17 +49,17 @@ export function SiteFooter() {
   ];
 
   const supportLinks = [
-    { href: "#", label: "Help Center" },
-    { href: "#", label: "FAQs" },
-    { href: "#", label: "How It Works" },
-    { href: "#", label: "Test Preparation" },
+    { href: "/help-center", label: "Help Center" },
+    { href: "/faqs", label: "FAQs" },
+    { href: "/how-it-works", label: "How It Works" },
+    { href: "/test-preparation", label: "Test Preparation" },
   ];
 
   const legalLinks = [
-    { href: "/privacy", label: "Privacy Policy" },
-    { href: "/terms", label: "Terms of Service" },
-    { href: "/hipaa", label: "HIPAA Notice" },
-    { href: "#", label: "Accessibility" },
+    { href: "/privacy-policy", label: "Privacy Policy" },
+    { href: "/terms-of-service", label: "Terms of Service" },
+    { href: "/hipaa-notice", label: "HIPAA Notice" },
+    { href: "/accessibility", label: "Accessibility" },
   ];
 
   const containerVariants = {
@@ -113,67 +87,6 @@ export function SiteFooter() {
       </div>
 
       <div className='relative container mx-auto px-4 sm:px-6 lg:px-8'>
-        {/* Newsletter Section - Awsmd style */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className='py-16 relative'
-        >
-          {/* Gradient border bottom */}
-          <div className='absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-cyan-400/30 via-blue-400/30 to-teal-400/30' />
-          <div className='max-w-4xl mx-auto text-center px-4 sm:px-0'>
-            <div className='inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/50 dark:to-blue-950/50 border-2 border-cyan-200 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 text-xs font-bold mb-4 shadow-md'>
-              <Sparkles className='h-3 w-3 sm:h-4 sm:w-4 animate-pulse' />
-              <span>Stay Updated</span>
-            </div>
-            <h3 className='text-xl sm:text-2xl md:text-3xl mb-4 text-center'>
-              <span className='text-gradient-medical font-bold'>Subscribe</span>
-              <span className='text-gray-900 dark:text-gray-100 font-bold'>
-                {" "}
-                to Our Newsletter
-              </span>
-            </h3>
-
-            <p className='text-sm sm:text-base text-gray-800 mb-6 max-w-2xl mx-auto leading-relaxed font-medium px-4 sm:px-0'>
-              Get exclusive health tips, special offers, and the latest updates
-              delivered to your inbox.
-            </p>
-            <form
-              onSubmit={handleNewsletterSubmit}
-              className='flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-lg mx-auto px-4 sm:px-0'
-            >
-              <div className='relative flex-1'>
-                <Mail className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500' />
-                <Input
-                  type='email'
-                  placeholder='Enter your email'
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className='pl-10 h-11 rounded-lg bg-white dark:bg-gray-900 text-sm font-medium'
-                />
-              </div>
-              <Button
-                type='submit'
-                size='default'
-                variant='medical'
-                disabled={isSubmitting}
-                className='h-11 px-6 text-white transition-all shadow-xl hover:shadow-2xl rounded-lg font-bold text-sm'
-              >
-                {isSubmitting ? (
-                  "Subscribing..."
-                ) : (
-                  <>
-                    Subscribe
-                    <Send className='ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform' />
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
-        </motion.div>
-
         {/* Main Footer Content */}
         <motion.div
           variants={containerVariants}
@@ -191,7 +104,7 @@ export function SiteFooter() {
               <div className='w-8 h-8 sm:w-10 sm:h-10 rounded-xl gradient-medical flex items-center justify-center shadow-xl'>
                 <Image
                   className='w-full h-full object-cover'
-                  src='https://ik.imagekit.io/an6uwgksy/logo.png'
+                  src='/images/logo.png'
                   alt='Ez LabTesting'
                   width={40}
                   height={40}
@@ -334,11 +247,6 @@ export function SiteFooter() {
               &copy; {new Date().getFullYear()} Ez LabTesting. All rights
               reserved.
             </p>
-            <div className='flex items-center gap-2'>
-              <span className='hidden sm:inline'>Developed by</span>
-              <Heart className='h-3 w-3 text-red-500 animate-pulse' />
-              <span className='hidden sm:inline'>devSyncBD</span>
-            </div>
             <p className='text-[10px]'>
               CLIA-certified laboratories • HIPAA-compliant • Available 24/7
             </p>

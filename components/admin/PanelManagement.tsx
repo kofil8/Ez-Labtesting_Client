@@ -41,7 +41,7 @@ export function PanelManagement() {
       console.error("Error loading data:", error);
       toast({
         title: "Error",
-        description: "Failed to load panels.",
+        description: "Unable to load panels. Please refresh the page.",
         variant: "destructive",
       });
     } finally {

@@ -83,6 +83,9 @@ export function PanelDetail({ panel }: { panel: Panel }) {
           testId: test.id,
           testName: test.name,
           price: test.price,
+          cptCode: test.cptCodes?.[0],
+          labCode: test.labCode,
+          labName: test.labName,
         });
       }
     });

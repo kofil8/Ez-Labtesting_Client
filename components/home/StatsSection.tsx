@@ -48,55 +48,61 @@ function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
 
 export function StatsSection() {
   return (
-    <section className='py-12 sm:py-16 md:py-20 lg:py-32 bg-kalles-card relative overflow-hidden'>
-      {/* Kalles-style subtle background pattern */}
-      <div className='absolute inset-0 bg-kalles-pattern opacity-30' />
+    <section className='py-16 sm:py-20 md:py-24 lg:py-28 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 relative overflow-hidden'>
+      {/* Enhanced background with subtle gradient overlay */}
+      <div className='absolute inset-0 bg-kalles-pattern opacity-20' />
+      <div className='absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5' />
 
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative'>
+      <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative'>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className='text-center mb-10 sm:mb-12 md:mb-16 lg:mb-20'
+          className='text-center mb-12 sm:mb-14 md:mb-16'
         >
-          <h2 className='text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 sm:mb-6'>
-            <span className='text-gray-900 dark:text-white'>Some </span>
-            <span className='awsmd-gradient-text'>Numbers</span>
-            <span className='text-gray-900 dark:text-white'> About Us</span>
+          {/* Section label */}
+          <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-4'>
+            <span className='w-2 h-2 rounded-full bg-blue-500 animate-pulse' />
+            Our Impact
+          </div>
+          <h2 className='text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4'>
+            <span className='text-gray-900 dark:text-white'>Trusted by </span>
+            <span className='bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent'>
+              Thousands
+            </span>
           </h2>
-          <p className='text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4 sm:px-0'>
-            Numbers don&#39;t lie, so we use data science to drive calculated
-            growth
+          <p className='text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed'>
+            Real numbers that reflect our commitment to your health journey
           </p>
         </motion.div>
 
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12'>
+        <div className='grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8'>
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, scale: 0.8, y: 50 }}
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
               transition={{
-                delay: index * 0.15,
-                duration: 0.8,
+                delay: index * 0.1,
+                duration: 0.5,
                 type: "spring",
-                stiffness: 80,
+                stiffness: 100,
               }}
               viewport={{ once: true }}
-              whileHover={{ y: -8 }}
+              whileHover={{ y: -6, scale: 1.02 }}
               className='text-center relative group'
             >
-              <div className='awsmd-glass-card p-4 sm:p-6 md:p-8 lg:p-10 awsmd-hover-lift border-2 border-gray-200/50 dark:border-gray-700/50 group-hover:border-purple-300/50 dark:group-hover:border-purple-600/50'>
-                {/* Number display - Awsmd style */}
-                <div className='text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 sm:mb-3 md:mb-4'>
+              <div className='bg-white dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-lg shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-slate-700/50 group-hover:border-blue-200 dark:group-hover:border-blue-800/50 group-hover:shadow-xl group-hover:shadow-blue-100/50 dark:group-hover:shadow-none transition-all duration-300'>
+                {/* Number display with improved typography */}
+                <div className='text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3'>
                   <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                 </div>
-                {/* Label */}
-                <div className='text-[9px] sm:text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide'>
+                {/* Label with better spacing and sizing */}
+                <div className='text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider'>
                   {stat.label}
                 </div>
-                {/* Icon or decorative element */}
-                <div className='absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 awsmd-gradient-cosmic awsmd-rounded opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl' />
+                {/* Subtle hover glow */}
+                <div className='absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none' />
               </div>
             </motion.div>
           ))}

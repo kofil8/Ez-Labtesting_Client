@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
 export function LoginPageContent() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -20,7 +20,21 @@ export function LoginPageContent() {
         fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
           ? fromParam
           : null;
-      router.push(safeFrom || "/");
+
+      if (safeFrom) {
+        router.push(safeFrom);
+        return;
+      }
+
+      const role = user?.role;
+      const roleRedirect =
+        role === "admin"
+          ? "/admin"
+          : role === "lab_partner"
+          ? "/dashboard/lab-partner"
+          : "/dashboard/customer";
+
+      router.push(roleRedirect);
     }
   }, [isAuthenticated, isLoading, router, searchParams]);
 

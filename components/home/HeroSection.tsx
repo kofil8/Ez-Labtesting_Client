@@ -61,6 +61,7 @@ export function HeroSection() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [shuffledSlides, setShuffledSlides] = useState(MEDICAL_CAROUSEL_SLIDES);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
 
   // Initialize shuffled slides and hydration state on mount
   useEffect(() => {
@@ -91,13 +92,25 @@ export function HeroSection() {
     if (!isAutoPlaying || prefersReducedMotion) return;
 
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) =>
-        prev === shuffledSlides.length - 1 ? 0 : prev + 1
-      );
+      setCurrentImageIndex((prev) => {
+        if (direction === "forward") {
+          if (prev === shuffledSlides.length - 1) {
+            setDirection("backward");
+            return prev - 1;
+          }
+          return prev + 1;
+        } else {
+          if (prev === 0) {
+            setDirection("forward");
+            return 1;
+          }
+          return prev - 1;
+        }
+      });
     }, 5500); // Change image every 5.5 seconds (2.5s transition + 3s display)
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, prefersReducedMotion, shuffledSlides.length]);
+  }, [isAutoPlaying, prefersReducedMotion, shuffledSlides.length, direction]);
 
   const goToNextImage = () => {
     setCurrentImageIndex((prev) =>
@@ -141,20 +154,16 @@ export function HeroSection() {
 
       {/* Medical Image Carousel - Main Background */}
       <div className='absolute inset-0 w-full h-full overflow-hidden z-0'>
-        <AnimatePresence mode='popLayout'>
+        <AnimatePresence initial={false}>
           {/* Current Image */}
           <motion.div
             key={`img-${currentImageIndex}`}
-            initial={{ opacity: 1, filter: "blur(0px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{
-              opacity: 0,
-              filter: "blur(30px)",
-              scale: 0.9,
-            }}
+            initial={{ x: direction === "forward" ? "100%" : "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: direction === "forward" ? "-100%" : "100%" }}
             transition={{
-              duration: prefersReducedMotion ? 0 : 2.5,
-              ease: "easeInOut",
+              duration: prefersReducedMotion ? 0 : 1.5,
+              ease: [0.65, 0, 0.35, 1],
             }}
             className='absolute inset-0 w-full h-full'
           >
@@ -169,142 +178,6 @@ export function HeroSection() {
             />
             {/* Dark overlay for text readability */}
             <div className='absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60' />
-          </motion.div>
-
-          {/* Advanced Shatter Glass Effect with Image Pieces */}
-          <motion.div
-            key={`shatter-${currentImageIndex}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 1 }}
-            transition={{
-              duration: prefersReducedMotion ? 0 : 2.5,
-              ease: "easeInOut",
-            }}
-            className='absolute inset-0 w-full h-full overflow-hidden'
-            style={{ pointerEvents: "none" }}
-          >
-            {/* Grid of shatter pieces with image background */}
-            {Array.from({ length: 24 }).map((_, i) => {
-              const row = Math.floor(i / 6);
-              const col = i % 6;
-              const randomRotation = Math.random() * 360;
-              const randomDelay = i * 0.08;
-              const staggerDirection = i % 2 === 0 ? 1 : -1;
-
-              // Map piece position to background position for image continuity
-              const bgPositionX = (col / 6) * 100;
-              const bgPositionY = (row / 4) * 100;
-
-              return (
-                <motion.div
-                  key={i}
-                  initial={{
-                    opacity: 1,
-                    x: 0,
-                    y: 0,
-                    rotate: 0,
-                    scale: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    x: (col - 2.5) * staggerDirection * 150,
-                    y: (row - 2) * staggerDirection * 150,
-                    rotate: randomRotation,
-                    scale: 0.1,
-                  }}
-                  transition={{
-                    duration: prefersReducedMotion ? 0 : 2.2,
-                    delay: randomDelay,
-                    ease: "easeInOut",
-                  }}
-                  className='absolute w-1/6 h-1/4 border-2 border-cyan-400/80 backdrop-blur-md shadow-2xl'
-                  style={{
-                    left: `${col * 16.666}%`,
-                    top: `${row * 25}%`,
-                    backgroundImage: `url('${shuffledSlides[currentImageIndex].url}')`,
-                    backgroundSize: "600% 400%",
-                    backgroundPosition: `${bgPositionX}% ${bgPositionY}%`,
-                    boxShadow:
-                      "0 0 30px rgba(34, 211, 238, 0.8), inset 0 0 15px rgba(168, 85, 247, 0.4)",
-                  }}
-                />
-              );
-            })}
-
-            {/* Radial burst lines */}
-            {Array.from({ length: 8 }).map((_, i) => {
-              const angle = (i / 8) * Math.PI * 2;
-              const distance = 200;
-              const x = Math.cos(angle) * distance;
-              const y = Math.sin(angle) * distance;
-
-              return (
-                <motion.div
-                  key={`burst-${i}`}
-                  initial={{
-                    opacity: 0.8,
-                    scaleX: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    scaleX: 1,
-                  }}
-                  transition={{
-                    duration: prefersReducedMotion ? 0 : 1.8,
-                    delay: i * 0.15,
-                    ease: "easeOut",
-                  }}
-                  className='absolute h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-transparent origin-left'
-                  style={{
-                    width: "400px",
-                    left: "50%",
-                    top: "50%",
-                    transform: `translate(-50%, -50%) rotate(${
-                      angle * (180 / Math.PI)
-                    }deg)`,
-                    boxShadow: "0 0 40px rgba(34, 211, 238, 0.9)",
-                  }}
-                />
-              );
-            })}
-
-            {/* Particle explosion */}
-            {Array.from({ length: 30 }).map((_, i) => {
-              const angle = (i / 30) * Math.PI * 2;
-              const velocity = 250 + Math.random() * 150;
-              const x = Math.cos(angle) * velocity;
-              const y = Math.sin(angle) * velocity;
-
-              return (
-                <motion.div
-                  key={`particle-${i}`}
-                  initial={{
-                    opacity: 1,
-                    x: 0,
-                    y: 0,
-                    scale: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    x,
-                    y,
-                    scale: 0,
-                  }}
-                  transition={{
-                    duration: prefersReducedMotion ? 0 : 2,
-                    delay: Math.random() * 0.4,
-                    ease: "easeOut",
-                  }}
-                  className='absolute w-2 h-2 rounded-full bg-gradient-to-r from-cyan-300 to-purple-500 blur-sm'
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    boxShadow: "0 0 20px rgba(34, 211, 238, 0.9)",
-                  }}
-                />
-              );
-            })}
           </motion.div>
         </AnimatePresence>
       </div>

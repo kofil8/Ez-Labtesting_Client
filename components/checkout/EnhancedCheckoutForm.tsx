@@ -1,5 +1,6 @@
 "use client";
 
+import { SecurityBadge } from "@/components/shared/SecurityBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -103,7 +104,8 @@ export function EnhancedCheckoutForm() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to process your order. Please try again.",
+        description:
+          "Unable to process your order. Your payment information is secure. Please verify your details and try again.",
         variant: "destructive",
       });
     } finally {
@@ -114,6 +116,9 @@ export function EnhancedCheckoutForm() {
   return (
     <div className='space-y-4 sm:space-y-6 md:space-y-8'>
       <CheckoutProgress currentStep={currentStep} steps={CHECKOUT_STEPS} />
+
+      {/* Security Badge */}
+      <SecurityBadge className='max-w-2xl mx-auto' />
 
       <form
         onSubmit={handleSubmit(onSubmit)}

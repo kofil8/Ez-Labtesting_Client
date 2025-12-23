@@ -130,7 +130,10 @@ export default function FindLabCenterPage() {
     return (
       <div className='flex min-h-screen flex-col'>
         <SiteHeader />
-        <main className='flex-1 flex items-center justify-center p-8'>
+        <main
+          id='main-content'
+          className='flex-1 flex items-center justify-center p-8'
+        >
           <div className='text-center max-w-md'>
             <TestTube2 className='h-16 w-16 mx-auto text-gray-400 mb-4' />
             <h1 className='text-2xl font-bold mb-2'>Configuration Required</h1>

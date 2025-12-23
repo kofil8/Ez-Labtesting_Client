@@ -27,6 +27,9 @@ export function EnhancedTestCard({ test, index = 0 }: EnhancedTestCardProps) {
       testId: test.id,
       testName: test.name,
       price: test.price,
+      cptCode: test.cptCodes?.[0],
+      labCode: test.labCode,
+      labName: test.labName,
     });
     toast({
       title: "Added to cart",

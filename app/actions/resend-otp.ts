@@ -25,7 +25,10 @@ export async function resendOtp(formData: FormData) {
 
   if (!res.ok) {
     const error = await res.json();
-    throw new Error(error.message || "Failed to resend OTP");
+    throw new Error(
+      error.message ||
+        "Unable to resend verification code. Please try again in a moment."
+    );
   }
 
   return { success: true };

@@ -24,7 +24,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { NotificationTestButton } from "../notifications/SendTestNotificationButton";
+import { NotificationsBell } from "../notifications/NotificationsBell";
 
 // Icon mapping for navigation links
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -91,6 +91,13 @@ export function SiteHeader() {
 
   return (
     <>
+      {/* Skip Navigation Link for Accessibility */}
+      <a
+        href='#main-content'
+        className='sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:font-semibold focus:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+      >
+        Skip to main content
+      </a>
       <header
         className={`sticky top-0 z-50 w-full border-b-2 transition-all duration-200 gpu-accelerated ${
           isScrolled
@@ -98,7 +105,7 @@ export function SiteHeader() {
             : "bg-white/80 dark:bg-gray-900/80 border-blue-50 dark:border-cyan-900/30 backdrop-blur-md"
         }`}
       >
-        <div className='container mx-auto px-3 sm:px-4 md:px-6 lg:px-8'>
+        <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='flex h-14 sm:h-16 items-center justify-between'>
             {/* Logo */}
             <Link
@@ -127,7 +134,7 @@ export function SiteHeader() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className='hidden lg:flex items-center space-x-1'>
+            <nav className='hidden lg:flex items-center gap-1'>
               {navLinks.map((link) => {
                 const shouldShow =
                   link.showAlways ||
@@ -144,17 +151,13 @@ export function SiteHeader() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className='relative px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-sm lg:text-base font-bold transition-all hover:text-primary group'
+                    className={`relative px-4 lg:px-5 py-2.5 text-sm lg:text-base font-semibold rounded-lg transition-all group ${
+                      isActive
+                        ? "text-primary bg-primary/10 border-l-4 border-primary"
+                        : "text-foreground hover:text-primary hover:bg-primary/5"
+                    }`}
                   >
                     <span className='relative z-10'>{link.label}</span>
-                    {isActive && (
-                      <motion.div
-                        layoutId='activeIndicatorDesktop'
-                        className='absolute bottom-0 left-0 right-0 border-b-2 border-dotted border-red-500 group-hover:hidden'
-                        initial={false}
-                      />
-                    )}
-                    <span className='absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 scale-0 group-hover:scale-100 transition-all duration-300' />
                   </Link>
                 );
               })}
@@ -167,7 +170,7 @@ export function SiteHeader() {
                 variant='ghost'
                 size='icon'
                 onClick={toggleCart}
-                className='relative hover:bg-primary/10 transition-colors group h-10 w-10 sm:h-11 sm:w-11 touch-manipulation'
+                className='relative hover:bg-primary/10 transition-colors group h-11 w-11 touch-manipulation'
                 aria-label={
                   isMounted
                     ? `Shopping cart${
@@ -194,38 +197,37 @@ export function SiteHeader() {
                 )}
               </Button>
 
+              {/* Notifications Bell */}
+              {isAuthenticated && <NotificationsBell />}
+
               {/* Auth - Desktop */}
-              {/* 🔥 Test Push Button (desktop only) */}
-              {isAuthenticated && (
-                <div className='hidden lg:flex'>
-                  <NotificationTestButton />
-                </div>
-              )}
               <div className='hidden lg:flex items-center gap-2'>
                 {isAuthenticated ? (
                   <>
                     <Link href='/profile'>
                       <Button
                         variant='ghost'
-                        size='icon'
-                        className='hover:bg-primary/10 transition-colors group'
+                        className='hover:bg-primary/10 transition-colors group gap-2'
                         title='My Account'
+                        aria-label='My Account'
                       >
-                        <User className='h-5 w-5 group-hover:scale-110 transition-transform' />
+                        <User className='h-4 w-4 group-hover:scale-110 transition-transform' />
+                        <span className='hidden xl:inline'>Profile</span>
                       </Button>
                     </Link>
                     <Button
                       variant='ghost'
-                      size='icon'
                       onClick={async () => {
                         const token = await getPushToken();
                         await logout(token);
                         router.push("/");
                       }}
-                      className='hover:bg-destructive/10 hover:text-destructive transition-colors group'
+                      className='hover:bg-destructive/10 hover:text-destructive transition-colors group gap-2'
                       title='Sign Out'
+                      aria-label='Sign Out'
                     >
-                      <LogOut className='h-5 w-5 group-hover:scale-110 transition-transform' />
+                      <LogOut className='h-4 w-4 group-hover:scale-110 transition-transform' />
+                      <span className='hidden xl:inline'>Sign Out</span>
                     </Button>
                   </>
                 ) : (
@@ -233,14 +235,14 @@ export function SiteHeader() {
                     <Button
                       variant='ghost'
                       asChild
-                      className='hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 dark:hover:from-cyan-900/20 dark:hover:to-blue-900/20 rounded-lg font-bold'
+                      className='hover:bg-primary/10 rounded-lg font-semibold'
                     >
                       <Link href='/login'>Sign In</Link>
                     </Button>
                     <Button
                       asChild
                       variant='medical'
-                      className='text-white hover:opacity-95 transition-all shadow-lg hover:shadow-xl rounded-lg font-bold px-6'
+                      className='text-white hover:opacity-95 transition-all shadow-lg hover:shadow-xl rounded-lg font-semibold px-6'
                     >
                       <Link href='/signup' className='flex items-center gap-2'>
                         <Sparkles className='h-5 w-5 group-hover:rotate-12 transition-transform' />
@@ -331,9 +333,44 @@ export function SiteHeader() {
               </div>
 
               {/* Mobile Menu Content */}
-              <div className='p-4 sm:p-5 space-y-1'>
+              <div className='p-5 space-y-1'>
+                {/* User Info (if authenticated) - Moved to top */}
+                {isAuthenticated && user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className='mb-6 p-4 rounded-xl bg-primary/5 border-2 border-primary/20'
+                  >
+                    <div className='flex items-center gap-3 mb-2'>
+                      <div className='h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center'>
+                        <User className='h-5 w-5 text-primary' />
+                      </div>
+                      <div className='flex-1 min-w-0'>
+                        <p className='text-sm font-medium text-muted-foreground'>
+                          Signed in as
+                        </p>
+                        <p className='text-base font-semibold truncate'>
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    {user.role === "admin" && (
+                      <span className='inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-md bg-gradient-to-r from-purple-500 to-pink-500 text-white'>
+                        <Shield className='h-3 w-3' />
+                        Admin
+                      </span>
+                    )}
+                  </motion.div>
+                )}
+
                 {/* Navigation Links */}
-                <nav className='space-y-1 mb-4'>
+                <nav className='space-y-1 mb-6'>
+                  <div className='px-3 mb-3'>
+                    <p className='text-xs font-bold text-muted-foreground uppercase tracking-wider'>
+                      Browse
+                    </p>
+                  </div>
                   {navLinks.map((link, index) => {
                     const shouldShow =
                       link.showAlways ||
@@ -354,22 +391,25 @@ export function SiteHeader() {
                         key={link.href}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ delay: index * 0.05 + 0.15 }}
                       >
                         <Link
                           href={link.href}
                           onClick={handleLinkClick}
-                          className='group relative flex items-center gap-3 px-4 py-3.5 sm:py-4 rounded-xl text-base sm:text-lg font-semibold transition-all touch-manipulation hover:bg-gray-100 dark:hover:bg-gray-800 text-foreground'
+                          className={`group relative flex items-center gap-3 px-4 py-4 rounded-xl text-base font-semibold transition-all touch-manipulation ${
+                            isActive
+                              ? "bg-primary/10 text-primary border-l-4 border-primary shadow-sm"
+                              : "text-foreground hover:bg-muted"
+                          }`}
                         >
-                          <IconComponent className='h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-muted-foreground' />
+                          <IconComponent
+                            className={`h-5 w-5 flex-shrink-0 transition-colors ${
+                              isActive
+                                ? "text-primary"
+                                : "text-muted-foreground"
+                            }`}
+                          />
                           <span>{link.label}</span>
-                          {isActive && (
-                            <motion.div
-                              layoutId='activeIndicator'
-                              className='absolute bottom-0 left-0 right-0 border-b-2 border-dotted border-red-500 group-hover:hidden'
-                              initial={false}
-                            />
-                          )}
                         </Link>
                       </motion.div>
                     );
@@ -377,35 +417,40 @@ export function SiteHeader() {
                 </nav>
 
                 {/* Divider */}
-                <div className='my-4 sm:my-5 border-t border-gray-200 dark:border-gray-700' />
+                <div className='mb-4 border-t border-border' />
 
                 {/* Auth Section */}
                 <div className='space-y-2'>
+                  <div className='px-3 mb-3'>
+                    <p className='text-xs font-bold text-muted-foreground uppercase tracking-wider'>
+                      {isAuthenticated ? "Account" : "Get Started"}
+                    </p>
+                  </div>
                   {isAuthenticated ? (
                     <>
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
+                        transition={{ delay: 0.3 }}
                       >
                         <Link href='/profile' onClick={handleLinkClick}>
                           <Button
                             variant='ghost'
-                            className='w-full justify-start h-12 sm:h-14 text-base sm:text-lg font-semibold touch-manipulation'
+                            className='w-full justify-start h-14 text-base font-semibold touch-manipulation hover:bg-primary/10'
                           >
-                            <User className='h-5 w-5 sm:h-6 sm:w-6 mr-3' />
-                            My Account
+                            <User className='h-5 w-5 mr-3' />
+                            My Profile
                           </Button>
                         </Link>
                       </motion.div>
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.25 }}
+                        transition={{ delay: 0.35 }}
                       >
                         <Button
                           variant='ghost'
-                          className='w-full justify-start h-12 sm:h-14 text-base sm:text-lg font-semibold text-destructive hover:bg-destructive/10 touch-manipulation'
+                          className='w-full justify-start h-14 text-base font-semibold text-destructive hover:bg-destructive/10 touch-manipulation'
                           onClick={async () => {
                             const token = await getPushToken();
                             await logout(token);
@@ -413,7 +458,7 @@ export function SiteHeader() {
                             router.push("/");
                           }}
                         >
-                          <LogOut className='h-5 w-5 sm:h-6 sm:w-6 mr-3' />
+                          <LogOut className='h-5 w-5 mr-3' />
                           Sign Out
                         </Button>
                       </motion.div>
@@ -423,12 +468,12 @@ export function SiteHeader() {
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
+                        transition={{ delay: 0.3 }}
                       >
                         <Link href='/login' onClick={handleLinkClick}>
                           <Button
                             variant='outline'
-                            className='w-full h-12 sm:h-14 text-base sm:text-lg font-semibold touch-manipulation'
+                            className='w-full h-14 text-base font-semibold touch-manipulation'
                           >
                             Sign In
                           </Button>
@@ -437,14 +482,14 @@ export function SiteHeader() {
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.25 }}
+                        transition={{ delay: 0.35 }}
                       >
                         <Link href='/signup' onClick={handleLinkClick}>
                           <Button
                             variant='medical'
-                            className='w-full h-12 sm:h-14 text-base sm:text-lg font-semibold text-white shadow-xl hover:shadow-2xl touch-manipulation'
+                            className='w-full h-14 text-base font-semibold text-white shadow-xl hover:shadow-2xl touch-manipulation'
                           >
-                            <Sparkles className='h-5 w-5 sm:h-6 sm:w-6 mr-2' />
+                            <Sparkles className='h-5 w-5 mr-2' />
                             Register
                           </Button>
                         </Link>
@@ -452,28 +497,6 @@ export function SiteHeader() {
                     </>
                   )}
                 </div>
-
-                {/* User Info (if authenticated) */}
-                {isAuthenticated && user && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className='mt-4 sm:mt-5 p-3 sm:p-4 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-                  >
-                    <p className='text-sm font-medium text-muted-foreground mb-1'>
-                      Signed in as
-                    </p>
-                    <p className='text-base sm:text-lg font-semibold'>
-                      {user.email}
-                    </p>
-                    {user.role === "admin" && (
-                      <span className='inline-block mt-2 px-2 py-1 text-xs font-bold rounded-md bg-gradient-to-r from-purple-500 to-pink-500 text-white'>
-                        Admin
-                      </span>
-                    )}
-                  </motion.div>
-                )}
               </div>
             </motion.div>
           </>

@@ -59,7 +59,9 @@ export function ProfileEditDialog({
           }
         } catch (error) {
           console.error("Failed to fetch profile:", error);
-          toast.error("Failed to load profile data");
+          toast.error(
+            "Unable to load your profile. Your data remains secure. Please try again."
+          );
         } finally {
           setLoading(false);
         }
@@ -161,7 +163,7 @@ export function ProfileEditDialog({
           </div>
         ) : !user ? (
           <div className='p-6 text-center text-muted-foreground'>
-            Failed to load profile data
+            Unable to load profile information
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className='p-6'>

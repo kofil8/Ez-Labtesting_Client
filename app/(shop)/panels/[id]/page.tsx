@@ -1,7 +1,7 @@
+import { PanelDetail } from "@/components/panels/PanelDetail";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { SiteHeader } from "@/components/shared/SiteHeader";
-import { PanelDetail } from "@/components/panels/PanelDetail";
 import panelsData from "@/data/panels.json";
 import { notFound } from "next/navigation";
 
@@ -40,7 +40,7 @@ export default async function PanelDetailPage({
   return (
     <div className='flex min-h-screen flex-col'>
       <SiteHeader />
-      <main className='flex-1'>
+      <main id='main-content' className='flex-1'>
         <PageContainer>
           <div className='py-8'>
             <PanelDetail panel={panel} />
@@ -51,4 +51,3 @@ export default async function PanelDetailPage({
     </div>
   );
 }
-

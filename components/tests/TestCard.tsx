@@ -7,7 +7,7 @@ import { useToast } from "@/hook/use-toast";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatCurrency } from "@/lib/utils";
 import { Test } from "@/types/test";
-import { Beaker, Clock, ShoppingCart } from "lucide-react";
+import { Beaker, Clock, ShieldCheck, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -26,6 +26,9 @@ export function TestCard({ test }: TestCardProps) {
       testId: test.id,
       testName: test.name,
       price: test.price,
+      cptCode: test.cptCodes?.[0],
+      labCode: test.labCode,
+      labName: test.labName,
     });
     toast({
       title: "Added to cart",
@@ -71,14 +74,25 @@ export function TestCard({ test }: TestCardProps) {
           {/* Header */}
           <div className='flex items-start justify-between gap-3 mb-3'>
             <div className='flex-1 min-w-0'>
-              <Badge
-                variant='outline'
-                className={`text-xs font-semibold mb-2 border-2 ${getCategoryColor(
-                  test.category
-                )}`}
-              >
-                {test.category.charAt(0).toUpperCase() + test.category.slice(1)}
-              </Badge>
+              <div className='flex items-center gap-2 mb-2 flex-wrap'>
+                <Badge
+                  variant='outline'
+                  className={`text-xs font-semibold border-2 ${getCategoryColor(
+                    test.category
+                  )}`}
+                >
+                  {test.category.charAt(0).toUpperCase() +
+                    test.category.slice(1)}
+                </Badge>
+                <Badge
+                  variant='outline'
+                  className='text-xs font-semibold border-2 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/50'
+                  title='CLIA Certified Laboratory'
+                >
+                  <ShieldCheck className='h-3 w-3 mr-1' />
+                  CLIA Certified
+                </Badge>
+              </div>
               <h3 className='font-bold text-base leading-snug line-clamp-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors'>
                 {test.name}
               </h3>

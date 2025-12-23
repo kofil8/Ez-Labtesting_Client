@@ -61,7 +61,8 @@ export function CartView() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to validate promo code.",
+        description:
+          "Unable to validate promo code. Please check the code and try again.",
         variant: "destructive",
       });
     } finally {

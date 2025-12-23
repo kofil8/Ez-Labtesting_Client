@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import { ArrowRight, Package } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Package, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 interface Panel {
   id: string;
@@ -90,9 +90,18 @@ export function PanelCard({ panel, index = 0 }: PanelCardProps) {
           {/* Content */}
           <CardContent className='p-4 pb-0 flex-1'>
             <div className='space-y-2'>
-              <h3 className='font-semibold text-base group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-2'>
-                {panel.name}
-              </h3>
+              <div className='flex items-start justify-between gap-2 mb-1'>
+                <h3 className='font-semibold text-base group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-2 flex-1'>
+                  {panel.name}
+                </h3>
+                <Badge
+                  variant='outline'
+                  className='text-xs font-semibold border bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/50 flex-shrink-0'
+                  title='CLIA Certified Laboratory Tests'
+                >
+                  <ShieldCheck className='h-3 w-3' />
+                </Badge>
+              </div>
               <p className='text-sm text-muted-foreground line-clamp-2'>
                 {panel.description}
               </p>
@@ -143,4 +152,3 @@ export function PanelCard({ panel, index = 0 }: PanelCardProps) {
     </Link>
   );
 }
-

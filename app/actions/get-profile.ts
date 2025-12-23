@@ -28,7 +28,8 @@ export async function getProfile() {
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({
-        message: "Failed to fetch profile",
+        message:
+          "Unable to load your profile information. Your data remains secure.",
       }));
 
       // If 401 after refresh attempt, session is expired
@@ -39,7 +40,10 @@ export async function getProfile() {
         throw new Error("Session expired. Please log in again.");
       }
 
-      throw new Error(error.message || "Failed to fetch profile");
+      throw new Error(
+        error.message ||
+          "Unable to load your profile information. Please refresh the page."
+      );
     }
 
     const data = await res.json();

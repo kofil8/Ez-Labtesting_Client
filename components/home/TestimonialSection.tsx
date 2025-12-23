@@ -1,6 +1,5 @@
 "use client";
 
-import { GlassmorphicCard } from "@/components/shared/GlassmorphicCard";
 import { motion } from "framer-motion";
 import { Quote, Star } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -68,133 +67,146 @@ export function TestimonialSection() {
   const visibleTestimonials = getVisibleTestimonials();
 
   return (
-    <section className='py-12 sm:py-16 md:py-24 relative overflow-hidden bg-kalles-card'>
-      {/* Kalles-style subtle background pattern */}
-      <div className='absolute inset-0 bg-kalles-pattern opacity-40' />
-      <div className='absolute inset-0 bg-kalles-dots opacity-30' />
+    <section className='py-16 sm:py-20 md:py-24 relative overflow-hidden bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900'>
+      {/* Subtle background patterns */}
+      <div className='absolute inset-0 bg-kalles-pattern opacity-20' />
+      <div className='absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-blue-100/30 via-transparent to-transparent dark:from-blue-900/10' />
 
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative'>
+      <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative'>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className='text-center mb-10 sm:mb-12 md:mb-16'
+          className='text-center mb-12 sm:mb-14 md:mb-16'
         >
-          <div className='inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium mb-3 sm:mb-4'>
-            <Star className='h-3 w-3 sm:h-4 sm:w-4 fill-current' />
-            <span>4.9/5 Rating</span>
+          <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-sm font-semibold mb-4'>
+            <Star className='h-4 w-4 fill-yellow-500 text-yellow-500' />
+            <span>4.9/5 Rating • 2,500+ Reviews</span>
           </div>
-          <h2 className='text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-4 sm:px-0'>
-            Loved by <span className='text-gradient-cosmic'>Thousands</span>
+          <h2 className='text-3xl sm:text-4xl md:text-5xl font-bold mb-4'>
+            Loved by{" "}
+            <span className='bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent'>
+              Thousands
+            </span>
           </h2>
-          <p className='text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4 sm:px-0'>
-            Don&#39;t just take our word for it - hear from our satisfied customers
+          <p className='text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed'>
+            Don&#39;t just take our word for it — hear from our satisfied
+            customers
           </p>
         </motion.div>
 
         <div className='relative overflow-hidden'>
-          <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8'>
             {visibleTestimonials.map((testimonial, index) => (
               <motion.div
                 key={`${testimonial.name}-${currentIndex}-${index}`}
-                initial={{ opacity: 0, y: 50, rotateY: -10 }}
-                animate={{ opacity: 1, y: 0, rotateY: 0 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
                   delay: index * 0.1,
-                  duration: 0.5,
+                  duration: 0.4,
                   type: "spring",
-                  stiffness: 100,
+                  stiffness: 120,
                 }}
-                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                whileHover={{ y: -6, transition: { duration: 0.25 } }}
               >
                 <div className='h-full relative group'>
-                  {/* Gradient border effect */}
-                  <div className='absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl opacity-0 group-hover:opacity-100 blur transition-opacity duration-300' />
-
-                  <GlassmorphicCard className='h-full p-8 relative border-2 border-transparent group-hover:border-primary/20 transition-all duration-300'>
-                    {/* Rating stars */}
-                    <div className='flex items-center gap-1 mb-6'>
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ delay: index * 0.1 + i * 0.05 }}
-                        >
-                          <Star className='h-5 w-5 fill-yellow-400 text-yellow-400' />
-                        </motion.div>
-                      ))}
+                  {/* Card with improved styling */}
+                  <div className='h-full bg-white dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 sm:p-7 shadow-lg shadow-gray-100/50 dark:shadow-none border border-gray-100 dark:border-slate-700/50 group-hover:border-blue-200 dark:group-hover:border-blue-800/50 group-hover:shadow-xl group-hover:shadow-blue-100/30 dark:group-hover:shadow-none transition-all duration-300'>
+                    {/* Rating stars with count */}
+                    <div className='flex items-center gap-2 mb-5'>
+                      <div className='flex items-center gap-0.5'>
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-4 w-4 ${
+                              i < testimonial.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "fill-gray-200 text-gray-200 dark:fill-gray-600 dark:text-gray-600"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className='text-xs font-semibold text-gray-500 dark:text-gray-400'>
+                        {testimonial.rating}.0
+                      </span>
                     </div>
 
-                    {/* Quote */}
+                    {/* Quote with better typography */}
                     <div className='relative mb-6'>
-                      <Quote className='absolute -top-4 -left-2 h-12 w-12 text-primary/10 -rotate-6' />
-                      <p className='text-sm text-muted-foreground pl-6 leading-relaxed relative z-10'>
+                      <Quote className='absolute -top-2 -left-1 h-8 w-8 text-blue-100 dark:text-blue-900/50' />
+                      <p className='text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed relative z-10 pl-4'>
                         &quot;{testimonial.text}&quot;
                       </p>
                     </div>
 
-                    {/* Profile */}
-                    <div className='flex items-center gap-4 pt-6 border-t border-border/50'>
-                      <div className='relative'>
-                        <div className='text-5xl'>{testimonial.image}</div>
-                        <div className='absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background' />
+                    {/* Profile with clearer visual hierarchy */}
+                    <div className='flex items-center gap-3 pt-5 border-t border-gray-100 dark:border-slate-700/50'>
+                      <div className='relative flex-shrink-0'>
+                        <div className='w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center text-2xl'>
+                          {testimonial.image}
+                        </div>
+                        <div className='absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800' />
                       </div>
                       <div>
-                        <p className='font-bold text-base'>
+                        <p className='font-semibold text-gray-900 dark:text-white'>
                           {testimonial.name}
                         </p>
-                        <p className='text-xs text-muted-foreground'>
+                        <p className='text-xs text-gray-500 dark:text-gray-400 font-medium'>
                           {testimonial.role}
                         </p>
                       </div>
                     </div>
-                  </GlassmorphicCard>
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
 
-        {/* Carousel indicators */}
-        <div className='flex justify-center gap-2 mt-8'>
+        {/* Carousel indicators - improved */}
+        <div className='flex justify-center gap-2 mt-10'>
           {testimonials.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2.5 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? "w-8 bg-primary"
-                  : "w-2 bg-gray-300 dark:bg-gray-600"
+                  ? "w-8 bg-gradient-to-r from-blue-500 to-cyan-500"
+                  : "w-2.5 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
               }`}
               aria-label={`Go to testimonial ${index + 1}`}
             />
           ))}
         </div>
 
-        {/* Social proof banner */}
+        {/* Social proof banner - enhanced */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-          className='mt-16 text-center'
+          transition={{ delay: 0.4 }}
+          className='mt-14 sm:mt-16 text-center'
         >
-          <div className='inline-flex items-center gap-6 px-8 py-4 rounded-full glass border-2 border-white/20 dark:border-gray-700/20'>
-            <div className='flex -space-x-2'>
-              {["👨‍💼", "👩‍💻", "👨‍⚕️", "👩‍🔬"].map((emoji, i) => (
+          <div className='inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6 px-6 sm:px-8 py-4 sm:py-5 rounded-2xl bg-white dark:bg-slate-800/80 shadow-lg shadow-gray-100/50 dark:shadow-none border border-gray-100 dark:border-slate-700/50'>
+            <div className='flex -space-x-3'>
+              {["👨‍💼", "👩‍💻", "👨‍⚕️", "👩‍🔬", "👨‍🔬"].map((emoji, i) => (
                 <div
                   key={i}
-                  className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center border-2 border-background text-lg'
+                  className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 flex items-center justify-center border-2 border-white dark:border-slate-800 text-lg shadow-sm'
                 >
                   {emoji}
                 </div>
               ))}
             </div>
-            <p className='text-sm font-medium'>
-              <span className='font-bold text-primary'>50,000+</span> happy
-              customers and counting
-            </p>
+            <div className='text-center sm:text-left'>
+              <p className='text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent'>
+                50,000+
+              </p>
+              <p className='text-sm text-gray-600 dark:text-gray-400 font-medium'>
+                Happy customers and counting
+              </p>
+            </div>
           </div>
         </motion.div>
       </div>

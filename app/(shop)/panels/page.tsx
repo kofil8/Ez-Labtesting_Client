@@ -41,7 +41,7 @@ export default function PanelsPage() {
         </div>
       </div>
 
-      <main className='flex-1 bg-gray-50 dark:bg-gray-900'>
+      <main id='main-content' className='flex-1 bg-gray-50 dark:bg-gray-900'>
         <PageContainer>
           <div className='py-12 space-y-8'>
             <FeaturedPanelGrid />

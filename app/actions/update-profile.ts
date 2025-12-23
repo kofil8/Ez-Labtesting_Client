@@ -44,7 +44,8 @@ export async function updateProfile(formData: FormData) {
     );
 
     if (!res.ok) {
-      let errorMessage = "Failed to update profile";
+      let errorMessage =
+        "Unable to update your profile. Your data remains secure. Please try again.";
       try {
         const error = await res.json();
         errorMessage = error.message || errorMessage;

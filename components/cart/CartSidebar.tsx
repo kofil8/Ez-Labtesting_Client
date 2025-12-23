@@ -87,7 +87,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to validate promo code.",
+        description:
+          "Unable to validate promo code. Please check the code and try again.",
         variant: "destructive",
       });
     } finally {
@@ -273,10 +274,13 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             {/* Footer - Only show if cart has items */}
             {items.length > 0 && (
               <div className='border-t border-gray-200 dark:border-gray-700 p-4 sm:p-5 md:p-6 space-y-3 sm:space-y-4 bg-gray-50 dark:bg-gray-900/50 flex-shrink-0'>
-                {/* Totals */}
+                {/* Enhanced Pricing Breakdown */}
                 <div className='space-y-1.5 sm:space-y-2'>
                   <div className='flex justify-between text-xs sm:text-sm'>
-                    <span className='text-muted-foreground'>Subtotal</span>
+                    <span className='text-muted-foreground'>
+                      Subtotal ({items.length}{" "}
+                      {items.length === 1 ? "test" : "tests"})
+                    </span>
                     <span className='font-medium'>
                       {formatCurrency(subtotal)}
                     </span>
@@ -291,12 +295,30 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       </span>
                     </div>
                   )}
+                  {/* Processing Fee */}
+                  <div className='flex justify-between text-xs sm:text-sm'>
+                    <span className='text-muted-foreground flex items-center gap-1'>
+                      Processing Fee
+                      <span className='text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded'>
+                        Secure
+                      </span>
+                    </span>
+                    <span className='font-medium'>{formatCurrency(2.5)}</span>
+                  </div>
+                  {/* Tax (if applicable) */}
+                  <div className='flex justify-between text-xs sm:text-sm'>
+                    <span className='text-muted-foreground'>Tax</span>
+                    <span className='font-medium'>{formatCurrency(0)}</span>
+                  </div>
                   <div className='flex justify-between text-sm sm:text-base font-bold pt-2 border-t border-gray-200 dark:border-gray-700'>
-                    <span>Total</span>
-                    <span className='text-base sm:text-lg'>
-                      {formatCurrency(total)}
+                    <span>Total Due</span>
+                    <span className='text-base sm:text-lg text-primary'>
+                      {formatCurrency(total + 2.5)}
                     </span>
                   </div>
+                  <p className='text-[10px] sm:text-xs text-muted-foreground text-center pt-1'>
+                    ✓ Includes lab processing, secure report delivery
+                  </p>
                 </div>
 
                 {/* Buttons */}

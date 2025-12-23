@@ -174,7 +174,9 @@ export function VerifyOTPForm() {
           setTimer(60);
         }
       } catch (err: any) {
-        toast.error("Failed to resend OTP.");
+        toast.error(
+          "Unable to resend verification code. Please try again in a moment."
+        );
       }
     });
   };

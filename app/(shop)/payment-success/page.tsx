@@ -27,7 +27,10 @@ export default function PaymentSuccessPage() {
   return (
     <div className='flex min-h-screen flex-col'>
       <SiteHeader />
-      <main className='flex-1 bg-gradient-to-b from-white to-green-50 dark:from-gray-900 dark:to-green-950'>
+      <main
+        id='main-content'
+        className='flex-1 bg-gradient-to-b from-white to-green-50 dark:from-gray-900 dark:to-green-950'
+      >
         <PageContainer>
           <div className='py-16'>
             <PaymentConfirmation {...mockOrderData} />
