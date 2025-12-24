@@ -10,10 +10,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hook/use-toast";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { AnimatePresence, motion } from "framer-motion";
 import { Locate, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 interface LabCenterSearchProps {
   onSearch: (
@@ -36,57 +35,16 @@ export function LabCenterSearch({
   const [showFilters, setShowFilters] = useState(false);
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
-  const placesLibrary = useMapsLibrary("places");
-  const [autocomplete, setAutocomplete] =
-    useState<google.maps.places.Autocomplete | null>(null);
-
-  // Initialize Google Places Autocomplete
-  useEffect(() => {
-    if (!placesLibrary || !inputRef.current) return;
-
-    const options: google.maps.places.AutocompleteOptions = {
-      fields: ["geometry", "name", "formatted_address"],
-      types: ["geocode", "establishment"],
-    };
-
-    const autocompleteInstance = new placesLibrary.Autocomplete(
-      inputRef.current,
-      options
-    );
-
-    autocompleteInstance.addListener("place_changed", () => {
-      const place = autocompleteInstance.getPlace();
-
-      if (place.geometry?.location) {
-        const location = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        };
-        const address = place.formatted_address || place.name || "";
-        setSearchQuery(address);
-        onSearch(address, location);
-
-        toast({
-          title: "Location found",
-          description: `Searching near ${address}`,
-        });
-      }
-    });
-
-    setAutocomplete(autocompleteInstance);
-
-    return () => {
-      // Cleanup
-      if (autocompleteInstance) {
-        google.maps.event.clearInstanceListeners(autocompleteInstance);
-      }
-    };
-  }, [placesLibrary, onSearch, toast]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      // For now, pass the query as-is - the parent will handle Mapbox geocoding
       onSearch(searchQuery);
+      toast({
+        title: "Searching...",
+        description: `Looking for medical labs near ${searchQuery}`,
+      });
     }
   };
 

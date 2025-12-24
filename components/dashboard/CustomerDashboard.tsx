@@ -260,7 +260,7 @@ export function CustomerDashboard() {
         <CardContent>
           <div className='grid gap-3 md:grid-cols-4'>
             <Link
-              href='/items'
+              href='/tests'
               className='flex items-center gap-3 p-4 rounded-lg border-2 border-dashed border-muted hover:border-primary hover:bg-primary/5 transition-all group'
             >
               <ShoppingBag className='h-5 w-5 text-primary group-hover:scale-110 transition-transform' />
