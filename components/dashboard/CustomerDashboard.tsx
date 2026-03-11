@@ -185,9 +185,7 @@ export function CustomerDashboard() {
     const address = Boolean(user?.address);
     const phone = Boolean(user?.phone || user?.phoneNumber);
 
-    const completedCount = [basicInfo, address, phone].filter(
-      Boolean,
-    ).length;
+    const completedCount = [basicInfo, address, phone].filter(Boolean).length;
 
     return {
       basicInfo,
