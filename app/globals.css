@@ -2,60 +2,370 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   FORM ANIMATIONS LAYER
+   Healthcare-appropriate micro-interactions
+   ======================================== */
+
+@layer utilities {
+  /* Respect user's motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* INPUT FOCUS ANIMATIONS */
+  @keyframes inputFocus {
+    from {
+      border-color: rgb(229, 231, 235);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    to {
+      border-color: rgb(37, 99, 235);
+      box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+
+  @keyframes iconColorShift {
+    from {
+      color: rgb(156, 163, 175);
+    }
+    to {
+      color: rgb(37, 99, 235);
+    }
+  }
+
+  .input-icon {
+    @apply transition-colors duration-200;
+  }
+
+  .form-group:focus-within .input-icon {
+    @apply animate-[iconColorShift_0.3s_cubic-bezier(0.4,0,0.2,1)_forwards];
+  }
+
+  /* LOADING STATE ANIMATIONS */
+  @keyframes spin-smooth {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes pulse-subtle {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes buttonLoadingPulse {
+    0% {
+      background-color: rgb(37, 99, 235);
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+    }
+    50% {
+      background-color: rgb(29, 78, 216);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+    100% {
+      background-color: rgb(37, 99, 235);
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+    }
+  }
+
+  .spinner-loading {
+    @apply animate-[spin-smooth_2s_linear_infinite];
+  }
+
+  .pulse-subtle {
+    @apply animate-[pulse-subtle_1.4s_ease-in-out_infinite];
+  }
+
+  .button-loading {
+    @apply animate-[buttonLoadingPulse_2s_ease-in-out_infinite];
+  }
+
+  /* SUCCESS STATE ANIMATIONS */
+  @keyframes successSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes checkmarkScale {
+    0% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes successGlowPulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+    }
+  }
+
+  .success-message {
+    @apply animate-[successSlideIn_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards];
+  }
+
+  .checkmark-icon {
+    @apply animate-[checkmarkScale_0.6s_cubic-bezier(0.34,1.56,0.64,1)_forwards];
+  }
+
+  .success-badge {
+    @apply animate-[successGlowPulse_2s_infinite];
+  }
+
+  /* ERROR STATE ANIMATIONS */
+  @keyframes errorSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes errorShake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+      transform: translateX(-2px);
+    }
+    20%,
+    40%,
+    60%,
+    80% {
+      transform: translateX(2px);
+    }
+  }
+
+  @keyframes errorPulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+
+  .error-message {
+    @apply animate-[errorSlideIn_0.3s_cubic-bezier(0.36,0,0.66,-0.56)_forwards];
+  }
+
+  .error-shake {
+    @apply animate-[errorShake_0.4s_ease-in-out];
+  }
+
+  .error-icon-pulse {
+    @apply animate-[errorPulse_1s_ease-in-out];
+  }
+
+  /* CARD ANIMATIONS */
+  @keyframes cardSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .card-entrance {
+    @apply animate-[cardSlideUp_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards];
+  }
+
+  .slide-in-left {
+    @apply animate-[slideInFromLeft_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards];
+  }
+
+  .slide-in-right {
+    @apply animate-[slideInFromRight_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards];
+  }
+
+  /* HOVER EFFECTS */
+  .button-hover-lift {
+    @apply transition-all duration-200;
+  }
+
+  .button-hover-lift:hover {
+    @apply -translate-y-0.5 shadow-xl shadow-blue-200/30;
+  }
+
+  /* PASSWORD TOGGLE ICON */
+  @keyframes fadeSwitch {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .password-toggle-icon {
+    @apply animate-[fadeSwitch_0.3s_ease-out_forwards];
+  }
+
+  /* CHECKBOX ANIMATION */
+  @keyframes checkboxCheck {
+    0% {
+      transform: scale(0.8);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* VALIDATION ANIMATIONS */
+  @keyframes validationGlowGreen {
+    0% {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+  }
+
+  @keyframes validationGlowRed {
+    0% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+  }
+
+  .field-valid {
+    @apply animate-[validationGlowGreen_1.5s_ease-out];
+  }
+
+  .field-invalid {
+    @apply animate-[validationGlowRed_1.5s_ease-out];
+  }
+}
+
 @layer base {
   :root {
-    /* Base Theme Colors */
-    --background: 210 20% 98%;
-    --foreground: 210 24% 16%;
+    /* Base Theme Colors - Premium Medical */
+    --background: 210 20% 98%; /* unchanged, good base */
+    --foreground: 215 25% 27%; /* Softer dark for text */
     --card: 0 0% 100%;
-    --card-foreground: 210 24% 16%;
+    --card-foreground: 215 25% 27%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 24% 16%;
-    --primary: 199 89% 48%; /* Medical Blue #0EA5E9 */
+    --popover-foreground: 215 25% 27%;
+
+    /* Primary: Deep Trusted Blue */
+    --primary: 200 80% 40%; /* #147CB8 - Professional Blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 152 69% 31%; /* Medical Green #16A34A */
+
+    /* Secondary: Clean Teal/Green */
+    --secondary: 165 65% 35%; /* #1F9376 - Medical Green */
     --secondary-foreground: 0 0% 100%;
+
     --muted: 210 20% 96%;
-    --muted-foreground: 210 12% 46%;
-    --accent: 199 89% 96%;
-    --accent-foreground: 199 89% 48%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 200 80% 96%;
+    --accent-foreground: 200 80% 40%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 20% 90%;
-    --input: 210 20% 94%;
-    --ring: 199 89% 48%;
-    --radius: 0.75rem; /* 12px - Default border radius */
+    --border: 215 20% 90%; /* Cool gray border */
+    --input: 215 20% 95%;
+    --ring: 200 80% 40%;
+    --radius: 0.75rem;
 
-    /* Status Colors - Enterprise Medical */
-    --success: 152 69% 31%; /* Green-600 #16A34A */
+    /* Status Colors - Refined */
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
-    --success-bg: 138 76% 97%; /* Green-50 #F0FDF4 */
-    --success-border: 141 84% 85%; /* Green-200 #BBF7D0 */
-    --success-text: 145 63% 20%; /* Green-800 #166534 */
+    --success-bg: 150 70% 98%;
+    --success-border: 160 60% 90%;
+    --success-text: 160 84% 30%;
 
-    --warning: 38 92% 50%; /* Amber-500 #F59E0B */
+    --warning: 35 90% 50%;
     --warning-foreground: 0 0% 100%;
-    --warning-bg: 48 100% 96%; /* Amber-50 #FFFBEB */
-    --warning-border: 48 96% 89%; /* Amber-200 #FDE68A */
-    --warning-text: 32 95% 44%; /* Amber-800 #92400E */
+    --warning-bg: 40 80% 98%;
+    --warning-border: 35 70% 90%;
+    --warning-text: 35 90% 35%;
 
-    --error: 0 72% 51%; /* Red-600 #DC2626 */
+    --error: 0 80% 60%;
     --error-foreground: 0 0% 100%;
-    --error-bg: 0 86% 97%; /* Red-50 #FEF2F2 */
-    --error-border: 0 93% 94%; /* Red-200 #FECACA */
-    --error-text: 0 70% 35%; /* Red-800 #991B1B */
+    --error-bg: 0 80% 99%;
+    --error-border: 0 60% 92%;
+    --error-text: 0 80% 40%;
 
-    --info: 199 89% 48%; /* Blue-500 #0EA5E9 */
+    --info: 210 90% 55%;
     --info-foreground: 0 0% 100%;
-    --info-bg: 204 100% 97%; /* Blue-50 #F0F9FF */
-    --info-border: 204 94% 94%; /* Blue-200 #BAE6FD */
-    --info-text: 205 87% 29%; /* Blue-800 #075985 */
+    --info-bg: 210 90% 99%;
+    --info-border: 210 70% 92%;
+    --info-text: 210 90% 40%;
 
     /* Lab Testing Theme Colors */
-    --lab-blue: 199 89% 48%;
-    --lab-green: 152 69% 31%;
-    --lab-teal: 187 85% 43%;
-    --lab-cyan: 194 100% 47%;
+    --lab-blue: 200 80% 40%;
+    --lab-green: 165 65% 35%;
+    --lab-teal: 175 70% 45%;
+    --lab-cyan: 195 85% 50%;
   }
 
   .dark {
@@ -118,7 +428,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-gradient-to-br from-blue-50/50 via-cyan-50/30 to-teal-50/50 dark:from-slate-950 dark:via-cyan-950/20 dark:to-slate-950 text-foreground;
+    @apply bg-slate-50/60 text-foreground;
     background-attachment: fixed;
     min-height: 100vh;
   }
@@ -408,46 +718,42 @@
   }
 
   .bg-kalles-pattern {
-    background-image: linear-gradient(
-        to right,
-        rgba(6, 182, 212, 0.02) 1px,
-        transparent 1px
-      ),
+    background-image:
+      linear-gradient(to right, rgba(6, 182, 212, 0.02) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
   .dark .bg-kalles-pattern {
-    background-image: linear-gradient(
-        to right,
-        rgba(6, 182, 212, 0.06) 1px,
-        transparent 1px
-      ),
+    background-image:
+      linear-gradient(to right, rgba(6, 182, 212, 0.06) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.06) 1px, transparent 1px);
   }
 
   .bg-medical-grid {
-    background-image: linear-gradient(
-        to right,
-        rgba(6, 182, 212, 0.03) 1px,
-        transparent 1px
-      ),
+    background-image:
+      linear-gradient(to right, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
       linear-gradient(to right, rgba(6, 182, 212, 0.01) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.01) 1px, transparent 1px);
-    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    background-size:
+      100px 100px,
+      100px 100px,
+      20px 20px,
+      20px 20px;
   }
 
   .dark .bg-medical-grid {
-    background-image: linear-gradient(
-        to right,
-        rgba(6, 182, 212, 0.05) 1px,
-        transparent 1px
-      ),
+    background-image:
+      linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
       linear-gradient(to right, rgba(6, 182, 212, 0.02) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
-    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    background-size:
+      100px 100px,
+      100px 100px,
+      20px 20px,
+      20px 20px;
   }
 
   /* ========================================
@@ -642,28 +948,35 @@
      ======================================== */
 
   .glow-primary {
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.4),
+    box-shadow:
+      0 0 20px rgba(6, 182, 212, 0.4),
       0 0 40px rgba(6, 182, 212, 0.15);
   }
 
   .glow-success {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4),
+    box-shadow:
+      0 0 20px rgba(16, 185, 129, 0.4),
       0 0 40px rgba(16, 185, 129, 0.15);
   }
 
   .glow-warning {
-    box-shadow: 0 0 20px rgba(251, 146, 60, 0.4),
+    box-shadow:
+      0 0 20px rgba(251, 146, 60, 0.4),
       0 0 40px rgba(251, 146, 60, 0.15);
   }
 
   .glow-medical {
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 40px rgba(6, 182, 212, 0.2),
+    box-shadow:
+      0 0 20px rgba(6, 182, 212, 0.5),
+      0 0 40px rgba(6, 182, 212, 0.2),
       0 0 60px rgba(6, 182, 212, 0.1);
   }
 
   .glow-lab {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4),
-      0 0 40px rgba(59, 130, 246, 0.15), inset 0 0 20px rgba(59, 130, 246, 0.05);
+    box-shadow:
+      0 0 20px rgba(59, 130, 246, 0.4),
+      0 0 40px rgba(59, 130, 246, 0.15),
+      inset 0 0 20px rgba(59, 130, 246, 0.05);
   }
 
   /* ========================================
@@ -704,12 +1017,14 @@
 
   .border-gradient {
     border: 2px solid transparent;
-    background: linear-gradient(white, white) padding-box,
+    background:
+      linear-gradient(white, white) padding-box,
       linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899) border-box;
   }
 
   .dark .border-gradient {
-    background: linear-gradient(#0f172a, #0f172a) padding-box,
+    background:
+      linear-gradient(#0f172a, #0f172a) padding-box,
       linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899) border-box;
   }
 
@@ -1023,21 +1338,15 @@
   }
 
   .bg-kalles-pattern {
-    background-image: linear-gradient(
-        to right,
-        rgba(6, 182, 212, 0.02) 1px,
-        transparent 1px
-      ),
+    background-image:
+      linear-gradient(to right, rgba(6, 182, 212, 0.02) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
   .dark .bg-kalles-pattern {
-    background-image: linear-gradient(
-        to right,
-        rgba(6, 182, 212, 0.06) 1px,
-        transparent 1px
-      ),
+    background-image:
+      linear-gradient(to right, rgba(6, 182, 212, 0.06) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.06) 1px, transparent 1px);
   }
 
@@ -1060,27 +1369,29 @@
 
   /* Medical grid pattern */
   .bg-medical-grid {
-    background-image: linear-gradient(
-        to right,
-        rgba(6, 182, 212, 0.03) 1px,
-        transparent 1px
-      ),
+    background-image:
+      linear-gradient(to right, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.03) 1px, transparent 1px),
       linear-gradient(to right, rgba(6, 182, 212, 0.01) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.01) 1px, transparent 1px);
-    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    background-size:
+      100px 100px,
+      100px 100px,
+      20px 20px,
+      20px 20px;
   }
 
   .dark .bg-medical-grid {
-    background-image: linear-gradient(
-        to right,
-        rgba(6, 182, 212, 0.05) 1px,
-        transparent 1px
-      ),
+    background-image:
+      linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
       linear-gradient(to right, rgba(6, 182, 212, 0.02) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
-    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+    background-size:
+      100px 100px,
+      100px 100px,
+      20px 20px,
+      20px 20px;
   }
 
   /* Clean card backgrounds like Kalles */
@@ -1111,7 +1422,8 @@
     ) !important;
     color: white !important;
     border-color: rgba(147, 197, 253, 0.4) !important;
-    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3),
+    box-shadow:
+      0 20px 25px -5px rgba(59, 130, 246, 0.3),
       0 10px 10px -5px rgba(59, 130, 246, 0.2) !important;
     backdrop-filter: blur(20px) !important;
   }
@@ -1126,7 +1438,8 @@
       #ec4899 100%
     ) !important;
     border-color: rgba(147, 197, 253, 0.4) !important;
-    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3),
+    box-shadow:
+      0 20px 25px -5px rgba(59, 130, 246, 0.3),
       0 10px 10px -5px rgba(59, 130, 246, 0.2) !important;
   }
 
@@ -1141,7 +1454,8 @@
     ) !important;
     color: white !important;
     border-color: rgba(74, 222, 128, 0.4) !important;
-    box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.3),
+    box-shadow:
+      0 20px 25px -5px rgba(16, 185, 129, 0.3),
       0 10px 10px -5px rgba(16, 185, 129, 0.2) !important;
     backdrop-filter: blur(20px) !important;
   }
@@ -1157,7 +1471,8 @@
     ) !important;
     color: white !important;
     border-color: rgba(251, 113, 133, 0.4) !important;
-    box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.3),
+    box-shadow:
+      0 20px 25px -5px rgba(239, 68, 68, 0.3),
       0 10px 10px -5px rgba(239, 68, 68, 0.2) !important;
     backdrop-filter: blur(20px) !important;
   }
@@ -1173,7 +1488,8 @@
     ) !important;
     color: white !important;
     border-color: rgba(147, 197, 253, 0.4) !important;
-    box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3),
+    box-shadow:
+      0 20px 25px -5px rgba(59, 130, 246, 0.3),
       0 10px 10px -5px rgba(59, 130, 246, 0.2) !important;
     backdrop-filter: blur(20px) !important;
   }
@@ -1189,7 +1505,8 @@
     ) !important;
     color: white !important;
     border-color: rgba(251, 191, 36, 0.4) !important;
-    box-shadow: 0 20px 25px -5px rgba(245, 158, 11, 0.3),
+    box-shadow:
+      0 20px 25px -5px rgba(245, 158, 11, 0.3),
       0 10px 10px -5px rgba(245, 158, 11, 0.2) !important;
     backdrop-filter: blur(20px) !important;
   }
@@ -1241,7 +1558,8 @@
   /* Hover effects */
   [data-sonner-toast]:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2),
+    box-shadow:
+      0 25px 30px -5px rgba(0, 0, 0, 0.2),
       0 15px 15px -5px rgba(0, 0, 0, 0.1) !important;
   }
 
@@ -1306,4 +1624,285 @@
 
 .btn-home:hover {
   background: #0b5ed7;
+}
+
+/* International Phone Input Styles */
+.react-international-phone-input-custom
+  .react-international-phone-input-container {
+  width: 100%;
+}
+
+.react-international-phone-input-custom .react-international-phone-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.react-international-phone-input-custom .react-international-phone-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-button {
+  height: 48px;
+  border: 1px solid #e5e7eb;
+  border-right: none;
+  border-radius: 0.5rem 0 0 0.5rem;
+  padding: 0 8px;
+  transition: all 0.2s;
+}
+
+.react-international-phone-input-custom {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-input-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.react-international-phone-input-custom .react-international-phone-input {
+  border-color: #e5e7eb;
+  border-radius: 0.5rem;
+  height: 48px;
+  background-color: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.react-international-phone-input-custom .react-international-phone-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-button {
+  border-right: 1px solid #e5e7eb;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-button:hover {
+  background-color: #f3f4f6;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-button:focus {
+  outline: none;
+  background-color: #e0e7ff;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-dropdown {
+  max-height: 320px;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  z-index: 50;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-search {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-search
+  input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-search
+  input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  background: white;
+  font-size: 14px;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-item:hover {
+  background-color: #dbeafe;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-item.selected {
+  background-color: #bfdbfe;
+  font-weight: 600;
+}
+
+.react-international-phone-input-custom
+  .react-international-phone-country-selector-button
+  .ril-flag {
+  width: 20px;
+  height: 14px;
+  border-radius: 2px;
+  object-fit: cover;
+}
+
+.react-international-phone-input-custom .react-international-phone-input {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+/* Emergency Contact Phone Input - Red Theme */
+.react-international-phone-input-emergency {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-input-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.react-international-phone-input-emergency .react-international-phone-input {
+  border-color: #fecaca;
+  border-radius: 0.5rem;
+  height: 48px;
+  background-color: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-button {
+  border-right: 1px solid #fecaca;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-button:hover {
+  background-color: #fef2f2;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-button:focus {
+  outline: none;
+  background-color: #fee2e2;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-dropdown {
+  max-height: 320px;
+  border-radius: 0.5rem;
+  border: 1px solid #fecaca;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  z-index: 50;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-search {
+  padding: 8px 12px;
+  border-bottom: 1px solid #fecaca;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-search
+  input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-search
+  input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  background: white;
+  font-size: 14px;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-item:hover {
+  background-color: #fee2e2;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-item.selected {
+  background-color: #fecaca;
+  font-weight: 600;
+}
+
+.react-international-phone-input-emergency
+  .react-international-phone-country-selector-button
+  .ril-flag {
+  width: 20px;
+  height: 14px;
+  border-radius: 2px;
+  object-fit: cover;
 }

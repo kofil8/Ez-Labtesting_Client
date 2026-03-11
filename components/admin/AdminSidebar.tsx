@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  Home,
+  FolderTree,
   LayoutDashboard,
   Menu,
   Package,
@@ -23,7 +23,7 @@ const navItems = [
     items: [
       {
         title: "Dashboard",
-        href: "/admin",
+        href: "/dashboard/admin",
         icon: LayoutDashboard,
       },
     ],
@@ -32,18 +32,23 @@ const navItems = [
     title: "Content Management",
     items: [
       {
+        title: "Categories",
+        href: "/dashboard/admin/categories",
+        icon: FolderTree,
+      },
+      {
         title: "Tests",
-        href: "/admin/tests",
+        href: "/dashboard/admin/tests",
         icon: TestTube2,
       },
       {
         title: "Test Panels",
-        href: "/admin/panels",
+        href: "/dashboard/admin/panels",
         icon: Package,
       },
       {
         title: "Promo Codes",
-        href: "/admin/promo-codes",
+        href: "/dashboard/admin/promo-codes",
         icon: Ticket,
       },
     ],
@@ -53,12 +58,12 @@ const navItems = [
     items: [
       {
         title: "Users",
-        href: "/admin/users",
+        href: "/dashboard/admin/users",
         icon: Users,
       },
       {
         title: "Orders",
-        href: "/admin/orders",
+        href: "/dashboard/admin/orders",
         icon: ShoppingCart,
       },
     ],
@@ -101,7 +106,7 @@ export function AdminSidebar() {
         className={cn(
           "fixed left-0 top-0 h-screen w-64 border-r bg-card p-6 z-40 transition-transform duration-300 overflow-y-auto",
           "lg:translate-x-0",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Branding */}
@@ -117,65 +122,50 @@ export function AdminSidebar() {
         </div>
 
         <nav className='space-y-6'>
-          {/* Back to Site Link */}
-          <Link
-            href='/'
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-              "text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            <Home className='h-4 w-4' />
-            <span>Back to Site</span>
-          </Link>
-
-          <div className='border-t pt-4'>
-            {/* Navigation Groups */}
-            {navItems.map((group) => (
-              <div key={group.title} className='mb-6'>
-                {/* Group Header */}
-                <div className='px-3 mb-2'>
-                  <h3 className='text-xs font-bold text-muted-foreground uppercase tracking-wider'>
-                    {group.title}
-                  </h3>
-                </div>
-
-                {/* Group Items */}
-                <div className='space-y-1'>
-                  {group.items.map((item) => {
-                    const Icon = item.icon;
-                    const isActive =
-                      pathname === item.href ||
-                      (item.href !== "/admin" &&
-                        pathname.startsWith(item.href + "/"));
-
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all",
-                          isActive
-                            ? "bg-primary/10 text-primary border-l-4 border-primary shadow-sm"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        )}
-                      >
-                        <Icon
-                          className={cn(
-                            "h-4 w-4 flex-shrink-0 transition-colors",
-                            isActive ? "text-primary" : "text-muted-foreground"
-                          )}
-                        />
-                        <span>{item.title}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
+          {/* Navigation Groups */}
+          {navItems.map((group) => (
+            <div key={group.title} className='mb-6'>
+              {/* Group Header */}
+              <div className='px-3 mb-2'>
+                <h3 className='text-xs font-bold text-muted-foreground uppercase tracking-wider'>
+                  {group.title}
+                </h3>
               </div>
-            ))}
-          </div>
+
+              {/* Group Items */}
+              <div className='space-y-1'>
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    pathname === item.href ||
+                    (item.href !== "/dashboard/admin" &&
+                      pathname.startsWith(item.href + "/"));
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all",
+                        isActive
+                          ? "bg-primary/10 text-primary border-l-4 border-primary shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          "h-4 w-4 flex-shrink-0 transition-colors",
+                          isActive ? "text-primary" : "text-muted-foreground",
+                        )}
+                      />
+                      <span>{item.title}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </div>
     </>

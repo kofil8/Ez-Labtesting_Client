@@ -1,212 +1,356 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Filter, Package } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { getPanels } from "@/app/actions/panels";
+import { CatalogHeader, SortOption } from "@/components/shared/CatalogHeader";
+import { Pagination } from "@/components/shared/Pagination";
 import { Badge } from "@/components/ui/badge";
-import panelsData from "@/data/panels.json";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import { Panel } from "@/types/panel";
+import { ArrowRight, Package } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-interface Panel {
-  id: string;
-  name: string;
-  description: string;
-  testIds: string[];
-  originalPrice: number;
-  bundlePrice: number;
-  savings: number;
+interface FeaturedPanelGridProps {
+  initialLimit?: number;
 }
 
-export function FeaturedPanelGrid() {
+type SortKey = "savings" | "price-asc" | "price-desc" | "name";
+
+type QueryState = {
+  page: number;
+  limit: number;
+  searchTerm: string;
+  sort: SortKey;
+};
+
+const SORT_OPTIONS: SortOption[] = [
+  { value: "savings", label: "💸 Best Savings" },
+  { value: "price-asc", label: "💰 Price: Low to High" },
+  { value: "price-desc", label: "💎 Price: High to Low" },
+  { value: "name", label: "📝 Name A-Z" },
+];
+
+const SEARCH_SUGGESTIONS = [
+  "Comprehensive",
+  "Cardiac",
+  "Hormone",
+  "Thyroid",
+  "Metabolic",
+];
+
+const parseSearchParams = (
+  searchParams: URLSearchParams,
+  fallbackLimit: number,
+): QueryState => {
+  const page = Number(searchParams.get("page") || "1") || 1;
+  const limit =
+    Number(searchParams.get("limit") || String(fallbackLimit)) || fallbackLimit;
+  const searchTerm = searchParams.get("searchTerm") || "";
+  const sort = (searchParams.get("sort") as SortKey) || "savings";
+  return { page, limit, searchTerm, sort };
+};
+
+export function FeaturedPanelGrid({
+  initialLimit = 9,
+}: FeaturedPanelGridProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const queryState = useMemo(
+    () => parseSearchParams(searchParams, initialLimit),
+    [initialLimit, searchParams],
+  );
+
   const [panels, setPanels] = useState<Panel[]>([]);
-  const [filteredPanels, setFilteredPanels] = useState<Panel[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"savings" | "price" | "name">("savings");
+  const [meta, setMeta] = useState({
+    page: queryState.page,
+    limit: queryState.limit,
+    total: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState(queryState.searchTerm);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setPanels(panelsData as Panel[]);
-    setFilteredPanels(panelsData as Panel[]);
-  }, []);
+  const pushQueryState = useCallback(
+    (next: Partial<QueryState>) => {
+      const params = new URLSearchParams(searchParams.toString());
 
-  // Handle sorting and filtering
-  useEffect(() => {
-    let result = [...panels];
-
-    // Apply sorting
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "savings":
-          return b.savings - a.savings;
-        case "price":
-          return a.bundlePrice - b.bundlePrice;
-        case "name":
-          return a.name.localeCompare(b.name);
-        default:
-          return 0;
+      if (next.page !== undefined) params.set("page", String(next.page));
+      if (next.limit !== undefined) params.set("limit", String(next.limit));
+      if (next.sort !== undefined) params.set("sort", next.sort);
+      if (next.searchTerm !== undefined) {
+        if (next.searchTerm) {
+          params.set("searchTerm", next.searchTerm);
+        } else {
+          params.delete("searchTerm");
+        }
       }
-    });
 
-    setFilteredPanels(result);
-  }, [panels, sortBy]);
+      if ((params.get("page") || "1") === "1") params.delete("page");
+      if ((params.get("sort") || "savings") === "savings")
+        params.delete("sort");
+      if (!params.get("searchTerm")) params.delete("searchTerm");
+      if (
+        (params.get("limit") || String(initialLimit)) === String(initialLimit)
+      ) {
+        params.delete("limit");
+      }
+
+      const queryString = params.toString();
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+        scroll: false,
+      });
+    },
+    [initialLimit, pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    setSearchInput(queryState.searchTerm);
+  }, [queryState.searchTerm]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== queryState.searchTerm) {
+        pushQueryState({ searchTerm: searchInput.trim(), page: 1 });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [pushQueryState, queryState.searchTerm, searchInput]);
+
+  const loadPanels = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const sortMap: Record<
+        SortKey,
+        {
+          sortBy: string;
+          sortOrder: "asc" | "desc";
+        }
+      > = {
+        savings: { sortBy: "discountPercent", sortOrder: "desc" },
+        "price-asc": { sortBy: "basePrice", sortOrder: "asc" },
+        "price-desc": { sortBy: "basePrice", sortOrder: "desc" },
+        name: { sortBy: "name", sortOrder: "asc" },
+      };
+
+      const sortConfig = sortMap[queryState.sort];
+      const response = await getPanels({
+        page: queryState.page,
+        limit: queryState.limit,
+        searchTerm: queryState.searchTerm || undefined,
+        sortBy: sortConfig.sortBy,
+        sortOrder: sortConfig.sortOrder,
+        isActive: true,
+      });
+
+      setPanels(response.data || []);
+      setMeta({
+        page: response.meta?.page || queryState.page,
+        limit: response.meta?.limit || queryState.limit,
+        total: response.meta?.total || 0,
+      });
+    } catch (err: any) {
+      console.error("Failed to fetch panels:", err);
+      setError(
+        err?.message || "Failed to load panels. Please refresh and try again.",
+      );
+      setPanels([]);
+      setMeta((prev) => ({ ...prev, total: 0 }));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    queryState.limit,
+    queryState.page,
+    queryState.searchTerm,
+    queryState.sort,
+  ]);
+
+  useEffect(() => {
+    loadPanels();
+  }, [loadPanels]);
 
   const savingsPercentage = (panel: Panel) => {
-    return Math.round((panel.savings / panel.originalPrice) * 100);
+    const savings = panel.basePrice - panel.bundlePrice;
+    return Math.round((savings / panel.basePrice) * 100);
   };
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(meta.total / (meta.limit || initialLimit)),
+  );
+
   return (
-    <div className='space-y-8'>
-      {/* Header with Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b'
-      >
-        <div>
-          <h2 className='text-2xl sm:text-3xl font-bold flex items-center gap-2'>
-            <Package className='h-7 w-7 text-purple-600 dark:text-purple-400' />
-            All Featured Panels
-          </h2>
-          <p className='text-muted-foreground mt-1'>
-            {filteredPanels.length} panel{filteredPanels.length !== 1 ? "s" : ""} available
+    <div className='space-y-4 sm:space-y-6 md:space-y-8'>
+      <CatalogHeader
+        searchValue={searchInput}
+        onSearchChange={setSearchInput}
+        sortValue={queryState.sort}
+        onSortChange={(value) =>
+          pushQueryState({ sort: value as SortKey, page: 1 })
+        }
+        sortOptions={SORT_OPTIONS}
+        resultCount={meta.total}
+        searchSuggestions={SEARCH_SUGGESTIONS}
+        onSuggestionClick={(suggestion) => setSearchInput(suggestion)}
+        showSuggestions
+        subtitle='Compare panel bundles by savings and tests included'
+      />
+
+      <div className='overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800'>
+        <div className='border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-4 dark:border-slate-600 dark:from-slate-700 dark:to-slate-700'>
+          <h3 className='text-lg font-bold text-slate-900 dark:text-white'>
+            Featured Panel Results
+          </h3>
+          <p className='mt-1 text-sm font-medium text-slate-600 dark:text-slate-300'>
+            {meta.total} panel{meta.total !== 1 ? "s" : ""} available
+            {meta.total > 0
+              ? ` • Page ${queryState.page} of ${totalPages}`
+              : ""}
           </p>
         </div>
 
-        {/* Sort Controls */}
-        <div className='flex items-center gap-2 w-full sm:w-auto'>
-          <Filter className='h-4 w-4 text-muted-foreground' />
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "savings" | "price" | "name")}
-            className='px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-medium'
-          >
-            <option value='savings'>Sort by Savings</option>
-            <option value='price'>Sort by Price</option>
-            <option value='name'>Sort by Name</option>
-          </select>
+        <div className='p-6'>
+          {isLoading ? (
+            <div className='py-10 text-center'>
+              <div className='inline-block h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-r-transparent' />
+              <p className='mt-4 text-sm font-medium text-slate-500 dark:text-slate-400'>
+                Loading panels...
+              </p>
+            </div>
+          ) : error ? (
+            <div className='py-10 text-center'>
+              <p className='text-sm font-semibold text-red-600 dark:text-red-400'>
+                {error}
+              </p>
+              <Button
+                variant='outline'
+                className='mt-4'
+                onClick={() => {
+                  setError(null);
+                  loadPanels();
+                }}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : panels.length === 0 ? (
+            <div className='py-10 text-center'>
+              <div className='mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted'>
+                <Package className='h-6 w-6 text-muted-foreground' />
+              </div>
+              <p className='text-sm font-semibold text-slate-900 dark:text-white'>
+                No panels found
+              </p>
+              <p className='mt-1 text-xs text-slate-500 dark:text-slate-400'>
+                Try changing your search query or reset filters.
+              </p>
+              <Button
+                variant='outline'
+                className='mt-4'
+                onClick={() =>
+                  pushQueryState({ page: 1, searchTerm: "", sort: "savings" })
+                }
+              >
+                Clear filters
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
+                {panels.map((panel) => (
+                  <Link
+                    key={panel.id}
+                    href={`/panels/${panel.id}`}
+                    className='group'
+                  >
+                    <Card className='flex h-full flex-col border border-slate-200 transition-shadow hover:shadow-md dark:border-slate-700'>
+                      {/* Panel image or gradient placeholder */}
+                      {panel.panelImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={panel.panelImage}
+                          alt={panel.name}
+                          className='h-36 w-full object-cover rounded-t-lg'
+                        />
+                      ) : (
+                        <div className='h-36 w-full rounded-t-lg bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500' />
+                      )}
+                      <CardHeader>
+                        <div className='mb-3 flex items-start justify-between gap-2'>
+                          <Badge variant='secondary' className='text-xs'>
+                            {panel.testsCount} tests
+                          </Badge>
+                          {panel.basePrice > panel.bundlePrice && (
+                            <Badge className='bg-emerald-600 text-white'>
+                              Save {savingsPercentage(panel)}%
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className='line-clamp-2 text-lg group-hover:text-cyan-700 dark:group-hover:text-cyan-400'>
+                          {panel.name}
+                        </CardTitle>
+                        <CardDescription className='line-clamp-2'>
+                          {panel.description || "No description available"}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className='flex-1 space-y-2'>
+                        <div className='flex items-center justify-between text-sm'>
+                          <span className='text-muted-foreground'>
+                            Regular Price
+                          </span>
+                          <span className='line-through'>
+                            {formatCurrency(panel.basePrice)}
+                          </span>
+                        </div>
+                        <div className='flex items-center justify-between border-t pt-2'>
+                          <span className='font-semibold'>Bundle Price</span>
+                          <span className='text-lg font-bold text-cyan-700 dark:text-cyan-400'>
+                            {formatCurrency(panel.bundlePrice)}
+                          </span>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button asChild className='w-full'>
+                          <span>
+                            View Details
+                            <ArrowRight className='ml-2 h-4 w-4' />
+                          </span>
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+
+              <Pagination
+                currentPage={queryState.page}
+                totalPages={totalPages}
+                onPageChange={(nextPage) => {
+                  pushQueryState({ page: nextPage });
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                resultCount={meta.total}
+                isLoading={isLoading}
+              />
+            </>
+          )}
         </div>
-      </motion.div>
-
-      {/* Panels Grid */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8'>
-        <AnimatePresence mode='wait'>
-          {filteredPanels.map((panel, index) => (
-            <motion.div
-              key={panel.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ delay: index * 0.1, duration: 0.3 }}
-              whileHover={{ y: -8 }}
-            >
-              <Link href={`/panels/${panel.id}`} className='group'>
-                <Card className='h-full hover:shadow-lg dark:hover:shadow-purple-500/10 transition-all duration-300 border-2 hover:border-purple-400 dark:hover:border-purple-600 overflow-hidden flex flex-col'>
-                  {/* Header Background */}
-                  <div className='relative h-32 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500 overflow-hidden'>
-                    {/* Animated background pattern */}
-                    <div className='absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity'>
-                      <svg className='w-full h-full' viewBox='0 0 400 200'>
-                        <defs>
-                          <pattern id='grid' width='40' height='40' patternUnits='userSpaceOnUse'>
-                            <path d='M 40 0 L 0 0 0 40' fill='none' stroke='white' strokeWidth='0.5' />
-                          </pattern>
-                        </defs>
-                        <rect width='400' height='200' fill='url(#grid)' />
-                      </svg>
-                    </div>
-
-                    {/* Icon Badge */}
-                    <div className='absolute top-4 left-4 p-3 rounded-lg bg-white/20 backdrop-blur-sm group-hover:bg-white/30 transition-all'>
-                      <Package className='h-6 w-6 text-white' />
-                    </div>
-
-                    {/* Savings Badge */}
-                    {panel.savings > 0 && (
-                      <motion.div
-                        initial={{ scale: 0, rotate: -45 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ delay: index * 0.1 + 0.2, type: "spring" }}
-                        className='absolute top-4 right-4'
-                      >
-                        <Badge className='bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg px-3 py-1.5 text-xs font-bold'>
-                          🎉 Save {savingsPercentage(panel)}%
-                        </Badge>
-                      </motion.div>
-                    )}
-                  </div>
-
-                  <CardHeader className='p-5 pb-3'>
-                    <div className='space-y-2'>
-                      <CardTitle className='text-xl group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-2'>
-                        {panel.name}
-                      </CardTitle>
-                      <CardDescription className='line-clamp-2'>
-                        {panel.description}
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className='flex-1 p-5 pt-0 space-y-4'>
-                    {/* Tests Count */}
-                    <div className='p-3 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200 dark:border-purple-800'>
-                      <div className='flex items-center justify-between'>
-                        <span className='text-sm font-medium text-muted-foreground'>Tests Included</span>
-                        <span className='text-2xl font-bold text-gradient-cosmic'>
-                          {panel.testIds.length}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Pricing */}
-                    <div className='space-y-2 pt-2'>
-                      <div className='flex justify-between items-center'>
-                        <span className='text-sm text-muted-foreground'>Regular Price</span>
-                        <span className='text-sm font-semibold line-through text-gray-500'>
-                          {formatCurrency(panel.originalPrice)}
-                        </span>
-                      </div>
-                      <div className='flex justify-between items-center pt-2 border-t'>
-                        <span className='font-semibold text-gradient-cosmic'>Bundle Price</span>
-                        <span className='text-2xl font-bold text-gradient-cosmic'>
-                          {formatCurrency(panel.bundlePrice)}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-
-                  <CardFooter className='p-5 pt-0'>
-                    <Button
-                      className='w-full gradient-blue-purple group-hover:scale-105 transition-transform shadow-md'
-                      size='default'
-                      asChild
-                    >
-                      <span className='flex items-center gap-2'>
-                        View Details
-                        <ArrowRight className='h-4 w-4 group-hover:translate-x-1 transition-transform' />
-                      </span>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
-        </AnimatePresence>
       </div>
-
-      {/* Empty State */}
-      {filteredPanels.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className='text-center py-12'
-        >
-          <Package className='h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50' />
-          <p className='text-muted-foreground text-lg'>No panels found</p>
-        </motion.div>
-      )}
     </div>
   );
 }
-

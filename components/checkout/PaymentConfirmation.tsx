@@ -4,7 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Calendar, CheckCircle2, Download, Mail, Share2 } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle2,
+  Download,
+  Mail,
+  Share2,
+  ShieldCheckIcon,
+} from "lucide-react";
 import Link from "next/link";
 
 interface PaymentConfirmationProps {
@@ -13,7 +20,13 @@ interface PaymentConfirmationProps {
   date: string;
   email: string;
   tests: Array<{ name: string; price: number }>;
-  paymentMethod: "card" | "ach";
+  paymentMethod:
+    | "card"
+    | "link"
+    | "paypal"
+    | "google_pay"
+    | "apple_pay"
+    | "crypto";
   last4?: string;
 }
 
@@ -26,6 +39,19 @@ export function PaymentConfirmation({
   paymentMethod,
   last4,
 }: PaymentConfirmationProps) {
+  const paymentMethodLabel =
+    paymentMethod === "card"
+      ? "Card"
+      : paymentMethod === "link"
+        ? "Link"
+        : paymentMethod === "paypal"
+          ? "PayPal"
+          : paymentMethod === "google_pay"
+            ? "Google Pay"
+            : paymentMethod === "apple_pay"
+              ? "Apple Pay"
+              : "Crypto";
+
   return (
     <div className='max-w-3xl mx-auto'>
       <motion.div
@@ -95,9 +121,7 @@ export function PaymentConfirmation({
                     alt='Mx Merchant'
                     className='h-5 w-auto'
                   />
-                  {paymentMethod === "card"
-                    ? "Credit Card"
-                    : "ACH Bank Transfer"}
+                  {paymentMethodLabel}
                   {last4 && ` •••• ${last4}`}
                 </p>
               </div>
@@ -147,7 +171,7 @@ export function PaymentConfirmation({
             <div className='pt-4 border-t'>
               <div className='flex flex-col md:flex-row items-center justify-between gap-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border mt-2'>
                 <div className='flex items-center gap-2'>
-                  <ShieldCheck className='h-6 w-6 text-blue-600' />
+                  <ShieldCheckIcon className='h-6 w-6 text-blue-600' />
                   <span className='text-sm font-medium text-blue-700'>
                     Your payment is protected by{" "}
                     <span className='font-bold'>PCI DSS</span> &{" "}

@@ -1,11 +1,6 @@
 "use client";
 
-import { Test } from "@/types/test";
-import { Upload, X } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-// import { uploadImageToAzureBlob } from '@/lib/azure-blob' // Uncomment when Azure Blob is configured
+import { Category, getCategories } from "@/app/actions/categories";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -26,18 +21,48 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hook/use-toast";
+import { normalizeTurnaround, parseTurnaroundInput } from "@/lib/test-utils";
+import { Upload, X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { TestDetailInput, TestDetailsForm } from "./TestDetailsForm";
 
-// Form type with cptCodes and keywords as strings for easier editing
-type TestFormData = Omit<Test, "cptCodes" | "keywords"> & {
-  cptCodes: string;
-  keywords: string;
+type TestFormData = {
+  testCode: string;
+  testName: string;
+  categoryId: string;
+  price: number | string;
+  turnaround?: number | string;
+  specimenType?: string;
+  description?: string;
+  testImage?: string;
+  testDetails: TestDetailInput[];
+  isPublished: boolean;
+  isActive: boolean;
+};
+
+type TestItem = {
+  id?: string;
+  testCode?: string;
+  testName?: string;
+  categoryId?: string;
+  price?: number;
+  turnaround?: number;
+  specimenType?: string;
+  description?: string;
+  testImage?: string;
+  testDetails?: TestDetailInput[];
+  isPublished?: boolean;
+  isActive?: boolean;
+  category?: Category;
 };
 
 interface TestEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  test: Test | null;
-  onSave: (test: Test) => void;
+  test: TestItem | null;
+  onSave: (testData: any, imageFile?: File) => void;
 }
 
 export function TestEditDialog({
@@ -46,59 +71,86 @@ export function TestEditDialog({
   test,
   onSave,
 }: TestEditDialogProps) {
-  const { register, handleSubmit, reset, setValue, watch } =
-    useForm<TestFormData>({
-      defaultValues: {
-        enabled: true,
-        category: "general",
-      },
-    });
-
+  const { toast } = useToast();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  const [formData, setFormData] = useState<TestFormData>({
+    testCode: "",
+    testName: "",
+    categoryId: "",
+    price: 0,
+    description: "",
+    testImage: "",
+    testDetails: [],
+    isPublished: false,
+    isActive: true,
+  });
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const result = await getCategories();
+        setCategories(result.data || []);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load categories.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    loadCategories();
+  }, [toast]);
+
+  // Reset form when test changes
   useEffect(() => {
     if (test) {
-      reset({
-        ...test,
-        cptCodes: Array.isArray(test.cptCodes) ? test.cptCodes.join(", ") : "",
-        keywords: Array.isArray(test.keywords) ? test.keywords.join(", ") : "",
-      } as TestFormData);
-      // Set preview if existing image
-      if (test.image) {
-        setImagePreview(test.image);
+      setFormData({
+        testCode: test.testCode || "",
+        testName: test.testName || "",
+        categoryId: test.categoryId || "",
+        price: test.price || 0,
+        turnaround: test.turnaround || 0,
+        specimenType: test.specimenType || "",
+        description: test.description || "",
+        testImage: test.testImage || "",
+        testDetails: test.testDetails || [],
+        isPublished: test.isPublished ?? false,
+        isActive: test.isActive ?? true,
+      });
+      if (test.testImage) {
+        setImagePreview(test.testImage);
       } else {
         setImagePreview(null);
       }
     } else {
-      reset({
-        name: "",
-        description: "",
-        category: "general",
+      setFormData({
+        testCode: "",
+        testName: "",
+        categoryId: "",
         price: 0,
-        cptCodes: "",
-        labCode: "",
-        labName: "CPL",
-        turnaroundDays: 1,
-        sampleType: "Blood",
-        preparation: "",
-        keywords: "",
-        image: "",
-        fastingRequired: false,
-        fastingHours: undefined,
-        ageRequirement: "",
-        sampleVolume: "",
-        tubeType: "",
-        collectionMethod: "",
-        resultsTimeframe: "",
-        enabled: true,
-      } as TestFormData);
+        turnaround: 0,
+        specimenType: "",
+        description: "",
+        testImage: "",
+        testDetails: [],
+        isPublished: false,
+        isActive: true,
+      });
       setImagePreview(null);
     }
     setSelectedImageFile(null);
-  }, [test, reset]);
+  }, [test]);
 
-  // Clean up preview URL when component unmounts
+  // Clean up preview URL
   useEffect(() => {
     return () => {
       if (imagePreview && imagePreview.startsWith("blob:")) {
@@ -110,21 +162,25 @@ export function TestEditDialog({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
-        alert("Please select an image file");
+        toast({
+          title: "Invalid file",
+          description: "Please select an image file",
+          variant: "destructive",
+        });
         return;
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert("Image size should be less than 5MB");
+        toast({
+          title: "File too large",
+          description: "Image size should be less than 5MB",
+          variant: "destructive",
+        });
         return;
       }
 
       setSelectedImageFile(file);
-
-      // Create preview URL
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
     }
@@ -136,365 +192,381 @@ export function TestEditDialog({
     }
     setSelectedImageFile(null);
     setImagePreview(null);
-    setValue("image", "");
+    setFormData({ ...formData, testImage: "" });
   };
 
-  const onSubmit = async (data: TestFormData) => {
-    // Handle image upload
-    if (selectedImageFile) {
-      try {
-        // TODO: Uncomment when Azure Blob Storage is configured
-        // const imageUrl = await uploadImageToAzureBlob(selectedImageFile)
-        // data.image = imageUrl
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-        // Temporary: For now, keep existing image if editing
-        // When Azure Blob is configured, upload the new file and use the returned URL
-        if (test?.image) {
-          // Keep existing image URL - new upload will replace it after Azure integration
-          data.image = test.image;
-        } else {
-          // Placeholder - will be replaced with Azure Blob URL
-          // For now, we'll need to handle this on the backend or use a temporary storage
-          data.image = undefined;
-        }
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        // Keep existing image if upload fails
-        if (test?.image) {
-          data.image = test.image;
-        } else {
-          data.image = undefined;
-        }
-      }
-    } else if (!data.image || data.image === "") {
-      data.image = undefined;
+    // Validate required fields
+    if (!formData.testCode.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Test code is required",
+        variant: "destructive",
+      });
+      return;
     }
 
-    // Convert empty strings to undefined for optional fields
-    if (data.preparation === "") data.preparation = undefined;
-    if (data.ageRequirement === "") data.ageRequirement = undefined;
-    if (data.sampleVolume === "") data.sampleVolume = undefined;
-    if (data.tubeType === "") data.tubeType = undefined;
-    if (data.collectionMethod === "") data.collectionMethod = undefined;
-    if (data.resultsTimeframe === "") data.resultsTimeframe = undefined;
-    if (data.fastingHours === undefined || isNaN(data.fastingHours))
-      data.fastingHours = undefined;
+    if (!formData.testName.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Test name is required",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Convert form data back to Test type
-    const testData: Test = {
-      ...data,
-      cptCodes: Array.isArray(data.cptCodes)
-        ? data.cptCodes
-        : typeof data.cptCodes === "string" && data.cptCodes.trim()
-        ? data.cptCodes
-            .split(",")
-            .map((c) => c.trim())
-            .filter(Boolean)
-        : [],
-      keywords: Array.isArray(data.keywords)
-        ? data.keywords
-        : typeof data.keywords === "string" && data.keywords.trim()
-        ? data.keywords
-            .split(",")
-            .map((k) => k.trim())
-            .filter(Boolean)
-        : undefined,
+    if (!formData.categoryId) {
+      toast({
+        title: "Validation Error",
+        description: "Category is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const priceNum = Number(formData.price);
+    if (!priceNum || priceNum <= 0) {
+      toast({
+        title: "Validation Error",
+        description: "Price must be greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate image is required for new tests
+    if (!test && !imagePreview && !selectedImageFile) {
+      toast({
+        title: "Validation Error",
+        description: "Test image is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate turnaround
+    if (!formData.turnaround) {
+      toast({
+        title: "Validation Error",
+        description: "Turnaround time is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      normalizeTurnaround(formData.turnaround);
+    } catch (error) {
+      toast({
+        title: "Validation Error",
+        description: `Invalid turnaround time: ${(error as Error).message}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate specimen type
+    if (!formData.specimenType?.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Specimen type is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Filter valid test details (optional)
+    const validDetails = formData.testDetails.filter((d) => {
+      // Only include details with all required fields filled
+      return (
+        d.component?.trim() &&
+        d.method?.trim() &&
+        d.cptCode?.trim() &&
+        d.testingLocatiion?.trim()
+      );
+    });
+
+    // Build payload
+    const payload = {
+      testCode: formData.testCode.trim(),
+      testName: formData.testName.trim(),
+      categoryId: formData.categoryId,
+      price: priceNum,
+      turnaround: formData.turnaround, // Send as-is, backend will normalize
+      specimenType: formData.specimenType?.trim() || "",
+      description: formData.description?.trim() || null,
+      testDetails: validDetails.length > 0 ? validDetails : undefined,
+      isPublished: formData.isPublished,
+      isActive: formData.isActive,
     };
 
-    onSave(testData);
+    onSave(payload, selectedImageFile || undefined);
   };
-
-  const category = watch("category");
-  const enabled = watch("enabled");
-  const fastingRequired = watch("fastingRequired");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-3xl max-h-[90vh] overflow-y-auto'>
+      <DialogContent className='max-h-[90vh] max-w-4xl overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>{test ? "Edit Test" : "Add New Test"}</DialogTitle>
           <DialogDescription>
-            {test ? "Update test information" : "Create a new lab test"}
+            {test
+              ? "Update test information and details"
+              : "Create a new lab test with details"}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='col-span-2'>
-              <Label htmlFor='name'>Test Name *</Label>
-              <Input id='name' {...register("name", { required: true })} />
+        <form onSubmit={handleSubmit} className='space-y-6'>
+          {/* Basic Information */}
+          <div className='space-y-4'>
+            <h3 className='text-lg font-semibold'>Basic Information</h3>
+
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+              <div>
+                <Label htmlFor='testCode'>
+                  Test Code <span className='text-destructive'>*</span>
+                </Label>
+                <Input
+                  id='testCode'
+                  value={formData.testCode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, testCode: e.target.value })
+                  }
+                  placeholder='e.g., CBC-001'
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor='testName'>
+                  Test Name <span className='text-destructive'>*</span>
+                </Label>
+                <Input
+                  id='testName'
+                  value={formData.testName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, testName: e.target.value })
+                  }
+                  placeholder='e.g., Complete Blood Count'
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor='categoryId'>
+                  Category <span className='text-destructive'>*</span>
+                </Label>
+                <Select
+                  value={formData.categoryId}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, categoryId: value })
+                  }
+                  disabled={loadingCategories}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select category' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor='price'>
+                  Price ($) <span className='text-destructive'>*</span>
+                </Label>
+                <Input
+                  id='price'
+                  type='number'
+                  step='0.01'
+                  min='0'
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
+                  placeholder='0.00'
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor='turnaround'>
+                  Turnaround Time <span className='text-destructive'>*</span>
+                </Label>
+                <Input
+                  id='turnaround'
+                  type='text'
+                  value={formData.turnaround}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ ...formData, turnaround: value });
+                  }}
+                  placeholder='e.g., 24h, 3-4 days, 48-72h'
+                  required
+                />
+                {formData.turnaround &&
+                  (() => {
+                    const parsed = parseTurnaroundInput(formData.turnaround);
+                    if (parsed) {
+                      return (
+                        <p className='text-xs text-muted-foreground mt-1'>
+                          Will be stored as: {parsed.hours}h (
+                          {parsed.displayFormat})
+                        </p>
+                      );
+                    } else if (formData.turnaround) {
+                      return (
+                        <p className='text-xs text-destructive mt-1'>
+                          Invalid format. Use: 24h, 3 days, 24-48 hours, 3-5d
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
+              </div>
+
+              <div>
+                <Label htmlFor='specimenType'>
+                  Specimen Type <span className='text-destructive'>*</span>
+                </Label>
+                <Input
+                  id='specimenType'
+                  value={formData.specimenType}
+                  onChange={(e) =>
+                    setFormData({ ...formData, specimenType: e.target.value })
+                  }
+                  placeholder='e.g., Blood, Urine, Saliva'
+                  required
+                />
+              </div>
             </div>
 
-            <div className='col-span-2'>
-              <Label htmlFor='description'>Description *</Label>
+            <div>
+              <Label htmlFor='description'>Description</Label>
               <Textarea
                 id='description'
-                {...register("description", { required: true })}
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                placeholder="Describe what this test measures and why it's important..."
                 rows={3}
               />
             </div>
+          </div>
+
+          {/* Test Image */}
+          <div className='space-y-4'>
+            <h3 className='text-lg font-semibold'>Test Image</h3>
 
             <div>
-              <Label htmlFor='category'>Category *</Label>
-              <Select
-                value={category}
-                onValueChange={(value) =>
-                  setValue("category", value as Test["category"])
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='general'>General Health</SelectItem>
-                  <SelectItem value='hormone'>Hormone</SelectItem>
-                  <SelectItem value='std'>STD Screening</SelectItem>
-                  <SelectItem value='thyroid'>Thyroid</SelectItem>
-                  <SelectItem value='cardiac'>Cardiac</SelectItem>
-                  <SelectItem value='metabolic'>Metabolic</SelectItem>
-                  <SelectItem value='nutrition'>Nutrition</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor='price'>Price ($) *</Label>
-              <Input
-                id='price'
-                type='number'
-                step='0.01'
-                {...register("price", { required: true, valueAsNumber: true })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor='labName'>Lab Name *</Label>
-              <Select
-                value={watch("labName")}
-                onValueChange={(value) => setValue("labName", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='CPL'>CPL</SelectItem>
-                  <SelectItem value='ACCESS'>ACCESS</SelectItem>
-                  <SelectItem value='Quest'>Quest</SelectItem>
-                  <SelectItem value='LabCorp'>LabCorp</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor='labCode'>Lab Code *</Label>
-              <Input
-                id='labCode'
-                {...register("labCode", { required: true })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor='cptCodes'>CPT Codes (comma-separated) *</Label>
-              <Input
-                id='cptCodes'
-                {...register("cptCodes", { required: true })}
-                placeholder='85025, 80053'
-              />
-            </div>
-
-            <div>
-              <Label htmlFor='turnaroundDays'>Turnaround (days) *</Label>
-              <Input
-                id='turnaroundDays'
-                type='number'
-                {...register("turnaroundDays", {
-                  required: true,
-                  valueAsNumber: true,
-                })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor='sampleType'>Sample Type *</Label>
-              <Input
-                id='sampleType'
-                {...register("sampleType", { required: true })}
-              />
-            </div>
-
-            <div className='col-span-2'>
-              <Label htmlFor='preparation'>Preparation Instructions</Label>
-              <Input id='preparation' {...register("preparation")} />
-            </div>
-
-            <div className='col-span-2'>
-              <Label htmlFor='keywords'>Keywords (comma-separated)</Label>
-              <Input
-                id='keywords'
-                {...register("keywords")}
-                placeholder='blood, anemia, infection, complete'
-              />
-              <p className='text-xs text-muted-foreground mt-1'>
-                Used for search functionality
-              </p>
-            </div>
-
-            <div className='col-span-2'>
-              <Label htmlFor='image'>Test Image</Label>
-              <div className='space-y-3'>
+              <Label htmlFor='testImage'>
+                Upload Image <span className='text-destructive'>*</span>
+              </Label>
+              <div className='mt-2'>
                 {imagePreview ? (
                   <div className='relative inline-block'>
                     <Image
                       src={imagePreview}
-                      alt='Preview'
-                      width={128}
-                      height={128}
-                      unoptimized
-                      className='h-32 w-32 object-cover rounded-lg border-2 border-border'
+                      alt='Test preview'
+                      width={200}
+                      height={200}
+                      className='rounded-lg border object-cover'
                     />
                     <Button
                       type='button'
                       variant='destructive'
-                      size='icon'
-                      className='absolute -top-2 -right-2 h-6 w-6 rounded-full'
+                      size='sm'
+                      className='absolute right-2 top-2'
                       onClick={handleRemoveImage}
                     >
                       <X className='h-4 w-4' />
                     </Button>
                   </div>
                 ) : (
-                  <div className='flex items-center justify-center w-full'>
-                    <label
-                      htmlFor='image-upload'
-                      className='flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent transition-colors'
-                    >
-                      <div className='flex flex-col items-center justify-center pt-5 pb-6'>
-                        <Upload className='w-8 h-8 mb-2 text-muted-foreground' />
-                        <p className='mb-2 text-sm text-muted-foreground'>
-                          <span className='font-semibold'>Click to upload</span>{" "}
-                          or drag and drop
-                        </p>
-                        <p className='text-xs text-muted-foreground'>
-                          PNG, JPG, GIF up to 5MB
-                        </p>
-                      </div>
-                      <input
-                        id='image-upload'
-                        type='file'
-                        className='hidden'
-                        accept='image/*'
-                        onChange={handleImageChange}
-                      />
-                    </label>
-                  </div>
-                )}
-                {selectedImageFile && (
-                  <p className='text-xs text-muted-foreground'>
-                    Selected: {selectedImageFile.name} (
-                    {(selectedImageFile.size / 1024).toFixed(2)} KB)
-                  </p>
-                )}
-                {test?.image && !selectedImageFile && (
-                  <p className='text-xs text-muted-foreground'>
-                    Current image: {test.image}
-                  </p>
+                  <label
+                    htmlFor='testImage'
+                    className='flex h-32 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400'
+                  >
+                    <div className='text-center'>
+                      <Upload className='mx-auto h-8 w-8 text-gray-400' />
+                      <p className='mt-2 text-sm text-gray-600'>
+                        Click to upload image{" "}
+                        <span className='text-destructive'>*</span>
+                      </p>
+                      <p className='text-xs text-gray-500'>
+                        PNG, JPG up to 5MB (Required)
+                      </p>
+                    </div>
+                    <Input
+                      id='testImage'
+                      type='file'
+                      accept='image/*'
+                      onChange={handleImageChange}
+                      className='hidden'
+                    />
+                  </label>
                 )}
               </div>
             </div>
+          </div>
 
-            <div className='col-span-2 border-t pt-4'>
-              <h3 className='text-sm font-semibold mb-3'>
-                Fasting Requirements
-              </h3>
-              <div className='flex items-center space-x-2 mb-3'>
+          {/* Test Details - Optional */}
+          <div className='space-y-4'>
+            <div>
+              <h3 className='text-lg font-semibold'>Test Details (Optional)</h3>
+              <p className='text-sm text-muted-foreground mt-1'>
+                Add detailed specifications for this test. You can skip this
+                section if not needed.
+              </p>
+            </div>
+            <TestDetailsForm
+              value={formData.testDetails}
+              onChange={(details) =>
+                setFormData({ ...formData, testDetails: details })
+              }
+            />
+          </div>
+
+          {/* Status Toggles */}
+          <div className='space-y-4'>
+            <h3 className='text-lg font-semibold'>Status</h3>
+
+            <div className='flex items-center space-x-6'>
+              <div className='flex items-center space-x-2'>
                 <Checkbox
-                  id='fastingRequired'
-                  checked={fastingRequired}
+                  id='isPublished'
+                  checked={formData.isPublished}
                   onCheckedChange={(checked) =>
-                    setValue("fastingRequired", checked as boolean)
+                    setFormData({
+                      ...formData,
+                      isPublished: checked === true,
+                    })
                   }
                 />
-                <Label
-                  htmlFor='fastingRequired'
-                  className='font-normal cursor-pointer'
-                >
-                  Fasting required
+                <Label htmlFor='isPublished' className='cursor-pointer'>
+                  Published (visible to customers)
                 </Label>
               </div>
-              {fastingRequired && (
-                <div>
-                  <Label htmlFor='fastingHours'>Fasting Hours</Label>
-                  <Input
-                    id='fastingHours'
-                    type='number'
-                    min='1'
-                    {...register("fastingHours", { valueAsNumber: true })}
-                    placeholder='8'
-                  />
-                </div>
-              )}
-            </div>
 
-            <div className='col-span-2 border-t pt-4'>
-              <h3 className='text-sm font-semibold mb-3'>Additional Details</h3>
-            </div>
-
-            <div>
-              <Label htmlFor='ageRequirement'>Age Requirement</Label>
-              <Input
-                id='ageRequirement'
-                {...register("ageRequirement")}
-                placeholder='18+'
-              />
-            </div>
-
-            <div>
-              <Label htmlFor='sampleVolume'>Sample Volume</Label>
-              <Input
-                id='sampleVolume'
-                {...register("sampleVolume")}
-                placeholder='Serum 0.5mL (no gel)'
-              />
-            </div>
-
-            <div>
-              <Label htmlFor='tubeType'>Tube Type</Label>
-              <Input
-                id='tubeType'
-                {...register("tubeType")}
-                placeholder='1 SST'
-              />
-            </div>
-
-            <div>
-              <Label htmlFor='collectionMethod'>Collection Method</Label>
-              <Input
-                id='collectionMethod'
-                {...register("collectionMethod")}
-                placeholder='In person at a Lab location'
-              />
-            </div>
-
-            <div className='col-span-2'>
-              <Label htmlFor='resultsTimeframe'>Results Timeframe</Label>
-              <Input
-                id='resultsTimeframe'
-                {...register("resultsTimeframe")}
-                placeholder='1-2 days from sample arrival at our lab'
-              />
-            </div>
-
-            <div className='col-span-2 flex items-center space-x-2 border-t pt-4'>
-              <Checkbox
-                id='enabled'
-                checked={enabled}
-                onCheckedChange={(checked) =>
-                  setValue("enabled", checked as boolean)
-                }
-              />
-              <Label htmlFor='enabled' className='font-normal cursor-pointer'>
-                Test is active and available for purchase
-              </Label>
+              <div className='flex items-center space-x-2'>
+                <Checkbox
+                  id='isActive'
+                  checked={formData.isActive}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isActive: checked === true })
+                  }
+                />
+                <Label htmlFor='isActive' className='cursor-pointer'>
+                  Active
+                </Label>
+              </div>
             </div>
           </div>
 
@@ -506,7 +578,9 @@ export function TestEditDialog({
             >
               Cancel
             </Button>
-            <Button type='submit'>{test ? "Update" : "Create"} Test</Button>
+            <Button type='submit'>
+              {test ? "Update Test" : "Create Test"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

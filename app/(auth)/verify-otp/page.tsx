@@ -2,7 +2,6 @@ import { VerifyOTPForm } from "@/components/auth/VerifyOTPForm";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
-import { SiteHeader } from "@/components/shared/SiteHeader";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -13,8 +12,8 @@ export const metadata = {
 export default function VerifyOTPPage() {
   return (
     <div className='flex min-h-screen flex-col'>
-      <SiteHeader />
-      <main id='main-content' className='flex-1'>
+      
+      <main id='main-content-section' className='flex-1'>
         <PageContainer>
           <div className='max-w-md mx-auto py-12'>
             <h1 className='text-3xl font-bold text-center mb-8'>

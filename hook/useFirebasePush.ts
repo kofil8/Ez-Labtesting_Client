@@ -44,11 +44,4 @@ export const useFirebasePush = () => {
 
     listen();
   }, []);
-
-  // Request permission
-  useEffect(() => {
-    if (Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, []);
 };

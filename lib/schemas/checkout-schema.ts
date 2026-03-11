@@ -15,7 +15,7 @@ export const checkoutSchema = z.object({
   city: z.string().min(2, "City is required"),
   state: z.string().length(2, "State must be 2 characters"),
   zipCode: z.string().regex(/^\d{5}$/, "ZIP code must be 5 digits"),
-  paymentMethod: z.enum(["ach", "card"], {
+  paymentMethod: z.enum(["card", "google_pay", "apple_pay", "crypto"], {
     message: "Please select a payment method",
   }),
   hipaaConsent: z.boolean().refine((val) => val === true, {

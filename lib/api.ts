@@ -1,9 +1,7 @@
 import ordersData from "@/data/orders.json";
-import panelsData from "@/data/panels.json";
 import promoCodesData from "@/data/promo-codes.json";
 import resultsData from "@/data/results.json";
 import testsData from "@/data/tests.json";
-import usersData from "@/data/users.json";
 import { Order } from "@/types/order";
 import { Panel } from "@/types/panel";
 import { PromoCode } from "@/types/promo-code";
@@ -28,7 +26,7 @@ export async function getTestById(id: string): Promise<Test | null> {
 export async function searchTests(
   query: string,
   category?: string,
-  sortBy?: string
+  sortBy?: string,
 ): Promise<Test[]> {
   await delay(300);
   let tests = testsData as Test[];
@@ -38,9 +36,9 @@ export async function searchTests(
     const lowerQuery = query.toLowerCase();
     tests = tests.filter(
       (test) =>
-        test.name.toLowerCase().includes(lowerQuery) ||
+        test.testName.toLowerCase().includes(lowerQuery) ||
         test.description.toLowerCase().includes(lowerQuery) ||
-        test.keywords?.some((k) => k.toLowerCase().includes(lowerQuery))
+        test.keywords?.some((k) => k.toLowerCase().includes(lowerQuery)),
     );
   }
 
@@ -55,7 +53,7 @@ export async function searchTests(
   } else if (sortBy === "price-desc") {
     tests.sort((a, b) => b.price - a.price);
   } else if (sortBy === "turnaround") {
-    tests.sort((a, b) => a.turnaroundDays - b.turnaroundDays);
+    tests.sort((a, b) => a.turnaround - b.turnaround);
   }
 
   return tests;
@@ -74,7 +72,7 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
 }
 
 export async function getResultByOrderId(
-  orderId: string
+  orderId: string,
 ): Promise<Result | null> {
   await delay(300);
   const results = resultsData as Result[];
@@ -112,7 +110,7 @@ export async function createOrder(orderData: Partial<Order>): Promise<Order> {
 
 export async function updateOrderById(
   orderId: string,
-  updates: Partial<Order>
+  updates: Partial<Order>,
 ): Promise<Order | null> {
   await delay(200);
   const orders = ordersData as Order[];
@@ -132,11 +130,11 @@ export async function updateOrderById(
 }
 
 export async function validatePromoCode(
-  code: string
+  code: string,
 ): Promise<{ valid: boolean; discount: number }> {
   await delay(400);
   const promoCode = (promoCodesData as PromoCode[]).find(
-    (pc) => pc.code.toUpperCase() === code.toUpperCase() && pc.enabled
+    (pc) => pc.code.toUpperCase() === code.toUpperCase() && pc.enabled,
   );
 
   if (!promoCode) {
@@ -169,47 +167,33 @@ export async function validatePromoCode(
   return { valid: true, discount };
 }
 
-// Panel CRUD functions
+// Panel CRUD functions - Note: These are mock functions for development
+// In production, use the server actions from app/actions/panels.ts instead
 export async function getAllPanels(): Promise<Panel[]> {
   await delay(300);
-  return panelsData as Panel[];
+  // Mock data for development - prefer using getPanels() from server actions
+  return [];
 }
 
 export async function getPanelById(id: string): Promise<Panel | null> {
   await delay(200);
-  const panels = panelsData as Panel[];
-  return panels.find((panel) => panel.id === id) || null;
+  // Use getPanelById() from server actions instead
+  return null;
 }
 
 export async function createPanel(panelData: Partial<Panel>): Promise<Panel> {
   await delay(500);
-  const newPanel: Panel = {
-    id: `panel-${Date.now()}`,
-    name: panelData.name || "",
-    description: panelData.description || "",
-    testIds: panelData.testIds || [],
-    originalPrice: panelData.originalPrice || 0,
-    bundlePrice: panelData.bundlePrice || 0,
-    savings: panelData.savings || 0,
-    enabled: panelData.enabled !== undefined ? panelData.enabled : true,
-    ...panelData,
-  } as Panel;
-
-  return newPanel;
+  // Use createPanel() from server actions instead
+  throw new Error("Use createPanel from app/actions/panels.ts");
 }
 
 export async function updatePanel(
   id: string,
-  panelData: Partial<Panel>
+  panelData: Partial<Panel>,
 ): Promise<Panel> {
   await delay(500);
-  const panels = panelsData as Panel[];
-  const existingPanel = panels.find((p) => p.id === id);
-  if (!existingPanel) {
-    throw new Error("Panel not found");
-  }
-
-  return { ...existingPanel, ...panelData } as Panel;
+  // Use updatePanel() from server actions instead
+  throw new Error("Use updatePanel from app/actions/panels.ts");
 }
 
 export async function deletePanel(id: string): Promise<void> {
@@ -230,7 +214,7 @@ export async function getPromoCodeById(id: string): Promise<PromoCode | null> {
 }
 
 export async function createPromoCode(
-  promoCodeData: Partial<PromoCode>
+  promoCodeData: Partial<PromoCode>,
 ): Promise<PromoCode> {
   await delay(500);
   const newPromoCode: PromoCode = {
@@ -255,7 +239,7 @@ export async function createPromoCode(
 
 export async function updatePromoCode(
   id: string,
-  promoCodeData: Partial<PromoCode>
+  promoCodeData: Partial<PromoCode>,
 ): Promise<PromoCode> {
   await delay(500);
   const promoCodes = promoCodesData as PromoCode[];
@@ -277,15 +261,15 @@ export async function createTest(testData: Partial<Test>): Promise<Test> {
   await delay(500);
   const newTest: Test = {
     id: `test-${Date.now()}`,
-    name: testData.name || "",
+    testName: testData.testName || "",
     description: testData.description || "",
     category: testData.category || "general",
     price: testData.price || 0,
     cptCodes: testData.cptCodes || [],
     labCode: testData.labCode || "",
     labName: testData.labName || "CPL",
-    turnaroundDays: testData.turnaroundDays || 1,
-    sampleType: testData.sampleType || "Blood",
+    turnaround: testData.turnaround || 1,
+    specimenType: testData.specimenType || "Blood",
     preparation: testData.preparation,
     keywords: testData.keywords,
     enabled: testData.enabled !== undefined ? testData.enabled : true,
@@ -297,7 +281,7 @@ export async function createTest(testData: Partial<Test>): Promise<Test> {
 
 export async function updateTest(
   id: string,
-  testData: Partial<Test>
+  testData: Partial<Test>,
 ): Promise<Test> {
   await delay(500);
   const tests = testsData as Test[];
@@ -315,52 +299,166 @@ export async function deleteTest(id: string): Promise<void> {
 }
 
 // User CRUD functions
-export async function getAllUsers(): Promise<User[]> {
-  await delay(300);
-  return usersData as User[];
+import { clientFetch, getApiUrl } from "./api-client";
+
+interface GetUsersParams {
+  page?: number;
+  limit?: number;
+  searchTerm?: string;
+  role?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+interface UsersPaginatedResponse {
+  data: User[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export async function getAllUsers(
+  params?: GetUsersParams,
+): Promise<UsersPaginatedResponse> {
+  const queryParams = new URLSearchParams();
+
+  if (params?.page) queryParams.append("page", params.page.toString());
+  if (params?.limit) queryParams.append("limit", params.limit.toString());
+  if (params?.searchTerm) queryParams.append("searchTerm", params.searchTerm);
+  if (params?.role) queryParams.append("role", params.role);
+  if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
+  if (params?.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+
+  const url = getApiUrl(`/users?${queryParams.toString()}`);
+  const response = await clientFetch(url);
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: "Failed to fetch users" }));
+    throw new Error(errorData.message || "Failed to fetch users");
+  }
+
+  const result = await response.json();
+  return {
+    data: result.data || [],
+    meta: result.meta || { total: 0, page: 1, limit: 10, totalPages: 0 },
+  };
 }
 
 export async function getUserById(id: string): Promise<User | null> {
-  await delay(200);
-  const users = usersData as User[];
-  return users.find((user) => user.id === id) || null;
+  const url = getApiUrl(`/users/${id}`);
+  const response = await clientFetch(url);
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: "Failed to fetch user" }));
+    return null;
+  }
+
+  const result = await response.json();
+  return result.data || null;
 }
 
-export async function createUser(userData: Partial<User>): Promise<User> {
-  await delay(500);
-  const newUser: User = {
-    id: `user-${Date.now()}`,
-    email: userData.email || "",
-    firstName: userData.firstName || "",
-    lastName: userData.lastName || "",
-    phone: userData.phone,
-    dateOfBirth: userData.dateOfBirth,
-    role: userData.role || "customer",
-    createdAt: new Date().toISOString(),
-    mfaEnabled: userData.mfaEnabled || false,
-    ...userData,
-  } as User;
+export async function createUser(
+  userData: Partial<User> & { password?: string },
+): Promise<User> {
+  const url = getApiUrl("/users");
+  const response = await clientFetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: userData.email,
+      password: userData.password || "TempPass123!",
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      phoneNumber: userData.phone || userData.phoneNumber,
+      gender: userData.gender,
+      bio: userData.bio,
+      dateOfBirth: userData.dateOfBirth,
+      address: userData.address,
+      bloodType: userData.bloodType,
+      allergies: userData.allergies,
+      medicalConditions: userData.medicalConditions,
+      medications: userData.medications,
+      emergencyContactName: userData.emergencyContactName,
+      emergencyContactPhone: userData.emergencyContactPhone,
+      profileImage: userData.profileImage,
+      isVerified: userData.isVerified,
+      status: userData.status || "ACTIVE",
+      role: userData.role?.toUpperCase() || "CUSTOMER",
+    }),
+  });
 
-  return newUser;
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: "Failed to create user" }));
+    throw new Error(errorData.message || "Failed to create user");
+  }
+
+  const result = await response.json();
+  return result.data;
 }
 
 export async function updateUser(
   id: string,
-  userData: Partial<User>
+  userData: Partial<User>,
 ): Promise<User> {
-  await delay(500);
-  const users = usersData as User[];
-  const existingUser = users.find((u) => u.id === id);
-  if (!existingUser) {
-    throw new Error("User not found");
+  const url = getApiUrl(`/users/${id}`);
+  const response = await clientFetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      phoneNumber: userData.phone || userData.phoneNumber,
+      gender: userData.gender,
+      bio: userData.bio,
+      dateOfBirth: userData.dateOfBirth,
+      address: userData.address,
+      bloodType: userData.bloodType,
+      allergies: userData.allergies,
+      medicalConditions: userData.medicalConditions,
+      medications: userData.medications,
+      emergencyContactName: userData.emergencyContactName,
+      emergencyContactPhone: userData.emergencyContactPhone,
+      profileImage: userData.profileImage,
+      isVerified: userData.isVerified,
+      status: userData.status,
+      role: userData.role?.toUpperCase(),
+      password: userData.password,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: "Failed to update user" }));
+    throw new Error(errorData.message || "Failed to update user");
   }
 
-  return { ...existingUser, ...userData } as User;
+  const result = await response.json();
+  return result.data;
 }
 
 export async function deleteUser(id: string): Promise<void> {
-  await delay(500);
-  // In real app, would call API to delete
+  const url = getApiUrl(`/users/${id}`);
+  const response = await clientFetch(url, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: "Failed to delete user" }));
+    throw new Error(errorData.message || "Failed to delete user");
+  }
 }
 
 // Order Management functions
@@ -371,7 +469,7 @@ export async function getAllOrders(): Promise<Order[]> {
 
 export async function updateOrder(
   id: string,
-  orderData: Partial<Order>
+  orderData: Partial<Order>,
 ): Promise<Order> {
   await delay(500);
   const orders = ordersData as Order[];

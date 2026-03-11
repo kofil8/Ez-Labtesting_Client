@@ -2,7 +2,6 @@ import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
-import { SiteHeader } from "@/components/shared/SiteHeader";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -13,8 +12,8 @@ export const metadata = {
 export default function ResetPasswordPage() {
   return (
     <div className='flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'>
-      <SiteHeader />
-      <main id='main-content' className='flex-1'>
+      
+      <main id='main-content-section' className='flex-1'>
         <PageContainer>
           <div className='flex items-center justify-center min-h-[calc(100vh-200px)] py-12 px-4'>
             <div className='w-full max-w-md'>

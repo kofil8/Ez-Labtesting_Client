@@ -69,7 +69,7 @@
         "sms": true
       }
     },
-    "paymentMethod": "ach",
+    "paymentMethod": "link",
     "createdAt": "2024-02-01T09:15:00Z",
     "updatedAt": "2024-02-05T10:30:00Z",
     "completedAt": "2024-02-05T10:30:00Z"

@@ -1,15 +1,21 @@
-import { CustomerDashboard } from "@/components/dashboard/CustomerDashboard";
-import { SiteFooter } from "@/components/shared/SiteFooter";
-import { SiteHeader } from "@/components/shared/SiteHeader";
+import { PageSkeleton } from "@/components/shared/PageSkeleton";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+
+const CustomerDashboardLazy = dynamic(() =>
+  import("@/components/dashboard/CustomerDashboard").then(
+    (m) => m.CustomerDashboard,
+  ),
+);
 
 export default function DashboardCustomerPage() {
   return (
-    <div className='flex min-h-screen flex-col'>
-      <SiteHeader />
-      <main id='main-content' className='flex-1'>
-        <CustomerDashboard />
-      </main>
-      <SiteFooter />
-    </div>
+    <Suspense fallback={<PageSkeleton />}>
+      <div className='flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-primary/5'>
+        <main id='main-content-section' className='flex-1 w-full'>
+          <CustomerDashboardLazy />
+        </main>
+      </div>
+    </Suspense>
   );
 }

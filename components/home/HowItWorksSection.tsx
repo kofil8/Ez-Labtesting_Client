@@ -1,93 +1,185 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
-  CalendarIcon,
-  ClipboardCheckIcon,
-  FileTextIcon,
-  SearchIcon,
+  CalendarCheck2,
+  FileCheck,
+  FlaskConical,
+  ScanLine,
 } from "lucide-react";
-import Link from "next/link";
 
 const steps = [
   {
-    icon: SearchIcon,
-    title: "Choose Your Test",
+    icon: FlaskConical,
+    title: "Choose Tests",
     description:
-      "Browse our comprehensive catalog of lab tests and health panels tailored to your needs.",
+      "Browse our comprehensive catalog of individual tests and health panels. Filter by health goals or medical needs.",
+    color: "from-blue-500 to-blue-600",
+    bgColor: "bg-blue-50",
   },
   {
-    icon: CalendarIcon,
-    title: "Book Appointment",
+    icon: CalendarCheck2,
+    title: "Schedule Visit",
     description:
-      "Select a convenient lab center near you and schedule your visit at a time that works for you.",
+      "Select a convenient lab location and time slot. Same-day appointments often available.",
+    color: "from-purple-500 to-purple-600",
+    bgColor: "bg-purple-50",
   },
   {
-    icon: ClipboardCheckIcon,
-    title: "Get Tested",
+    icon: ScanLine,
+    title: "Quick Collection",
     description:
-      "Visit the lab center for a quick sample collection by our professional healthcare staff.",
+      "Visit your chosen lab for a fast, professional sample collection. Takes just 10-15 minutes.",
+    color: "from-cyan-500 to-cyan-600",
+    bgColor: "bg-cyan-50",
   },
   {
-    icon: FileTextIcon,
-    title: "Receive Results",
+    icon: FileCheck,
+    title: "Get Results",
     description:
-      "Access your detailed test results securely online within 24-48 hours.",
+      "Receive secure, physician-reviewed reports in your patient portal within 24-72 hours.",
+    color: "from-emerald-500 to-emerald-600",
+    bgColor: "bg-emerald-50",
   },
+];
+
+const featurePoints = [
+  "No hidden fees or surprise charges",
+  "24/7 access to your health records",
+  "Direct provider referral option",
+  "Comprehensive health insights",
 ];
 
 export function HowItWorksSection() {
   return (
-    <section className='py-16 md:py-24 bg-gradient-to-b from-white to-gray-50'>
-      <div className='container mx-auto px-4 md:px-6'>
-        <div className='text-center mb-12'>
-          <h2 className='text-3xl md:text-4xl font-bold tracking-tight mb-4'>
+    <section className='py-16 sm:py-20 lg:py-24 bg-white'>
+      <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.5 }}
+          className='mx-auto max-w-3xl text-center mb-16 lg:mb-20'
+        >
+          <p className='mb-3 text-xs font-bold uppercase tracking-wider text-blue-600'>
+            Simple Process
+          </p>
+          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-4'>
             How It Works
           </h2>
-          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
-            Get your lab tests done in four simple steps. Fast, convenient, and
-            reliable healthcare at your fingertips.
+          <p className='text-base sm:text-lg text-slate-600 leading-relaxed'>
+            A streamlined, patient-centered workflow designed for your health
+            and convenience. From test selection to results, we make every step
+            clear and effortless.
           </p>
+        </motion.div>
+
+        {/* Steps Grid */}
+        <div className='mb-16'>
+          <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
+            {steps.map((step, index) => {
+              const IconComponent = step.icon;
+              const isLast = index === steps.length - 1;
+
+              return (
+                <motion.div
+                  key={step.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.4, delay: index * 0.08 }}
+                  className='relative group'
+                >
+                  {/* Connector Arrow (hidden on mobile, visible on lg) */}
+                  {!isLast && (
+                    <div className='hidden lg:block absolute -right-3 top-12 w-6 h-0.5 bg-gradient-to-r from-slate-200 to-slate-100'></div>
+                  )}
+
+                  {/* Card */}
+                  <div className='h-full rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300'>
+                    {/* Step Number */}
+                    <div className='mb-4 flex items-center justify-between'>
+                      <div className='inline-flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-200 font-bold text-slate-900'>
+                        {index + 1}
+                      </div>
+                      <ArrowRight className='h-4 w-4 text-slate-300 group-hover:text-slate-400' />
+                    </div>
+
+                    {/* Icon */}
+                    <div
+                      className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg ${step.bgColor}`}
+                    >
+                      <IconComponent
+                        className='h-6 w-6'
+                        style={{
+                          background: `linear-gradient(135deg, ${step.color.split(" ")[0]} 0%, ${step.color.split(" ")[1]} 100%)`,
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <h3 className='mb-2 text-lg font-bold text-slate-900'>
+                      {step.title}
+                    </h3>
+                    <p className='text-sm leading-relaxed text-slate-600'>
+                      {step.description}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10'>
-          {steps.map((step, index) => (
-            <Card
-              key={index}
-              className='relative border-2 hover:shadow-lg transition-shadow duration-300'
-            >
-              <CardContent className='pt-12 pb-6 px-6'>
-                <div className='absolute -top-6 left-1/2 transform -translate-x-1/2'>
-                  <div className='w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg'>
-                    <step.icon className='w-6 h-6 text-primary-foreground' />
+        {/* Key Features */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.5 }}
+          className='rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-blue-50 p-8 sm:p-10'
+        >
+          <h3 className='mb-6 text-2xl font-bold text-slate-900'>
+            Why Choose EzLabTesting?
+          </h3>
+          <div className='grid gap-4 sm:grid-cols-2'>
+            {featurePoints.map((point, index) => (
+              <motion.div
+                key={point}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className='flex items-start gap-3'
+              >
+                <div className='mt-1 flex-shrink-0'>
+                  <div className='flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100'>
+                    <svg
+                      className='h-3 w-3 text-emerald-600'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={3}
+                        d='M5 13l4 4L19 7'
+                      />
+                    </svg>
                   </div>
                 </div>
-                <div className='absolute top-4 right-4 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center'>
-                  <span className='text-sm font-bold text-primary'>
-                    {index + 1}
-                  </span>
-                </div>
-                <h3 className='text-xl font-semibold mb-3 text-center'>
-                  {step.title}
-                </h3>
-                <p className='text-muted-foreground text-center text-sm'>
-                  {step.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className='text-center'>
-          <Link href='/how-it-works'>
-            <Button size='lg' className='group'>
-              Learn More
-              <ArrowRight className='ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform' />
-            </Button>
-          </Link>
-        </div>
+                <span className='text-sm font-medium text-slate-700'>
+                  {point}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </section>
   );

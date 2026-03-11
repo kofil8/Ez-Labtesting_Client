@@ -22,10 +22,18 @@ export async function logoutUser(pushToken?: string) {
           pushToken: pushToken || null, // 🔥 unregister token on backend
         }),
         credentials: "include",
-      }
+      },
     );
-  } catch (error) {
-    console.error("Error calling logout API:", error);
+  } catch (error: any) {
+    // Log but don't fail - we still clear cookies locally
+    if (
+      error.cause?.code === "ECONNREFUSED" ||
+      error.message?.includes("fetch failed")
+    ) {
+      console.error("Server unavailable during logout:", error);
+    } else {
+      console.error("Error calling logout API:", error);
+    }
   }
 
   // Clear cookies client-side

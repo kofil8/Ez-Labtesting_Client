@@ -8,10 +8,27 @@ import { PasswordInput } from "@/components/shared/PasswordInput";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hook/use-toast";
 import { SignupFormData, signupSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Phone, User } from "lucide-react";
+import {
+  AlertCircle,
+  Calendar,
+  Heart,
+  Mail,
+  MapPin,
+  Phone,
+  Stethoscope,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -20,7 +37,7 @@ import { toast } from "sonner";
 
 // Password strength calculator
 const calculatePasswordStrength = (
-  password: string
+  password: string,
 ): {
   score: number;
   label: string;
@@ -78,6 +95,7 @@ export function SignupForm() {
   const [error, setError] = useState("");
   const [passwordValue, setPasswordValue] = useState("");
   const [phoneValue, setPhoneValue] = useState("");
+  const [bloodTypeValue, setBloodTypeValue] = useState("");
 
   const {
     register,
@@ -108,12 +126,12 @@ export function SignupForm() {
     } else if (limitedNumber.length <= 7) {
       return `+${limitedNumber.slice(0, 1)} (${limitedNumber.slice(
         1,
-        4
+        4,
       )}) ${limitedNumber.slice(4)}`;
     } else {
       return `+${limitedNumber.slice(0, 1)} (${limitedNumber.slice(
         1,
-        4
+        4,
       )}) ${limitedNumber.slice(4, 7)}-${limitedNumber.slice(7, 11)}`;
     }
   };
@@ -133,7 +151,7 @@ export function SignupForm() {
         const res = await registerUser(formData);
         if (res?.success) {
           toast.success(
-            "Account created! Please verify your email to activate your account."
+            "Account created! Please verify your email to activate your account.",
           );
           const email = res.email || (formData.get("email") as string);
           // Store email in sessionStorage for OTP verification
@@ -163,6 +181,19 @@ export function SignupForm() {
     if (data.phone) {
       formData.append("phoneNumber", data.phone);
     }
+    // Add medical fields if provided
+    if (data.dateOfBirth) formData.append("dateOfBirth", data.dateOfBirth);
+    if (data.address) formData.append("address", data.address);
+    if (data.bloodType) formData.append("bloodType", data.bloodType);
+    if (data.allergies) formData.append("allergies", data.allergies);
+    if (data.medicalConditions)
+      formData.append("medicalConditions", data.medicalConditions);
+    if (data.medications) formData.append("medications", data.medications);
+    if (data.emergencyContactName)
+      formData.append("emergencyContactName", data.emergencyContactName);
+    if (data.emergencyContactPhone)
+      formData.append("emergencyContactPhone", data.emergencyContactPhone);
+
     handleAction(formData);
   };
 
@@ -181,24 +212,27 @@ export function SignupForm() {
   // };
 
   return (
-    <Card className='w-full border-0 shadow-2xl bg-white/80 backdrop-blur-sm'>
+    <Card className='w-full border border-blue-100 shadow-xl bg-white/95 backdrop-blur-sm'>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className='pt-6 p-6 space-y-5'>
+        <CardContent className='pt-8 px-7 py-6 space-y-6'>
           {/* Name Fields */}
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='firstName' className='text-sm font-medium'>
+          <div className='grid grid-cols-2 gap-5'>
+            <div className='space-y-2.5'>
+              <Label
+                htmlFor='firstName'
+                className='text-sm font-semibold text-gray-900'
+              >
                 First Name
-                <span className='text-destructive ml-1' aria-label='required'>
+                <span className='text-red-500 ml-1' aria-label='required'>
                   *
                 </span>
               </Label>
               <div className='relative group'>
-                <User className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors' />
+                <User className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors' />
                 <Input
                   id='firstName'
                   placeholder='John'
-                  className='pl-10 h-11'
+                  className='pl-10 h-11 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
                   aria-required='true'
                   aria-invalid={errors.firstName ? "true" : "false"}
                   aria-describedby={
@@ -213,19 +247,22 @@ export function SignupForm() {
               />
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='lastName' className='text-sm font-medium'>
+            <div className='space-y-2.5'>
+              <Label
+                htmlFor='lastName'
+                className='text-sm font-semibold text-gray-900'
+              >
                 Last Name
-                <span className='text-destructive ml-1' aria-label='required'>
+                <span className='text-red-500 ml-1' aria-label='required'>
                   *
                 </span>
               </Label>
               <div className='relative group'>
-                <User className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors' />
+                <User className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors' />
                 <Input
                   id='lastName'
                   placeholder='Doe'
-                  className='pl-10 h-11'
+                  className='pl-10 h-11 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
                   aria-required='true'
                   aria-invalid={errors.lastName ? "true" : "false"}
                   aria-describedby={
@@ -242,20 +279,23 @@ export function SignupForm() {
           </div>
 
           {/* Email */}
-          <div className='space-y-2'>
-            <Label htmlFor='email' className='text-sm font-medium'>
-              Email address
-              <span className='text-destructive ml-1' aria-label='required'>
+          <div className='space-y-2.5'>
+            <Label
+              htmlFor='email'
+              className='text-sm font-semibold text-gray-900'
+            >
+              Email Address
+              <span className='text-red-500 ml-1' aria-label='required'>
                 *
               </span>
             </Label>
             <div className='relative group'>
-              <Mail className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors' />
+              <Mail className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors' />
               <Input
                 id='email'
                 type='email'
                 placeholder='you@example.com'
-                className='pl-10 h-11'
+                className='pl-10 h-11 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
                 aria-required='true'
                 aria-invalid={errors.email ? "true" : "false"}
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -266,37 +306,43 @@ export function SignupForm() {
           </div>
 
           {/* Phone */}
-          <div className='space-y-2'>
-            <Label htmlFor='phone' className='text-sm font-medium'>
-              Phone number{" "}
-              <span className='text-muted-foreground text-xs'>(optional)</span>
+          <div className='space-y-2.5'>
+            <Label
+              htmlFor='phone'
+              className='text-sm font-semibold text-gray-900'
+            >
+              Phone Number{" "}
+              <span className='text-gray-500 font-normal text-xs'>
+                (optional)
+              </span>
             </Label>
             <div className='relative group'>
-              <Phone className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors' />
+              <Phone className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors' />
               <Input
                 id='phone'
                 type='tel'
                 placeholder='+1 (555) 123-4567'
                 value={phoneValue}
                 onChange={handlePhoneChange}
-                className='pl-10 h-11'
+                className='pl-10 h-11 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
                 aria-invalid={errors.phone ? "true" : "false"}
                 aria-describedby={errors.phone ? "phone-error" : "phone-hint"}
               />
             </div>
             <FieldError error={errors.phone?.message} id='phone-error' />
             {phoneValue && !errors.phone && (
-              <p id='phone-hint' className='text-xs text-muted-foreground'>
-                US phone format applied
+              <p id='phone-hint' className='text-xs text-gray-500'>
+                ✓ US phone format
               </p>
             )}
           </div>
 
           {/* Password */}
-          <div className='space-y-2'>
+          <div className='space-y-2.5 mt-1'>
             <PasswordInput
               id='password'
               label='Password'
+              labelClassName='text-sm font-semibold text-gray-900'
               placeholder='Create a strong password (min. 8 characters)'
               required
               {...register("password", {
@@ -311,7 +357,7 @@ export function SignupForm() {
                   {[1, 2, 3, 4].map((bar) => (
                     <div
                       key={bar}
-                      className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                      className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
                         bar <= passwordStrength.score
                           ? passwordStrength.bgColor
                           : "bg-gray-200"
@@ -324,29 +370,14 @@ export function SignupForm() {
                 </p>
               </div>
             )}
-            {errors.password && (
-              <p className='text-xs text-red-500 font-medium flex items-center gap-1'>
-                <svg
-                  className='h-3 w-3'
-                  fill='currentColor'
-                  viewBox='0 0 20 20'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
-                    clipRule='evenodd'
-                  />
-                </svg>
-                {errors.password.message}
-              </p>
-            )}
           </div>
 
           {/* Confirm Password */}
-          <div className='space-y-2'>
+          <div className='space-y-2.5'>
             <PasswordInput
               id='confirmPassword'
               label='Confirm Password'
+              labelClassName='text-sm font-semibold text-gray-900'
               placeholder='Re-enter your password'
               required
               {...register("confirmPassword")}
@@ -354,90 +385,295 @@ export function SignupForm() {
             />
           </div>
 
+          {/* Medical Information Section */}
+          <div className='pt-6 mt-6 border-t-2 border-blue-100'>
+            <div className='flex items-center gap-2 mb-4'>
+              <Heart className='w-5 h-5 text-blue-600' />
+              <h3 className='text-base font-bold text-gray-900'>
+                Medical Information{" "}
+                <span className='text-gray-500 font-normal text-sm'>
+                  (Optional)
+                </span>
+              </h3>
+            </div>
+            <p className='text-sm text-gray-600 mb-4'>
+              Providing medical information helps us serve you better. You can
+              always update this later in your profile.
+            </p>
+
+            {/* Date of Birth & Blood Type */}
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5'>
+              <div className='space-y-2.5'>
+                <Label
+                  htmlFor='dateOfBirth'
+                  className='text-sm font-semibold text-gray-900'
+                >
+                  Date of Birth
+                </Label>
+                <div className='relative group'>
+                  <Calendar className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors' />
+                  <Input
+                    id='dateOfBirth'
+                    type='date'
+                    className='pl-10 h-11 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                    {...register("dateOfBirth")}
+                  />
+                </div>
+                <FieldError
+                  error={errors.dateOfBirth?.message}
+                  id='dateOfBirth-error'
+                />
+              </div>
+
+              <div className='space-y-2.5'>
+                <Label
+                  htmlFor='bloodType'
+                  className='text-sm font-semibold text-gray-900'
+                >
+                  Blood Type
+                </Label>
+                <Select
+                  value={bloodTypeValue}
+                  onValueChange={(value) => {
+                    setBloodTypeValue(value);
+                    setValue("bloodType", value, { shouldValidate: true });
+                  }}
+                >
+                  <SelectTrigger className='h-11 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'>
+                    <SelectValue placeholder='Select blood type' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='A+'>A+</SelectItem>
+                    <SelectItem value='A-'>A-</SelectItem>
+                    <SelectItem value='B+'>B+</SelectItem>
+                    <SelectItem value='B-'>B-</SelectItem>
+                    <SelectItem value='AB+'>AB+</SelectItem>
+                    <SelectItem value='AB-'>AB-</SelectItem>
+                    <SelectItem value='O+'>O+</SelectItem>
+                    <SelectItem value='O-'>O-</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FieldError
+                  error={errors.bloodType?.message}
+                  id='bloodType-error'
+                />
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className='space-y-2.5 mb-5'>
+              <Label
+                htmlFor='address'
+                className='text-sm font-semibold text-gray-900'
+              >
+                Address
+              </Label>
+              <div className='relative group'>
+                <MapPin className='absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors' />
+                <Input
+                  id='address'
+                  placeholder='123 Main St, City, State ZIP'
+                  className='pl-10 h-11 border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+                  {...register("address")}
+                />
+              </div>
+              <FieldError error={errors.address?.message} id='address-error' />
+            </div>
+
+            {/* Allergies */}
+            <div className='space-y-2.5 mb-5'>
+              <Label
+                htmlFor='allergies'
+                className='text-sm font-semibold text-gray-900 flex items-center gap-2'
+              >
+                <AlertCircle className='w-4 h-4 text-orange-500' />
+                Allergies
+              </Label>
+              <Textarea
+                id='allergies'
+                placeholder='List any allergies (medications, food, etc.)'
+                rows={2}
+                className='border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none'
+                {...register("allergies")}
+                maxLength={500}
+              />
+              <p className='text-xs text-gray-500'>
+                Separate multiple allergies with commas
+              </p>
+              <FieldError
+                error={errors.allergies?.message}
+                id='allergies-error'
+              />
+            </div>
+
+            {/* Medical Conditions */}
+            <div className='space-y-2.5 mb-5'>
+              <Label
+                htmlFor='medicalConditions'
+                className='text-sm font-semibold text-gray-900'
+              >
+                Medical Conditions
+              </Label>
+              <Textarea
+                id='medicalConditions'
+                placeholder='List any chronic conditions or diagnoses'
+                rows={2}
+                className='border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none'
+                {...register("medicalConditions")}
+                maxLength={500}
+              />
+              <FieldError
+                error={errors.medicalConditions?.message}
+                id='medicalConditions-error'
+              />
+            </div>
+
+            {/* Current Medications */}
+            <div className='space-y-2.5 mb-5'>
+              <Label
+                htmlFor='medications'
+                className='text-sm font-semibold text-gray-900 flex items-center gap-2'
+              >
+                <Stethoscope className='w-4 h-4 text-blue-600' />
+                Current Medications
+              </Label>
+              <Textarea
+                id='medications'
+                placeholder='List current medications and dosages'
+                rows={2}
+                className='border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none'
+                {...register("medications")}
+                maxLength={500}
+              />
+              <FieldError
+                error={errors.medications?.message}
+                id='medications-error'
+              />
+            </div>
+
+            {/* Emergency Contact */}
+            <div className='bg-red-50 border border-red-200 rounded-lg p-4 space-y-4'>
+              <div className='flex items-center gap-2'>
+                <AlertCircle className='w-5 h-5 text-red-600' />
+                <h4 className='text-sm font-bold text-gray-900'>
+                  Emergency Contact
+                </h4>
+              </div>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <div className='space-y-2'>
+                  <Label
+                    htmlFor='emergencyContactName'
+                    className='text-sm font-semibold text-gray-900'
+                  >
+                    Contact Name
+                  </Label>
+                  <Input
+                    id='emergencyContactName'
+                    placeholder='Full name'
+                    className='h-11 border-gray-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 bg-white'
+                    {...register("emergencyContactName")}
+                  />
+                  <FieldError
+                    error={errors.emergencyContactName?.message}
+                    id='emergencyContactName-error'
+                  />
+                </div>
+
+                <div className='space-y-2'>
+                  <Label
+                    htmlFor='emergencyContactPhone'
+                    className='text-sm font-semibold text-gray-900'
+                  >
+                    Contact Phone
+                  </Label>
+                  <Input
+                    id='emergencyContactPhone'
+                    type='tel'
+                    placeholder='1234567890'
+                    className='h-11 border-gray-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 bg-white'
+                    {...register("emergencyContactPhone")}
+                  />
+                  <FieldError
+                    error={errors.emergencyContactPhone?.message}
+                    id='emergencyContactPhone-error'
+                  />
+                </div>
+              </div>
+              <p className='text-xs text-red-700 bg-red-100 p-2 rounded'>
+                <strong>Important:</strong> This person will be contacted in
+                case of medical emergencies
+              </p>
+            </div>
+          </div>
+
           {/* Error Message */}
           {error && <ErrorAlert message={error} />}
+
+          {/* Security & Privacy Notice */}
+          <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2 mt-8'>
+            <div className='flex items-start gap-3'>
+              <svg
+                className='h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
+                />
+              </svg>
+              <p className='text-xs text-gray-700 leading-relaxed'>
+                <span className='font-semibold text-gray-900'>
+                  Your data is secure:
+                </span>{" "}
+                All information is encrypted and HIPAA-compliant. We never share
+                your health data without explicit consent.
+              </p>
+            </div>
+          </div>
 
           {/* Submit Button */}
           <LoadingButton
             type='submit'
             loading={isPending}
             loadingText='Creating your account...'
-            className='w-full h-11 bg-gradient-to-r from-primary to-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all'
+            className='w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 mt-8'
           >
             Create Account
           </LoadingButton>
 
           {/* Terms Notice */}
-          <p className='text-xs text-center text-gray-500'>
+          <p className='text-xs text-center text-gray-600 leading-relaxed mt-6'>
             By creating an account, you agree to our{" "}
             <a
               href='#'
-              className='text-cyan-600 hover:text-cyan-700 font-medium'
+              className='text-blue-600 hover:text-blue-700 font-semibold underline-offset-2 hover:underline'
             >
               Terms of Service
-            </a>{" "}
-            and{" "}
+            </a>
+            ,{" "}
             <a
               href='#'
-              className='text-cyan-600 hover:text-cyan-700 font-medium'
+              className='text-blue-600 hover:text-blue-700 font-semibold underline-offset-2 hover:underline'
             >
               Privacy Policy
+            </a>
+            , and{" "}
+            <a
+              href='#'
+              className='text-blue-600 hover:text-blue-700 font-semibold underline-offset-2 hover:underline'
+            >
+              HIPAA Notice
             </a>
           </p>
         </CardContent>
 
-        <CardFooter className='flex flex-col space-y-4 p-6 pt-0'>
-          <div className='relative w-full'>
-            <div className='absolute inset-0 flex items-center'>
-              <div className='w-full border-t border-gray-200' />
-            </div>
-            <div className='relative flex justify-center text-xs uppercase'>
-              <span className='bg-white px-2 text-gray-500'>
-                Or sign up with
-              </span>
-            </div>
-          </div>
-
-          {/* Social Signup Buttons */}
-          <div className='grid grid-cols-2 gap-3'>
-            <button
-              type='button'
-              disabled
-              className='h-11 px-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center gap-2 opacity-60 cursor-not-allowed'
-            >
-              <svg className='h-5 w-5' viewBox='0 0 24 24'>
-                <path
-                  fill='currentColor'
-                  d='M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z'
-                />
-                <path
-                  fill='currentColor'
-                  d='M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z'
-                />
-                <path
-                  fill='currentColor'
-                  d='M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z'
-                />
-                <path
-                  fill='currentColor'
-                  d='M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z'
-                />
-              </svg>
-              <span className='text-sm font-medium'>Google</span>
-            </button>
-            <button
-              type='button'
-              disabled
-              className='h-11 px-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center gap-2 opacity-60 cursor-not-allowed'
-            >
-              <svg className='h-5 w-5' fill='currentColor' viewBox='0 0 24 24'>
-                <path d='M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z' />
-              </svg>
-              <span className='text-sm font-medium'>GitHub</span>
-            </button>
-          </div>
-
-          <p className='text-sm text-center text-gray-600'>
+        <CardFooter className='flex flex-col space-y-3 px-7 py-5 border-t border-gray-100'>
+          {/* Sign In Link */}
+          <p className='text-sm text-center text-gray-600 w-full'>
             Already have an account?{" "}
             <Link
               href={(() => {
@@ -452,7 +688,7 @@ export function SignupForm() {
                   ? `/login?from=${encodeURIComponent(safeFrom)}`
                   : "/login";
               })()}
-              className='font-semibold text-cyan-600 hover:text-cyan-700 transition-colors duration-200'
+              className='font-semibold text-blue-600 hover:text-blue-700 transition-colors duration-200'
             >
               Sign in
             </Link>

@@ -10,7 +10,8 @@ import {
 import ordersData from "@/data/orders.json";
 import promoCodesData from "@/data/promo-codes.json";
 import resultsData from "@/data/results.json";
-import testsData from "@/data/tests.json";
+// TODO: Replace with real API call to getTests() from @/app/actions/tests
+// import testsData from "@/data/tests.json";
 import {
   calculateRevenueStats,
   getOrdersByStatus,
@@ -78,14 +79,15 @@ export function AdminDashboard() {
     recentOrders,
   } = useMemo(() => {
     const orders = ordersData as Order[];
-    const tests = testsData as any[];
+    // TODO: Fetch from real API - const testsResult = await getTests({ limit: 1000 });
+    const tests: any[] = []; // testsData as any[];
     const promoCodes = promoCodesData as any[];
     const results = resultsData as any[];
 
     // Calculate statistics
     const revenueStats = calculateRevenueStats(orders);
     const pendingResultsCount = results.filter(
-      (r: any) => r.status === "pending" || r.status === "processing"
+      (r: any) => r.status === "pending" || r.status === "processing",
     ).length;
     const activeTestsCount = tests.filter((t: any) => t.enabled).length;
 
@@ -210,7 +212,7 @@ export function AdminDashboard() {
                     <div
                       className={cn(
                         "flex items-center gap-1",
-                        isPositive ? "text-green-600" : "text-red-600"
+                        isPositive ? "text-green-600" : "text-red-600",
                       )}
                     >
                       {isPositive ? (
@@ -264,7 +266,7 @@ export function AdminDashboard() {
                     const [year, month] = value.split("-");
                     return new Date(
                       parseInt(year),
-                      parseInt(month) - 1
+                      parseInt(month) - 1,
                     ).toLocaleDateString("en-US", { month: "short" });
                   }}
                 />
@@ -276,8 +278,8 @@ export function AdminDashboard() {
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                   }}
-                  formatter={(value: number) => [
-                    `$${value.toLocaleString()}`,
+                  formatter={(value: number | undefined) => [
+                    `$${(value || 0).toLocaleString()}`,
                     "Revenue",
                   ]}
                 />
@@ -316,14 +318,14 @@ export function AdminDashboard() {
                     percent?: number;
                   }) =>
                     `${name || "Unknown"}: ${((percent || 0) * 100).toFixed(
-                      0
+                      0,
                     )}%`
                   }
                   outerRadius={100}
                   fill='#8884d8'
                   dataKey='count'
                 >
-                  {ordersByStatus.map((entry, index) => (
+                  {ordersByStatus.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={PIE_COLORS[index % PIE_COLORS.length]}
@@ -372,11 +374,12 @@ export function AdminDashboard() {
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                   }}
-                  formatter={(value: number, name: string) => {
-                    if (name === "count") return [value, "Orders"];
+                  formatter={(value: number | undefined, name?: string) => {
+                    const val = value || 0;
+                    if (name === "count") return [val, "Orders"];
                     if (name === "revenue")
-                      return [`$${value.toFixed(2)}`, "Revenue"];
-                    return value;
+                      return [`$${val.toFixed(2)}`, "Revenue"];
+                    return val;
                   }}
                 />
                 <Legend />
@@ -415,8 +418,8 @@ export function AdminDashboard() {
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                   }}
-                  formatter={(value: number) => [
-                    `$${value.toLocaleString("en-US", {
+                  formatter={(value: number | undefined) => [
+                    `$${(value || 0).toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}`,
@@ -525,7 +528,7 @@ export function AdminDashboard() {
                             "processing",
                             "cancelled",
                           ].includes(order.status) &&
-                            "bg-gray-100 text-gray-800"
+                            "bg-gray-100 text-gray-800",
                         )}
                       >
                         {order.status.charAt(0).toUpperCase() +

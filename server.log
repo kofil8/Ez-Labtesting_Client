@@ -1,0 +1,12 @@
+yarn run v1.22.22
+$ next dev
+ ⚠ Port 3000 is in use by process 11652, using available port 3001 instead.
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3001
+   - Network:       http://172.23.1error Command failed with exit code 3221225786.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+dev\lock, is another instance of next dev running?
+   Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+[?25h
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.

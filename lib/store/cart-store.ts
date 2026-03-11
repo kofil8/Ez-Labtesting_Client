@@ -1,21 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export interface CartItem {
-  testId: string;
-  testName: string;
+export type CartItem = {
+  id: string; // unique identifier for the cart item, e.g., `test-${testId}` or `panel-${panelId}`
+  itemType: "TEST" | "PANEL";
+  name: string;
   price: number;
-  cptCode?: string;
-  labCode?: string;
-  labName?: string;
-}
+} & (
+  | { itemType: "TEST"; testId: string }
+  | { itemType: "PANEL"; panelId: string; testIds: string[] }
+);
 
 interface CartState {
   items: CartItem[];
   promoCode: string | null;
   discount: number;
   addItem: (item: CartItem) => void;
-  removeItem: (testId: string) => void;
+  removeItem: (itemId: string) => void;
   clearCart: () => void;
   setPromoCode: (code: string, discount: number) => void;
   clearPromoCode: () => void;
@@ -35,7 +36,7 @@ export const useCartStore = create<CartState>()(
       addItem: (item: CartItem) => {
         set((state) => {
           // Check if item already exists
-          const exists = state.items.some((i) => i.testId === item.testId);
+          const exists = state.items.some((i) => i.id === item.id);
           if (exists) {
             return state; // Don't add duplicates
           }
@@ -43,9 +44,9 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      removeItem: (testId: string) => {
+      removeItem: (itemId: string) => {
         set((state) => ({
-          items: state.items.filter((item) => item.testId !== testId),
+          items: state.items.filter((item) => item.id !== itemId),
         }));
       },
 
@@ -82,6 +83,6 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "cart-storage",
-    }
-  )
+    },
+  ),
 );

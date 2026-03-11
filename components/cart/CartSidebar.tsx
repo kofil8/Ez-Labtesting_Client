@@ -104,9 +104,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     });
   };
 
-  const handleCheckout = () => {
+  const handleReviewCheckout = () => {
     onClose();
-    router.push("/checkout");
+    router.push("/cart");
   };
 
   if (!isMounted) return null;
@@ -174,17 +174,41 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <>
                   {/* Cart Items */}
                   <div className='space-y-2 sm:space-y-3'>
-                    {items.map((item) => (
+                    {items.map((item, index) => {
+                      const legacyItem = item as {
+                        id?: string;
+                        itemType?: "TEST" | "PANEL";
+                        name?: string;
+                        testName?: string;
+                        testId?: string;
+                        panelId?: string;
+                      };
+                      const itemKey =
+                        legacyItem.id ||
+                        legacyItem.testId ||
+                        legacyItem.panelId ||
+                        `cart-item-${index}`;
+                      const itemIdToRemove =
+                        legacyItem.id ||
+                        legacyItem.testId ||
+                        legacyItem.panelId ||
+                        "";
+                      const itemName =
+                        legacyItem.name || legacyItem.testName || "Lab Item";
+                      const itemTypeLabel =
+                        legacyItem.itemType === "PANEL" ? "Panel" : "Lab Test";
+
+                      return (
                       <div
-                        key={item.testId}
+                        key={itemKey}
                         className='flex items-start justify-between gap-2 sm:gap-3 p-2.5 sm:p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700'
                       >
                         <div className='flex-1 min-w-0 pr-2'>
                           <h4 className='font-semibold text-xs sm:text-sm break-words leading-tight'>
-                            {item.testName}
+                            {itemName}
                           </h4>
                           <p className='text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1'>
-                            Lab Test
+                            {itemTypeLabel}
                           </p>
                         </div>
                         <div className='text-right flex-shrink-0'>
@@ -195,10 +219,12 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                             variant='ghost'
                             size='sm'
                             onClick={() => {
-                              removeItem(item.testId);
+                              if (itemIdToRemove) {
+                                removeItem(itemIdToRemove);
+                              }
                               toast({
                                 title: "Removed from cart",
-                                description: `${item.testName} has been removed.`,
+                                description: `${itemName} has been removed.`,
                               });
                             }}
                             className='mt-1.5 sm:mt-2 text-destructive hover:text-destructive hover:bg-destructive/10 text-[10px] sm:text-xs h-6 sm:h-7 px-2'
@@ -208,7 +234,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Divider */}
@@ -324,10 +351,10 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 {/* Buttons */}
                 <div className='space-y-2'>
                   <Button
-                    onClick={handleCheckout}
+                    onClick={handleReviewCheckout}
                     className='w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-sm sm:text-base h-10 sm:h-11'
                   >
-                    Proceed to Checkout
+                    Review Checkout
                   </Button>
                   <Button
                     variant='outline'

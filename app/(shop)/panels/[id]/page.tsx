@@ -1,8 +1,7 @@
-import { PanelDetail } from "@/components/panels/PanelDetail";
+import { getPanelById } from "@/app/actions/panels";
+import { PanelDetail } from "@/components/panels";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
-import { SiteHeader } from "@/components/shared/SiteHeader";
-import panelsData from "@/data/panels.json";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({
@@ -11,18 +10,20 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const panel = (panelsData as any[]).find((p) => p.id === id);
 
-  if (!panel) {
+  try {
+    const panel = await getPanelById(id);
+
     return {
-      title: "Panel Not Found",
+      title: `${panel.name} | Ez LabTesting`,
+      description: panel.description,
+    };
+  } catch {
+    return {
+      title: "Panel Not Found | Ez LabTesting",
+      description: "The requested test panel could not be found.",
     };
   }
-
-  return {
-    title: `${panel.name} | Ez LabTesting`,
-    description: panel.description,
-  };
 }
 
 export default async function PanelDetailPage({
@@ -30,17 +31,18 @@ export default async function PanelDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  let panel;
   const { id } = await params;
-  const panel = (panelsData as any[]).find((p) => p.id === id);
 
-  if (!panel) {
+  try {
+    panel = await getPanelById(id);
+  } catch {
     notFound();
   }
 
   return (
-    <div className='flex min-h-screen flex-col'>
-      <SiteHeader />
-      <main id='main-content' className='flex-1'>
+    <div className='flex min-h-screen flex-col bg-background'>
+      <main id='main-content-section' className='flex-1'>
         <PageContainer>
           <div className='py-8'>
             <PanelDetail panel={panel} />

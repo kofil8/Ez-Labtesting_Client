@@ -4,7 +4,6 @@ import { ChangePasswordForm } from "@/components/profile/ChangePasswordForm";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
-import { SiteHeader } from "@/components/shared/SiteHeader";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -38,8 +37,8 @@ export default function ChangePasswordPage() {
 
   return (
     <div className='flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'>
-      <SiteHeader />
-      <main id='main-content' className='flex-1'>
+      
+      <main id='main-content-section' className='flex-1'>
         <PageContainer>
           <div className='py-12 px-4'>
             {/* Header Section */}

@@ -1,6 +1,5 @@
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { PageContainer } from "@/components/shared/PageContainer";
-import { SiteHeader } from "@/components/shared/SiteHeader";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { Suspense } from "react";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
@@ -13,7 +12,7 @@ export const metadata = {
 export default function ForgotPasswordPage() {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <SiteHeader />
+      
       <main className="flex-1">
         <PageContainer>
           <div className="flex items-center justify-center min-h-[calc(100vh-200px)] py-12 px-4">

@@ -1,9 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Performance optimizations
+  typedRoutes: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: 10 * 1024 * 1024, // 10 MB
+    },
+  },
   compress: true,
-  reactStrictMode: true,
+  reactStrictMode: false, // Disabled to reduce duplicate renders in development
   poweredByHeader: false,
 
   // Optimize production builds
@@ -25,7 +30,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.pexels.com",
+        hostname: "ez-labtesting-bucket.s3.us-west-1.amazonaws.com",
         port: "",
         pathname: "/**",
       },
@@ -39,6 +44,7 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    unoptimized: process.env.NODE_ENV === "development", // Skip optimization in dev to avoid S3 timeout issues
   },
   // Ensure static files are properly served with correct headers
   async headers() {
@@ -68,6 +74,15 @@ const nextConfig: NextConfig = {
             value: "bytes",
           },
         ],
+      },
+    ];
+  },
+  // Proxy API requests to backend server
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1"}/:path*`,
       },
     ];
   },
