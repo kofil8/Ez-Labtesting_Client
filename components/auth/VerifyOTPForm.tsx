@@ -126,7 +126,7 @@ export function VerifyOTPForm() {
   const onSubmit = async (data: MFAFormData) => {
     if (!email) {
       toast.error("Email not found. Restart signup.");
-      router.push("/register/account");
+      router.push("/register");
       return;
     }
 
@@ -279,9 +279,7 @@ export function VerifyOTPForm() {
             type='button'
             variant='ghost'
             className='w-full'
-            onClick={() =>
-              router.push(fromLogin ? "/login" : "/register/account")
-            }
+            onClick={() => router.push(fromLogin ? "/login" : "/register")}
           >
             Back
           </Button>

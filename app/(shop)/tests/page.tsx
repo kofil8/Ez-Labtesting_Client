@@ -25,6 +25,8 @@ export const metadata = {
     "Order lab tests online with fast results, expert analysis, and affordable pricing. CLIA-certified labs, same-day processing available.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function TestsPage() {
   let featuredPanels: Panel[] = [];
   try {

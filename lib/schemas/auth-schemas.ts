@@ -37,12 +37,46 @@ const signupBaseSchema = z.object({
       "Password must contain at least one special character (!@#$%^&*())",
     ),
   confirmPassword: z.string(),
-  // Optional medical fields
   gender: z
     .enum(["MALE", "FEMALE", "NON_BINARY", "PREFER_NOT_TO_SAY", "OTHER"])
     .optional(),
+  profileImage: z
+    .string()
+    .url("Profile image must be a valid URL")
+    .optional()
+    .or(z.literal("")),
+  bio: z
+    .string()
+    .max(500, "Bio must be less than 500 characters")
+    .optional()
+    .or(z.literal("")),
   dateOfBirth: z.string().optional().or(z.literal("")),
   address: z.string().optional().or(z.literal("")),
+  addressLine1: z
+    .string()
+    .max(255, "Address line 1 must be less than 255 characters")
+    .optional()
+    .or(z.literal("")),
+  addressLine2: z
+    .string()
+    .max(255, "Address line 2 must be less than 255 characters")
+    .optional()
+    .or(z.literal("")),
+  city: z
+    .string()
+    .max(100, "City must be less than 100 characters")
+    .optional()
+    .or(z.literal("")),
+  state: z
+    .string()
+    .max(2, "State must be 2 characters or less")
+    .optional()
+    .or(z.literal("")),
+  zipCode: z
+    .string()
+    .max(10, "Zip code must be 10 characters or less")
+    .optional()
+    .or(z.literal("")),
   bloodType: z.string().optional().or(z.literal("")),
   allergies: z.string().max(500).optional().or(z.literal("")),
   medicalConditions: z.string().max(500).optional().or(z.literal("")),
@@ -51,11 +85,13 @@ const signupBaseSchema = z.object({
   emergencyContactPhone: z.string().optional().or(z.literal("")),
 });
 
-export const signupSchema = signupBaseSchema
-  .refine((data) => data.password === data.confirmPassword, {
+export const signupSchema = signupBaseSchema.refine(
+  (data) => data.password === data.confirmPassword,
+  {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  });
+  },
+);
 
 export const signupAccountSchema = signupBaseSchema
   .pick({
@@ -65,7 +101,12 @@ export const signupAccountSchema = signupBaseSchema
     phone: true,
     password: true,
     confirmPassword: true,
-    gender: true,
+    dateOfBirth: true,
+    addressLine1: true,
+    addressLine2: true,
+    city: true,
+    state: true,
+    zipCode: true,
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -73,9 +114,10 @@ export const signupAccountSchema = signupBaseSchema
   });
 
 export const signupMedicalSchema = signupBaseSchema.pick({
+  gender: true,
   dateOfBirth: true,
-  bloodType: true,
   address: true,
+  bloodType: true,
   allergies: true,
   medicalConditions: true,
   medications: true,
@@ -132,6 +174,18 @@ export const profileUpdateSchema = z.object({
     .max(500, "Bio must be less than 500 characters")
     .optional()
     .or(z.literal("")),
+  profileImage: z.string().optional().or(z.literal("")),
+  addressLine1: z.string().max(255).optional().or(z.literal("")),
+  addressLine2: z.string().max(255).optional().or(z.literal("")),
+  city: z.string().max(100).optional().or(z.literal("")),
+  state: z.string().max(2).optional().or(z.literal("")),
+  zipCode: z.string().max(10).optional().or(z.literal("")),
+  bloodType: z.string().optional().or(z.literal("")),
+  allergies: z.string().max(500).optional().or(z.literal("")),
+  medicalConditions: z.string().max(500).optional().or(z.literal("")),
+  medications: z.string().max(500).optional().or(z.literal("")),
+  emergencyContactName: z.string().optional().or(z.literal("")),
+  emergencyContactPhone: z.string().optional().or(z.literal("")),
 });
 
 export const changePasswordSchema = z

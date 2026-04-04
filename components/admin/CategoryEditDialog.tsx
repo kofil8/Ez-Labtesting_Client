@@ -2,6 +2,7 @@
 
 import type { Category } from "@/app/actions/categories";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -14,93 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hook/use-toast";
 import { useEffect, useState } from "react";
-
-type CategoryFormData = {
-  name: string;
-};
-
-interface CategoryEditDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  category: Category | null;
-  onSave: (categoryData: any) => void;
-}
-
-export function CategoryEditDialog({
-  open,
-  onOpenChange,
-  category,
-  onSave,
-}: CategoryEditDialogProps) {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState<CategoryFormData>({ name: "" });
-
-  useEffect(() => {
-    if (category) {
-      setFormData({ name: category.name || "" });
-    } else {
-      setFormData({ name: "" });
-    }
-  }, [category]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.name.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Category name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    onSave({ name: formData.name.trim() });
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-w-md'>
-        <DialogHeader>
-          <DialogTitle>
-            {category ? "Edit Category" : "Add New Category"}
-          </DialogTitle>
-          <DialogDescription>
-            {category ? "Update category name" : "Create a new test category"}
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div>
-            <Label htmlFor='name'>
-              Category Name <span className='text-destructive'>*</span>
-            </Label>
-            <Input
-              id='name'
-              value={formData.name}
-              onChange={(e) => setFormData({ name: e.target.value })}
-              placeholder='e.g., General Health, Hormone Panel'
-              required
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              type='button'
-              variant='outline'
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type='submit'>
-              {category ? "Update Category" : "Create Category"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 type CategoryFormData = {
   name: string;

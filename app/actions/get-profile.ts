@@ -157,6 +157,15 @@ function normalizeProfile(rawProfile: unknown): Profile {
       dateOfBirth,
       gender: toGender(contactInfo.gender ?? root.gender),
       address: toOptionalString(contactInfo.address ?? root.address),
+      addressLine1: toOptionalString(
+        contactInfo.addressLine1 ?? root.addressLine1,
+      ),
+      addressLine2: toOptionalString(
+        contactInfo.addressLine2 ?? root.addressLine2,
+      ),
+      city: toOptionalString(contactInfo.city ?? root.city),
+      state: toOptionalString(contactInfo.state ?? root.state),
+      zipCode: toOptionalString(contactInfo.zipCode ?? root.zipCode),
     },
     medicalInfo: {
       bloodType: bloodType as Profile["medicalInfo"]["bloodType"],

@@ -38,7 +38,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 ------------------------------------------------------ */
 const AUTH_TOKEN_KEY = "auth_token";
 const AUTH_COOKIE_NAME = "accessToken";
-const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 /* ------------------------------------------------------
    TOKEN HELPERS
@@ -63,10 +62,32 @@ function getOrCreateToken(): string {
   return placeholderToken;
 }
 
+function normalizeRole(role: string | null | undefined): User["role"] {
+  switch (role?.toLowerCase()) {
+    case "superadmin":
+    case "super_admin":
+      return "super_admin";
+    case "admin":
+      return "admin";
+    case "lab_partner":
+      return "lab_partner";
+    case "customer":
+    default:
+      return "customer";
+  }
+}
+
+function toAuthUser(profile: any): User {
+  return {
+    ...profile,
+    role: normalizeRole(profile?.role),
+  };
+}
+
 /* ------------------------------------------------------
    PERSISTENCE HELPERS
 ------------------------------------------------------ */
-function setAuthPersistence(token: string, user: User) {
+function setAuthPersistence(token: string, _user: User) {
   if (typeof window === "undefined") return;
 
   localStorage.setItem(AUTH_TOKEN_KEY, token);
@@ -139,9 +160,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const profileResult = await getProfile();
 
                 if (profileResult?.success && profileResult.profile) {
-                  setAuthPersistence(newToken, profileResult.profile);
+                  const user = toAuthUser(profileResult.profile);
+                  setAuthPersistence(newToken, user);
                   setAuthState({
-                    user: profileResult.profile,
+                    user,
                     token: newToken,
                     isAuthenticated: true,
                     isLoading: false,
@@ -235,11 +257,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (result?.success && result.profile) {
         // Get or create token placeholder (real auth is via httpOnly cookie)
         const token = getOrCreateToken();
+        const user = toAuthUser(result.profile);
 
-        setAuthPersistence(token, result.profile);
+        setAuthPersistence(token, user);
 
         setAuthState({
-          user: result.profile,
+          user,
           token,
           isAuthenticated: true,
           isLoading: false,
@@ -281,11 +304,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (result?.success && result.profile) {
         // Get or create token placeholder (real auth is via httpOnly cookie)
         const token = getOrCreateToken();
+        const user = toAuthUser(result.profile);
 
-        setAuthPersistence(token, result.profile);
+        setAuthPersistence(token, user);
 
         setAuthState({
-          user: result.profile,
+          user,
           token,
           isAuthenticated: true,
           isLoading: false,
@@ -351,16 +375,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (result?.success && result.profile) {
           // Update auth state with new profile data
           const token = getOrCreateToken();
+          const user = toAuthUser(result.profile);
 
-          setAuthPersistence(token, result.profile);
+          setAuthPersistence(token, user);
           setAuthState((prev) => ({
             ...prev,
-            user: result.profile!,
+            user,
             token,
             isAuthenticated: true,
           }));
 
-          return { success: true, profile: result.profile };
+          return { success: true, profile: user };
         }
 
         throw new Error("Failed to update profile");

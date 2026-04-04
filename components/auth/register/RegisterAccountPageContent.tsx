@@ -37,9 +37,9 @@ export function RegisterAccountPageContent() {
 
   return (
     <RegisterFlowShell
-      step={1}
       title='Create your secure account'
-      subtitle='Start with your core account details. You can add optional health history in the next step.'
+      subtitle='Open your account in minutes to manage lab orders, appointments, delivery details, and results from one secure place.'
+      badgeText='Medical checkout ready'
     >
       <RegisterAccountForm />
     </RegisterFlowShell>

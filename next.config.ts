@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   typedRoutes: false,
   experimental: {
     serverActions: {
-      bodySizeLimit: 10 * 1024 * 1024, // 10 MB
+      bodySizeLimit: 10 * 1024 * 1024,
     },
   },
   compress: true,

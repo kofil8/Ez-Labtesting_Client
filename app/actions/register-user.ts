@@ -1,56 +1,62 @@
 "use server";
 
+import { signupSchema } from "@/lib/schemas/auth-schemas";
+
 export async function registerUser(formData: FormData) {
-  // Extract required fields
-  const firstName = formData.get("firstName") as string;
-  const lastName = formData.get("lastName") as string;
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const phoneNumber = formData.get("phoneNumber") as string | null;
-
-  // Extract optional fields
-  const gender = formData.get("gender") as string | null;
-  const dateOfBirth = formData.get("dateOfBirth") as string | null;
-  const address = formData.get("address") as string | null;
-  const bloodType = formData.get("bloodType") as string | null;
-  const allergies = formData.get("allergies") as string | null;
-  const medicalConditions = formData.get("medicalConditions") as string | null;
-  const medications = formData.get("medications") as string | null;
-  const emergencyContactName = formData.get("emergencyContactName") as
-    | string
-    | null;
-  const emergencyContactPhone = formData.get("emergencyContactPhone") as
-    | string
-    | null;
-
-  if (!firstName || !lastName || !email || !password || !phoneNumber) {
-    throw new Error(
-      "First name, last name, email, phone number, and password are required",
-    );
-  }
-
-  // Build request body with all fields
-  const requestBody: any = {
-    firstName,
-    lastName,
-    email,
-    password,
-    phoneNumber,
+  const requestData = {
+    firstName: String(formData.get("firstName") ?? "").trim(),
+    lastName: String(formData.get("lastName") ?? "").trim(),
+    email: String(formData.get("email") ?? "").trim(),
+    password: String(formData.get("password") ?? ""),
+    phone: String(formData.get("phoneNumber") ?? "").replace(/\D/g, ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? formData.get("password") ?? ""),
+    gender: String(formData.get("gender") ?? "").trim() || undefined,
+    profileImage: String(formData.get("profileImage") ?? "").trim(),
+    bio: String(formData.get("bio") ?? "").trim(),
+    dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
+    address: String(formData.get("address") ?? "").trim(),
+    addressLine1: String(formData.get("addressLine1") ?? "").trim(),
+    addressLine2: String(formData.get("addressLine2") ?? "").trim(),
+    city: String(formData.get("city") ?? "").trim(),
+    state: String(formData.get("state") ?? "").trim().toUpperCase(),
+    zipCode: String(formData.get("zipCode") ?? "").trim(),
+    bloodType: String(formData.get("bloodType") ?? "").trim(),
+    allergies: String(formData.get("allergies") ?? "").trim(),
+    medicalConditions: String(formData.get("medicalConditions") ?? "").trim(),
+    medications: String(formData.get("medications") ?? "").trim(),
+    emergencyContactName: String(formData.get("emergencyContactName") ?? "").trim(),
+    emergencyContactPhone: String(formData.get("emergencyContactPhone") ?? "").trim(),
   };
 
-  // Add optional medical fields if provided
-  if (gender && gender.trim()) requestBody.gender = gender;
-  if (dateOfBirth && dateOfBirth.trim()) requestBody.dateOfBirth = dateOfBirth;
-  if (address && address.trim()) requestBody.address = address;
-  if (bloodType && bloodType.trim()) requestBody.bloodType = bloodType;
-  if (allergies && allergies.trim()) requestBody.allergies = allergies;
-  if (medicalConditions && medicalConditions.trim())
-    requestBody.medicalConditions = medicalConditions;
-  if (medications && medications.trim()) requestBody.medications = medications;
-  if (emergencyContactName && emergencyContactName.trim())
-    requestBody.emergencyContactName = emergencyContactName;
-  if (emergencyContactPhone && emergencyContactPhone.trim())
-    requestBody.emergencyContactPhone = emergencyContactPhone;
+  const validated = signupSchema.parse(requestData);
+
+  const requestBody: any = {
+    firstName: validated.firstName,
+    lastName: validated.lastName,
+    email: validated.email,
+    password: validated.password,
+    phoneNumber: validated.phone,
+  };
+
+  if (validated.gender) requestBody.gender = validated.gender;
+  if (validated.profileImage) requestBody.profileImage = validated.profileImage;
+  if (validated.bio) requestBody.bio = validated.bio;
+  if (validated.dateOfBirth) requestBody.dateOfBirth = validated.dateOfBirth;
+  if (validated.address) requestBody.address = validated.address;
+  if (validated.addressLine1) requestBody.addressLine1 = validated.addressLine1;
+  if (validated.addressLine2) requestBody.addressLine2 = validated.addressLine2;
+  if (validated.city) requestBody.city = validated.city;
+  if (validated.state) requestBody.state = validated.state;
+  if (validated.zipCode) requestBody.zipCode = validated.zipCode;
+  if (validated.bloodType) requestBody.bloodType = validated.bloodType;
+  if (validated.allergies) requestBody.allergies = validated.allergies;
+  if (validated.medicalConditions)
+    requestBody.medicalConditions = validated.medicalConditions;
+  if (validated.medications) requestBody.medications = validated.medications;
+  if (validated.emergencyContactName)
+    requestBody.emergencyContactName = validated.emergencyContactName;
+  if (validated.emergencyContactPhone)
+    requestBody.emergencyContactPhone = validated.emergencyContactPhone;
 
   let res;
   try {
@@ -70,7 +76,6 @@ export async function registerUser(formData: FormData) {
       },
     );
   } catch (error: any) {
-    // Handle connection errors (ECONNREFUSED, network failures, etc.)
     if (
       error.cause?.code === "ECONNREFUSED" ||
       error.message?.includes("fetch failed")
@@ -91,5 +96,5 @@ export async function registerUser(formData: FormData) {
 
   const data = await res.json();
 
-  return { success: true, email: data?.data?.email || email };
+  return { success: true, email: data?.data?.email || validated.email };
 }

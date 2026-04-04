@@ -35,6 +35,12 @@ export async function updateProfile(formData: FormData) {
     const phone = formData.get("phoneNumber") as string | null;
     const gender = formData.get("gender") as string | null;
     const dateOfBirth = formData.get("dateOfBirth") as string | null;
+    const profileImage = formData.get("profileImage") as string | null;
+    const addressLine1 = formData.get("addressLine1") as string | null;
+    const addressLine2 = formData.get("addressLine2") as string | null;
+    const city = formData.get("city") as string | null;
+    const state = formData.get("state") as string | null;
+    const zipCode = formData.get("zipCode") as string | null;
     const address = formData.get("address") as string | null;
     const bloodType = formData.get("bloodType") as string | null;
     const allergies = formData.get("allergies") as string | null;
@@ -64,6 +70,12 @@ export async function updateProfile(formData: FormData) {
       // Convert "YYYY-MM-DD" to ISO-8601 DateTime format
       dataObj.dateOfBirth = new Date(dateOfBirth).toISOString();
     }
+    if (profileImage !== null) dataObj.profileImage = profileImage;
+    if (addressLine1 !== null) dataObj.addressLine1 = addressLine1;
+    if (addressLine2 !== null) dataObj.addressLine2 = addressLine2;
+    if (city !== null) dataObj.city = city;
+    if (state !== null) dataObj.state = state;
+    if (zipCode !== null) dataObj.zipCode = zipCode;
     if (address !== null) dataObj.address = address;
     if (bloodType !== null) dataObj.bloodType = bloodType;
     if (allergies !== null) dataObj.allergies = allergies;

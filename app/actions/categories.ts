@@ -8,11 +8,19 @@ const API_BASE_URL =
 export type Category = {
   id: string;
   name: string;
+  slug?: string;
+  icon?: string | null;
+  isActive?: boolean;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
+  _count?: {
+    tests: number;
+  };
 };
 
-export type GetCategoriesOptions = Record<string, never>;
+export type GetCategoriesOptions = {
+  includeInactive?: boolean;
+};
 
 export type CategoriesListResponse = {
   data: Category[];
@@ -24,11 +32,13 @@ export type CategoriesListResponse = {
 };
 
 export async function getCategories(
-  _options: GetCategoriesOptions = {},
+  options: GetCategoriesOptions = {},
 ): Promise<CategoriesListResponse> {
   let res;
   try {
-    res = await fetch(`${API_BASE_URL}/categories/all`, {
+    const query = options.includeInactive ? "?includeInactive=true" : "";
+
+    res = await fetch(`${API_BASE_URL}/categories/all${query}`, {
       method: "GET",
       cache: "no-store",
     });

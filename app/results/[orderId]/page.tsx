@@ -22,10 +22,7 @@ export default async function ResultViewerPage({
     getOrderById(orderId),
   ]);
 
-  const hasOrder = Boolean(order);
-  const hasResults = Boolean(results && results.length > 0);
-
-  if (!hasOrder || !hasResults) {
+  if (!order || !results || results.length === 0) {
     redirect(`/results/${orderId}/pending`);
   }
 

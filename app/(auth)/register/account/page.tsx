@@ -1,17 +1,5 @@
-import { RegisterAccountPageContent } from "@/components/auth/register/RegisterAccountPageContent";
-import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
 export default function RegisterAccountPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className='flex min-h-screen items-center justify-center'>
-          <LoadingSpinner />
-        </div>
-      }
-    >
-      <RegisterAccountPageContent />
-    </Suspense>
-  );
+  redirect("/register");
 }

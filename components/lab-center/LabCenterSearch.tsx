@@ -377,7 +377,6 @@ export function LabCenterSearch({
           justifyContent: "center",
           gap: 8,
           fontFamily: "'Google Sans', Roboto, Arial, sans-serif",
-          cursor: disabled || isGettingLocation ? "not-allowed" : "pointer",
           opacity: disabled || isGettingLocation ? 0.5 : 1,
           transition: "opacity 0.2s ease",
         }}

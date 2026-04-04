@@ -9,6 +9,11 @@ export interface ContactInfo {
   dateOfBirth?: string; // ISO date string
   gender?: "male" | "female" | "other" | "prefer_not_to_say";
   address?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
 }
 
 export interface MedicalInfo {
@@ -59,6 +64,11 @@ export interface UpdateProfilePayload {
   dateOfBirth?: string;
   gender?: string;
   address?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
   bloodType?: string;
   allergies?: string[];
   medicalConditions?: string[];

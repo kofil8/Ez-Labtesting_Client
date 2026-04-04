@@ -10,6 +10,11 @@ export interface User {
   dateOfBirth?: string;
   profileImage?: string;
   bio?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
 
   // Address information
   address?: string;
