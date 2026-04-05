@@ -1,19 +1,26 @@
 [
   {
     "id": "test-001",
-    "name": "Complete Blood Count (CBC)",
+    "testName": "Complete Blood Count (CBC)",
     "description": "Measures red blood cells, white blood cells, platelets, hemoglobin, and hematocrit. Used to detect anemia, infections, and blood disorders.",
     "category": "general",
     "price": 29.99,
-    "cptCodes": ["85025"],
+    "cptCodes": [
+      "85025"
+    ],
     "labCode": "CBC-001",
     "labName": "CPL",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "Fasting not required",
-    "keywords": ["blood", "anemia", "infection", "complete"],
+    "keywords": [
+      "blood",
+      "anemia",
+      "infection",
+      "complete"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=400&h=300&fit=crop",
+    "testImage": "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=400&h=300&fit=crop",
     "fastingRequired": false,
     "ageRequirement": "18+",
     "sampleVolume": "Whole blood 2.0mL",
@@ -23,19 +30,26 @@
   },
   {
     "id": "test-002",
-    "name": "Comprehensive Metabolic Panel (CMP)",
+    "testName": "Comprehensive Metabolic Panel (CMP)",
     "description": "Tests 14 different measurements including glucose, calcium, and electrolytes to assess kidney and liver function.",
     "category": "metabolic",
     "price": 39.99,
-    "cptCodes": ["80053"],
+    "cptCodes": [
+      "80053"
+    ],
     "labCode": "CMP-001",
     "labName": "CPL",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "Fasting 8-12 hours required",
-    "keywords": ["kidney", "liver", "glucose", "metabolic"],
+    "keywords": [
+      "kidney",
+      "liver",
+      "glucose",
+      "metabolic"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
+    "testImage": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
     "fastingRequired": true,
     "fastingHours": 10,
     "ageRequirement": "18+",
@@ -46,19 +60,27 @@
   },
   {
     "id": "test-003",
-    "name": "Lipid Panel",
+    "testName": "Lipid Panel",
     "description": "Measures total cholesterol, LDL, HDL, and triglycerides to assess cardiovascular risk.",
     "category": "cardiac",
     "price": 34.99,
-    "cptCodes": ["80061"],
+    "cptCodes": [
+      "80061"
+    ],
     "labCode": "LIP-001",
     "labName": "ACCESS",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "Fasting 9-12 hours required",
-    "keywords": ["cholesterol", "heart", "cardiovascular", "hdl", "ldl"],
+    "keywords": [
+      "cholesterol",
+      "heart",
+      "cardiovascular",
+      "hdl",
+      "ldl"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=400&h=300&fit=crop",
+    "testImage": "https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?w=400&h=300&fit=crop",
     "fastingRequired": true,
     "fastingHours": 12,
     "ageRequirement": "18+",
@@ -69,307 +91,464 @@
   },
   {
     "id": "test-004",
-    "name": "Thyroid Panel (TSH, T3, T4)",
+    "testName": "Thyroid Panel (TSH, T3, T4)",
     "description": "Comprehensive thyroid function assessment including TSH, Free T3, and Free T4 levels.",
     "category": "thyroid",
     "price": 79.99,
-    "cptCodes": ["84443", "84439", "84436"],
+    "cptCodes": [
+      "84443",
+      "84439",
+      "84436"
+    ],
     "labCode": "THY-001",
     "labName": "CPL",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "No special preparation needed",
-    "keywords": ["thyroid", "metabolism", "tsh", "hormone"],
+    "keywords": [
+      "thyroid",
+      "metabolism",
+      "tsh",
+      "hormone"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=400&h=300&fit=crop"
   },
   {
     "id": "test-005",
-    "name": "Vitamin D, 25-Hydroxy",
+    "testName": "Vitamin D, 25-Hydroxy",
     "description": "Measures vitamin D levels to assess bone health and immune function.",
     "category": "nutrition",
     "price": 49.99,
-    "cptCodes": ["82306"],
+    "cptCodes": [
+      "82306"
+    ],
     "labCode": "VD-001",
     "labName": "ACCESS",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "No fasting required",
-    "keywords": ["vitamin d", "bone", "immune", "nutrition"],
+    "keywords": [
+      "vitamin d",
+      "bone",
+      "immune",
+      "nutrition"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop"
   },
   {
     "id": "test-006",
-    "name": "Testosterone, Total",
+    "testName": "Testosterone, Total",
     "description": "Measures total testosterone levels in blood. Important for assessing hormone health in men and women.",
     "category": "hormone",
     "price": 59.99,
-    "cptCodes": ["84403"],
+    "cptCodes": [
+      "84403"
+    ],
     "labCode": "TEST-001",
     "labName": "CPL",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "Morning collection preferred",
-    "keywords": ["testosterone", "hormone", "male", "energy"],
+    "keywords": [
+      "testosterone",
+      "hormone",
+      "male",
+      "energy"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop"
   },
   {
     "id": "test-007",
-    "name": "Hemoglobin A1C",
+    "testName": "Hemoglobin A1C",
     "description": "Measures average blood sugar levels over the past 2-3 months. Used for diabetes screening and monitoring.",
     "category": "metabolic",
     "price": 39.99,
-    "cptCodes": ["83036"],
+    "cptCodes": [
+      "83036"
+    ],
     "labCode": "HBA1C-001",
     "labName": "CPL",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "No fasting required",
-    "keywords": ["diabetes", "blood sugar", "glucose", "a1c"],
+    "keywords": [
+      "diabetes",
+      "blood sugar",
+      "glucose",
+      "a1c"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1581594549595-35f6edc7b762?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1581594549595-35f6edc7b762?w=400&h=300&fit=crop"
   },
   {
     "id": "test-008",
-    "name": "STD Panel - Complete",
+    "testName": "STD Panel - Complete",
     "description": "Comprehensive screening for Chlamydia, Gonorrhea, HIV, Syphilis, and Herpes (HSV 1 & 2).",
     "category": "std",
     "price": 199.99,
-    "cptCodes": ["87491", "87591", "86703", "86780", "86694"],
+    "cptCodes": [
+      "87491",
+      "87591",
+      "86703",
+      "86780",
+      "86694"
+    ],
     "labCode": "STD-FULL",
     "labName": "ACCESS",
-    "turnaroundDays": 3,
-    "sampleType": "Blood and Urine",
+    "turnaround": 3,
+    "specimenType": "Blood and Urine",
     "preparation": "No special preparation",
-    "keywords": ["std", "sexual health", "hiv", "screening"],
+    "keywords": [
+      "std",
+      "sexual health",
+      "hiv",
+      "screening"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1576602976047-174e57a47881?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1576602976047-174e57a47881?w=400&h=300&fit=crop"
   },
   {
     "id": "test-009",
-    "name": "Iron Panel",
+    "testName": "Iron Panel",
     "description": "Includes serum iron, TIBC, ferritin, and iron saturation. Assesses iron stores and anemia risk.",
     "category": "general",
     "price": 54.99,
-    "cptCodes": ["83540", "83550", "82728"],
+    "cptCodes": [
+      "83540",
+      "83550",
+      "82728"
+    ],
     "labCode": "IRON-001",
     "labName": "CPL",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "Fasting 8-10 hours preferred",
-    "keywords": ["iron", "anemia", "ferritin", "fatigue"],
+    "keywords": [
+      "iron",
+      "anemia",
+      "ferritin",
+      "fatigue"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=300&fit=crop"
   },
   {
     "id": "test-010",
-    "name": "Estradiol (E2)",
+    "testName": "Estradiol (E2)",
     "description": "Measures estradiol levels. Important for fertility, menopause, and hormone balance assessment.",
     "category": "hormone",
     "price": 64.99,
-    "cptCodes": ["82670"],
+    "cptCodes": [
+      "82670"
+    ],
     "labCode": "EST-001",
     "labName": "ACCESS",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "No special preparation",
-    "keywords": ["estrogen", "hormone", "female", "fertility", "menopause"],
+    "keywords": [
+      "estrogen",
+      "hormone",
+      "female",
+      "fertility",
+      "menopause"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=300&fit=crop"
   },
   {
     "id": "test-011",
-    "name": "PSA (Prostate-Specific Antigen)",
+    "testName": "PSA (Prostate-Specific Antigen)",
     "description": "Screens for prostate health issues including enlarged prostate and prostate cancer.",
     "category": "general",
     "price": 44.99,
-    "cptCodes": ["84153"],
+    "cptCodes": [
+      "84153"
+    ],
     "labCode": "PSA-001",
     "labName": "CPL",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "No ejaculation 48 hours before test",
-    "keywords": ["prostate", "psa", "male", "cancer screening"],
+    "keywords": [
+      "prostate",
+      "psa",
+      "male",
+      "cancer screening"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=400&h=300&fit=crop"
   },
   {
     "id": "test-012",
-    "name": "Cortisol, AM",
+    "testName": "Cortisol, AM",
     "description": "Measures morning cortisol levels to assess adrenal function and stress response.",
     "category": "hormone",
     "price": 49.99,
-    "cptCodes": ["82533"],
+    "cptCodes": [
+      "82533"
+    ],
     "labCode": "CORT-001",
     "labName": "ACCESS",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "Morning collection 7-9 AM required",
-    "keywords": ["cortisol", "stress", "adrenal", "hormone"],
+    "keywords": [
+      "cortisol",
+      "stress",
+      "adrenal",
+      "hormone"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=300&fit=crop"
   },
   {
     "id": "test-013",
-    "name": "Vitamin B12 and Folate",
+    "testName": "Vitamin B12 and Folate",
     "description": "Measures B12 and folate levels. Important for nerve health, energy, and red blood cell formation.",
     "category": "nutrition",
     "price": 59.99,
-    "cptCodes": ["82607", "82746"],
+    "cptCodes": [
+      "82607",
+      "82746"
+    ],
     "labCode": "B12F-001",
     "labName": "CPL",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "No fasting required",
-    "keywords": ["b12", "folate", "vitamin", "energy", "anemia"],
+    "keywords": [
+      "b12",
+      "folate",
+      "vitamin",
+      "energy",
+      "anemia"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=400&h=300&fit=crop"
   },
   {
     "id": "test-014",
-    "name": "C-Reactive Protein (CRP)",
+    "testName": "C-Reactive Protein (CRP)",
     "description": "Measures inflammation levels in the body. Useful for assessing infection and chronic inflammation.",
     "category": "general",
     "price": 39.99,
-    "cptCodes": ["86140"],
+    "cptCodes": [
+      "86140"
+    ],
     "labCode": "CRP-001",
     "labName": "ACCESS",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "No special preparation",
-    "keywords": ["inflammation", "crp", "infection", "heart disease"],
+    "keywords": [
+      "inflammation",
+      "crp",
+      "infection",
+      "heart disease"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=400&h=300&fit=crop"
   },
   {
     "id": "test-015",
-    "name": "Liver Function Panel",
+    "testName": "Liver Function Panel",
     "description": "Comprehensive liver assessment including ALT, AST, ALP, bilirubin, and albumin.",
     "category": "metabolic",
     "price": 44.99,
-    "cptCodes": ["80076"],
+    "cptCodes": [
+      "80076"
+    ],
     "labCode": "LFP-001",
     "labName": "CPL",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "Fasting 8 hours preferred",
-    "keywords": ["liver", "alt", "ast", "hepatic"],
+    "keywords": [
+      "liver",
+      "alt",
+      "ast",
+      "hepatic"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400&h=300&fit=crop"
   },
   {
     "id": "test-016",
-    "name": "Urinalysis, Complete",
+    "testName": "Urinalysis, Complete",
     "description": "Comprehensive urine analysis including chemical and microscopic examination.",
     "category": "general",
     "price": 24.99,
-    "cptCodes": ["81001"],
+    "cptCodes": [
+      "81001"
+    ],
     "labCode": "UA-001",
     "labName": "CPL",
-    "turnaroundDays": 1,
-    "sampleType": "Urine",
+    "turnaround": 1,
+    "specimenType": "Urine",
     "preparation": "First morning sample preferred",
-    "keywords": ["urine", "kidney", "infection", "diabetes"],
+    "keywords": [
+      "urine",
+      "kidney",
+      "infection",
+      "diabetes"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1582560475093-ba66accbc424?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1582560475093-ba66accbc424?w=400&h=300&fit=crop"
   },
   {
     "id": "test-017",
-    "name": "DHEA-Sulfate",
+    "testName": "DHEA-Sulfate",
     "description": "Measures DHEA-S levels to assess adrenal function and androgen production.",
     "category": "hormone",
     "price": 69.99,
-    "cptCodes": ["82627"],
+    "cptCodes": [
+      "82627"
+    ],
     "labCode": "DHEA-001",
     "labName": "ACCESS",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "No special preparation",
-    "keywords": ["dhea", "adrenal", "hormone", "aging"],
+    "keywords": [
+      "dhea",
+      "adrenal",
+      "hormone",
+      "aging"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=300&fit=crop"
   },
   {
     "id": "test-018",
-    "name": "Magnesium, Serum",
+    "testName": "Magnesium, Serum",
     "description": "Measures magnesium levels. Important for muscle, nerve, and heart function.",
     "category": "nutrition",
     "price": 34.99,
-    "cptCodes": ["83735"],
+    "cptCodes": [
+      "83735"
+    ],
     "labCode": "MAG-001",
     "labName": "CPL",
-    "turnaroundDays": 1,
-    "sampleType": "Blood",
+    "turnaround": 1,
+    "specimenType": "Blood",
     "preparation": "No fasting required",
-    "keywords": ["magnesium", "muscle", "heart", "mineral"],
+    "keywords": [
+      "magnesium",
+      "muscle",
+      "heart",
+      "mineral"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=300&fit=crop"
   },
   {
     "id": "test-019",
-    "name": "Progesterone",
+    "testName": "Progesterone",
     "description": "Measures progesterone levels. Important for fertility, pregnancy, and hormone balance.",
     "category": "hormone",
     "price": 59.99,
-    "cptCodes": ["84144"],
+    "cptCodes": [
+      "84144"
+    ],
     "labCode": "PROG-001",
     "labName": "ACCESS",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "Timing depends on menstrual cycle",
-    "keywords": ["progesterone", "hormone", "female", "fertility", "pregnancy"],
+    "keywords": [
+      "progesterone",
+      "hormone",
+      "female",
+      "fertility",
+      "pregnancy"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=400&h=300&fit=crop"
   },
   {
     "id": "test-020",
-    "name": "Zinc, Serum",
+    "testName": "Zinc, Serum",
     "description": "Measures zinc levels. Important for immune function, wound healing, and taste.",
     "category": "nutrition",
     "price": 44.99,
-    "cptCodes": ["84630"],
+    "cptCodes": [
+      "84630"
+    ],
     "labCode": "ZINC-001",
     "labName": "CPL",
-    "turnaroundDays": 2,
-    "sampleType": "Blood",
+    "turnaround": 2,
+    "specimenType": "Blood",
     "preparation": "Morning collection preferred",
-    "keywords": ["zinc", "immune", "mineral", "nutrition"],
+    "keywords": [
+      "zinc",
+      "immune",
+      "mineral",
+      "nutrition"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?w=400&h=300&fit=crop"
   },
   {
     "id": "test-021",
-    "name": "Women's Health Panel",
+    "testName": "Women's Health Panel",
     "description": "Comprehensive panel including CBC, CMP, Thyroid, Estradiol, Progesterone, and Vitamin D.",
     "category": "hormone",
     "price": 249.99,
-    "cptCodes": ["85025", "80053", "84443", "82670", "84144", "82306"],
+    "cptCodes": [
+      "85025",
+      "80053",
+      "84443",
+      "82670",
+      "84144",
+      "82306"
+    ],
     "labCode": "WHP-001",
     "labName": "CPL",
-    "turnaroundDays": 3,
-    "sampleType": "Blood",
+    "turnaround": 3,
+    "specimenType": "Blood",
     "preparation": "Fasting 8-12 hours required",
-    "keywords": ["women", "female", "hormone", "comprehensive", "panel"],
+    "keywords": [
+      "women",
+      "female",
+      "hormone",
+      "comprehensive",
+      "panel"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop"
+    "testImage": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop"
   },
   {
     "id": "test-022",
-    "name": "Men's Health Panel",
+    "testName": "Men's Health Panel",
     "description": "Comprehensive panel including CBC, CMP, Lipid, Testosterone, PSA, and Vitamin D.",
     "category": "hormone",
     "price": 249.99,
-    "cptCodes": ["85025", "80053", "80061", "84403", "84153", "82306"],
+    "cptCodes": [
+      "85025",
+      "80053",
+      "80061",
+      "84403",
+      "84153",
+      "82306"
+    ],
     "labCode": "MHP-001",
     "labName": "CPL",
-    "turnaroundDays": 3,
-    "sampleType": "Blood",
+    "turnaround": 3,
+    "specimenType": "Blood",
     "preparation": "Fasting 8-12 hours required",
-    "keywords": ["men", "male", "testosterone", "comprehensive", "panel"],
+    "keywords": [
+      "men",
+      "male",
+      "testosterone",
+      "comprehensive",
+      "panel"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop",
+    "testImage": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop",
     "fastingRequired": true,
     "fastingHours": 10,
     "ageRequirement": "18+",
@@ -380,19 +559,27 @@
   },
   {
     "id": "test-023",
-    "name": "17-Hydroxyprogesterone (17-OHP)",
+    "testName": "17-Hydroxyprogesterone (17-OHP)",
     "description": "The 17-Hydroxyprogesterone (17-OHP) test is a simple blood test used to measure the level of 17-hydroxyprogesterone, a hormone produced by the adrenal glands and ovaries. This test is often ordered to evaluate adrenal function and diagnose conditions like congenital adrenal hyperplasia (CAH), a genetic disorder affecting hormone production. It may also help in assessing the cause of irregular periods, infertility, or abnormal hair growth in women.",
     "category": "hormone",
-    "price": 109.0,
-    "cptCodes": ["82633"],
+    "price": 109,
+    "cptCodes": [
+      "82633"
+    ],
     "labCode": "17OHP-001",
     "labName": "CPL",
-    "turnaroundDays": 3,
-    "sampleType": "Blood",
+    "turnaround": 3,
+    "specimenType": "Blood",
     "preparation": "No special preparation needed",
-    "keywords": ["17-ohp", "hydroxyprogesterone", "hormone", "adrenal", "cah"],
+    "keywords": [
+      "17-ohp",
+      "hydroxyprogesterone",
+      "hormone",
+      "adrenal",
+      "cah"
+    ],
     "enabled": true,
-    "image": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
+    "testImage": "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
     "fastingRequired": false,
     "ageRequirement": "18+",
     "sampleVolume": "Serum .5mL (no gel)",

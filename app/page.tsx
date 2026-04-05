@@ -1,25 +1,32 @@
-import { SiteHeader } from "@/components/shared/SiteHeader";
-import { SiteFooter } from "@/components/shared/SiteFooter";
-import { FeaturedBundles } from "@/components/home/FeaturedBundles";
+import { ComplianceBanner } from "@/components/home/ComplianceBanner";
+import { HealthReadyCTA } from "@/components/home/HealthReadyCTA";
 import { HeroSection } from "@/components/home/HeroSection";
-import { StatsSection } from "@/components/home/StatsSection";
+import { HowItWorksSection } from "@/components/home/HowItWorksSection";
+import { PopularCategoriesSection } from "@/components/home/PopularCategoriesSection";
+import { PopularTestsSection } from "@/components/home/PopularTestsSection";
 import { TestimonialSection } from "@/components/home/TestimonialSection";
-import { PromoCodeSection } from "@/components/home/PromoCodeSection";
+import { WhyChooseUsSection } from "@/components/home/WhyChooseUsSection";
 import { FloatingActionButton } from "@/components/shared/FloatingActionButton";
+import { LazyFooter } from "@/components/shared/LazyFooter";
 
 export default function HomePage() {
   return (
-    <div className='flex min-h-screen flex-col'>
-      <SiteHeader />
-      <main className='flex-1'>
+    <>
+      <main
+        id='main-content-section'
+        className='flex-1 min-w-0 overflow-x-hidden'
+      >
         <HeroSection />
-        <StatsSection />
-        <FeaturedBundles />
-        <PromoCodeSection />
+        <HowItWorksSection />
+        <PopularCategoriesSection />
+        <PopularTestsSection />
         <TestimonialSection />
+        <WhyChooseUsSection />
+        <HealthReadyCTA />
+        <ComplianceBanner />
       </main>
-      <SiteFooter />
+      <LazyFooter />
       <FloatingActionButton />
-    </div>
+    </>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
 import { getFirebaseMessaging } from "@/lib/firebase/firebase.config";
-import { onMessage } from "firebase/messaging";
-import { toast } from "sonner";
 import { registerFirebaseSW } from "@/lib/firebase/register-sw";
+import { useNotificationsStore } from "@/lib/store/notifications-store";
+import { onMessage } from "firebase/messaging";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export const useFirebasePush = () => {
   // Register service worker
@@ -20,20 +21,27 @@ export const useFirebasePush = () => {
 
       onMessage(messaging, (payload) => {
         console.log("🔥 Foreground notification received:", payload);
+        const title = payload.notification?.title || "Notification";
+        const body = payload.notification?.body;
 
-        toast(payload.notification?.title || "Notification", {
-          description: payload.notification?.body,
-        });
+        // Show toast for immediate visibility
+        toast(title, { description: body });
+
+        // Persist into notifications store for bell/dropdown
+        try {
+          const messageId = (payload as any)?.messageId as string | undefined;
+          useNotificationsStore.getState().addNotification({
+            id: messageId,
+            title,
+            body,
+            data: payload.data as Record<string, unknown> | undefined,
+          });
+        } catch (e) {
+          console.error("Failed to add notification to store", e);
+        }
       });
     };
 
     listen();
-  }, []);
-
-  // Request permission
-  useEffect(() => {
-    if (Notification.permission === "default") {
-      Notification.requestPermission();
-    }
   }, []);
 };

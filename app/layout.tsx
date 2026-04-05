@@ -1,19 +1,16 @@
+import { TokenRefreshManager } from "@/components/auth/TokenRefreshManager";
 import { CartSidebarWrapper } from "@/components/cart/CartSidebarWrapper";
 import { ClientInit } from "@/components/ClientInit";
 import { KallesBackground } from "@/components/shared/KallesBackground";
 import { LocationInitializer } from "@/components/shared/LocationInitializer";
+import { SiteHeader } from "@/components/shared/SiteHeader";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartSidebarProvider } from "@/lib/cart-sidebar-context";
+import { CheckoutProvider } from "@/lib/context/CheckoutContext";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Ez LabTesting",
@@ -29,24 +26,81 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang='en' className='smooth-scroll' suppressHydrationWarning>
-      <body
-        className={`${inter.className} antialiased custom-scrollbar`}
-        suppressHydrationWarning
-      >
-        {/* App-wide background component */}
-        <KallesBackground />
+    <html
+      lang='en'
+      className='smooth-scroll'
+      data-scroll-behavior='smooth'
+      suppressHydrationWarning
+    >
+      <body className='antialiased custom-scrollbar' suppressHydrationWarning>
+        <Script
+          id='sanitize-browser-injected-attrs'
+          strategy='beforeInteractive'
+        >
+          {`(() => {
+  const BIS_ATTRS = ['bis_skin_checked', 'bis_register'];
+  const SELECTOR = BIS_ATTRS.map(a => '[' + a + ']').join(',');
 
-        {/* Initializes client-side Firebase push notification listener */}
+  function stripNode(node) {
+    if (node.nodeType !== 1) return;
+    for (var i = 0; i < BIS_ATTRS.length; i++) {
+      if (node.hasAttribute(BIS_ATTRS[i])) node.removeAttribute(BIS_ATTRS[i]);
+    }
+  }
+
+  function stripAll(root) {
+    try {
+      var nodes = root.querySelectorAll(SELECTOR);
+      for (var i = 0; i < nodes.length; i++) stripNode(nodes[i]);
+    } catch(e) {}
+  }
+
+  function startObserver() {
+    stripAll(document.body);
+    var observer = new MutationObserver(function(mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var m = mutations[i];
+        if (m.type === 'attributes') {
+          stripNode(m.target);
+        } else if (m.type === 'childList') {
+          for (var j = 0; j < m.addedNodes.length; j++) {
+            var n = m.addedNodes[j];
+            if (n.nodeType === 1) { stripNode(n); stripAll(n); }
+          }
+        }
+      }
+    });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: BIS_ATTRS,
+      subtree: true,
+      childList: true,
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startObserver, { once: true });
+  } else {
+    startObserver();
+  }
+})();`}
+        </Script>
+        <KallesBackground />
         <ClientInit />
 
         <AuthProvider>
-          <CartSidebarProvider>
-            <LocationInitializer />
-            {children}
-            <CartSidebarWrapper />
-            <Toaster />
-          </CartSidebarProvider>
+          <TokenRefreshManager />
+          <CheckoutProvider>
+            <CartSidebarProvider>
+              <LocationInitializer />
+              <SiteHeader />
+              <div id='page-content' className='min-h-screen flex flex-col'>
+                {children}
+              </div>
+              <CartSidebarWrapper />
+              <Toaster />
+            </CartSidebarProvider>
+          </CheckoutProvider>
         </AuthProvider>
       </body>
     </html>

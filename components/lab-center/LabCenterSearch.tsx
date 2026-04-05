@@ -1,273 +1,402 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/hook/use-toast";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
-import { AnimatePresence, motion } from "framer-motion";
-import { Locate, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useDebounce } from "@/hook/useDebounce";
+import { LabCenterService } from "@/lib/services/lab-centers.service";
+import { SearchSuggestion } from "@/types/lab-center";
+import { Loader2, MapPin, Navigation, Search, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface LabCenterSearchProps {
-  onSearch: (
-    location: string,
-    coordinates?: { lat: number; lng: number }
+  onLocationSelect: (
+    lat: number,
+    lng: number,
+    address?: string,
+    searchQuery?: string,
   ) => void;
-  onLocateMe?: () => void;
-  onRadiusChange?: (radius: number) => void;
-  radius?: number;
+  disabled?: boolean;
 }
 
 export function LabCenterSearch({
-  onSearch,
-  onLocateMe,
-  onRadiusChange,
-  radius = 25,
+  onLocationSelect,
+  disabled,
 }: LabCenterSearchProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isLocating, setIsLocating] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const { toast } = useToast();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const placesLibrary = useMapsLibrary("places");
-  const [autocomplete, setAutocomplete] =
-    useState<google.maps.places.Autocomplete | null>(null);
+  const [address, setAddress] = useState("");
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Initialize Google Places Autocomplete
-  useEffect(() => {
-    if (!placesLibrary || !inputRef.current) return;
+  // Debounce address input to fetch suggestions
+  const debouncedAddress = useDebounce(address, 300);
 
-    const options: google.maps.places.AutocompleteOptions = {
-      fields: ["geometry", "name", "formatted_address"],
-      types: ["geocode", "establishment"],
-    };
-
-    const autocompleteInstance = new placesLibrary.Autocomplete(
-      inputRef.current,
-      options
-    );
-
-    autocompleteInstance.addListener("place_changed", () => {
-      const place = autocompleteInstance.getPlace();
-
-      if (place.geometry?.location) {
-        const location = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-        };
-        const address = place.formatted_address || place.name || "";
-        setSearchQuery(address);
-        onSearch(address, location);
-
-        toast({
-          title: "Location found",
-          description: `Searching near ${address}`,
-        });
-      }
-    });
-
-    setAutocomplete(autocompleteInstance);
-
-    return () => {
-      // Cleanup
-      if (autocompleteInstance) {
-        google.maps.event.clearInstanceListeners(autocompleteInstance);
-      }
-    };
-  }, [placesLibrary, onSearch, toast]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      onSearch(searchQuery);
-    }
-  };
-
-  const handleLocateMe = async () => {
-    setIsLocating(true);
-
-    if (!navigator.geolocation) {
-      toast({
-        title: "Geolocation not supported",
-        description: "Your browser doesn't support geolocation.",
-        variant: "destructive",
-      });
-      setIsLocating(false);
+  // Fetch suggestions when debounced address changes
+  const fetchSuggestions = useCallback(async () => {
+    if (!debouncedAddress.trim() || debouncedAddress.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
 
+    setIsFetchingSuggestions(true);
     try {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setSearchQuery(`${latitude}, ${longitude}`);
-          onLocateMe?.();
-          setIsLocating(false);
-          toast({
-            title: "Location found",
-            description: "Showing lab centers near you.",
-          });
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          toast({
-            title: "Location access denied",
-            description: "Please allow location access to use this feature.",
-            variant: "destructive",
-          });
-          setIsLocating(false);
-        }
-      );
+      const results =
+        await LabCenterService.getAutocompleteSuggestions(debouncedAddress);
+      setSuggestions(results);
+      setShowSuggestions(true);
     } catch (error) {
-      console.error("Error getting location:", error);
-      setIsLocating(false);
-      toast({
-        title: "Error",
-        description: "Failed to get your location.",
-        variant: "destructive",
-      });
+      const message =
+        error instanceof Error ? error.message : "Failed to fetch suggestions";
+      toast.error(message);
+      setSuggestions([]);
+    } finally {
+      setIsFetchingSuggestions(false);
+    }
+  }, [debouncedAddress]);
+
+  // Call fetchSuggestions when debounced value changes
+  useEffect(() => {
+    fetchSuggestions();
+  }, [debouncedAddress, fetchSuggestions]);
+
+  const handleUseMyLocation = async () => {
+    setIsGettingLocation(true);
+    try {
+      const location = await LabCenterService.getCurrentLocation();
+      onLocationSelect(location.latitude, location.longitude, "Your Location");
+      toast.success("Location detected successfully");
+      setAddress("");
+      setSuggestions([]);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get location";
+      toast.error(message);
+    } finally {
+      setIsGettingLocation(false);
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className='w-full space-y-4'
-    >
-      <form onSubmit={handleSearch} className='flex flex-col sm:flex-row gap-3'>
-        <div className='relative flex-1'>
-          <MapPin className='absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-500 dark:text-blue-400 z-10' />
-          <Input
-            ref={inputRef}
-            type='text'
-            placeholder='Enter city, state, or ZIP code (e.g., Las Vegas, NV 89101)'
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className='pl-11 h-14 text-base bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 shadow-sm'
-            autoComplete='off'
-          />
-        </div>
-        <div className='flex gap-2'>
-          <Button
-            type='button'
-            variant='outline'
-            size='lg'
-            onClick={handleLocateMe}
-            disabled={isLocating}
-            className='group h-14 px-4 sm:px-6 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 [&_svg]:!size-5'
-          >
-            <Locate
-              className={`flex-shrink-0 text-gray-700 dark:text-gray-300 ${
-                isLocating ? "animate-spin" : ""
-              }`}
-            />
-            <span className='inline-block max-w-0 overflow-hidden group-hover:max-w-[200px] group-hover:ml-2 whitespace-nowrap transition-all duration-300'>
-              Use My Location
-            </span>
-          </Button>
-          <Button
-            type='submit'
-            size='lg'
-            className='h-14 px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all'
-          >
-            <Search className='h-5 w-5 flex-shrink-0' />
-            <span className='hidden sm:inline ml-2'>Search</span>
-          </Button>
-          <Button
-            type='button'
-            variant='outline'
-            size='lg'
-            onClick={() => setShowFilters(!showFilters)}
-            className='group h-14 px-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 [&_svg]:!size-5'
-          >
-            <SlidersHorizontal className='flex-shrink-0 text-gray-700 dark:text-gray-300' />
-            <span className='inline-block max-w-0 overflow-hidden group-hover:max-w-[100px] group-hover:ml-2 whitespace-nowrap transition-all duration-300'>
-              Filters
-            </span>
-          </Button>
-        </div>
-      </form>
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!address.trim()) {
+      toast.error("Please enter an address");
+      return;
+    }
 
-      {/* Filters Panel */}
-      <AnimatePresence>
-        {showFilters && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className='overflow-hidden bg-white dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-4 shadow-sm'
+    setIsGeocoding(true);
+    try {
+      const result = await LabCenterService.geocodeAddress(address);
+      onLocationSelect(
+        result.latitude,
+        result.longitude,
+        result.formattedAddress,
+        address,
+      );
+      toast.success("Address found successfully");
+      setAddress("");
+      setSuggestions([]);
+      setShowSuggestions(false);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to geocode address";
+      toast.error(message);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  const handleSuggestionSelect = async (suggestion: SearchSuggestion) => {
+    setAddress(suggestion.description);
+    setShowSuggestions(false);
+
+    setIsGeocoding(true);
+    try {
+      const result = await LabCenterService.geocodeAddress(
+        suggestion.description,
+      );
+      onLocationSelect(
+        result.latitude,
+        result.longitude,
+        result.formattedAddress,
+        suggestion.description,
+      );
+      toast.success("Location selected successfully");
+      setAddress("");
+      setSuggestions([]);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to select location";
+      toast.error(message);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  const handleClear = () => {
+    setAddress("");
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <form
+        onSubmit={handleSearch}
+        style={{
+          display: "flex",
+          gap: 8,
+          position: "relative",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
+          {/* Search icon inside input */}
+          <span
+            style={{
+              position: "absolute",
+              left: 10,
+              top: "50%",
+              transform: "translateY(-50%)",
+              pointerEvents: "none",
+              color: "#9aa0a6",
+              display: "flex",
+            }}
           >
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
-                Search Filters
-              </h3>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={() => setShowFilters(false)}
-                className='h-8 w-8 p-0'
-              >
-                <X className='h-4 w-4' />
-              </Button>
-            </div>
-            <div className='flex flex-col sm:flex-row gap-4'>
-              <div className='flex-1'>
-                <label className='text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block'>
-                  Search Radius
-                </label>
-                <Select
-                  value={radius.toString()}
-                  onValueChange={(value) => {
-                    onRadiusChange?.(Number(value));
+            <MapPin style={{ width: 18, height: 18 }} />
+          </span>
+
+          <input
+            type='text'
+            placeholder='Search city, state, or zip'
+            value={address}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              if (e.target.value) setShowSuggestions(true);
+            }}
+            onFocus={() => address && setShowSuggestions(true)}
+            autoComplete='off'
+            disabled={disabled || isGeocoding}
+            style={{
+              width: "100%",
+              padding: "9px 32px 9px 36px",
+              border: "1px solid #dadce0",
+              borderRadius: 24,
+              fontSize: 14,
+              color: "#202124",
+              outline: "none",
+              boxSizing: "border-box",
+              fontFamily: "'Google Sans', Roboto, Arial, sans-serif",
+              background: "#fff",
+            }}
+            onFocusCapture={(e) => {
+              (e.target as HTMLInputElement).style.border = "1px solid #1a73e8";
+            }}
+            onBlurCapture={(e) => {
+              (e.target as HTMLInputElement).style.border = "1px solid #dadce0";
+            }}
+          />
+
+          {/* Clear button */}
+          {address && (
+            <button
+              type='button'
+              onClick={handleClear}
+              tabIndex={-1}
+              style={{
+                position: "absolute",
+                right: 8,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#9aa0a6",
+                padding: 2,
+                display: "flex",
+              }}
+            >
+              <X style={{ width: 16, height: 16 }} />
+            </button>
+          )}
+
+          {/* Suggestions dropdown */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 4px)",
+                left: 0,
+                right: 0,
+                background: "#fff",
+                border: "1px solid #dadce0",
+                borderRadius: 8,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                zIndex: 100,
+                maxHeight: 200,
+                overflowY: "auto",
+              }}
+            >
+              {suggestions.map((suggestion, idx) => (
+                <button
+                  key={idx}
+                  type='button'
+                  onClick={() => handleSuggestionSelect(suggestion)}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "10px 14px 10px 36px",
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    borderBottom:
+                      idx < suggestions.length - 1
+                        ? "1px solid #f1f3f4"
+                        : "none",
+                    fontFamily: "'Google Sans', Roboto, Arial, sans-serif",
+                    position: "relative",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background =
+                      "#f1f3f4";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background =
+                      "none";
                   }}
                 >
-                  <SelectTrigger className='w-full bg-white dark:bg-gray-900'>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='5'>5 miles</SelectItem>
-                    <SelectItem value='10'>10 miles</SelectItem>
-                    <SelectItem value='25'>25 miles</SelectItem>
-                    <SelectItem value='50'>50 miles</SelectItem>
-                    <SelectItem value='100'>100 miles</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "#9aa0a6",
+                    }}
+                  >
+                    <MapPin style={{ width: 15, height: 15 }} />
+                  </span>
+                  <div
+                    style={{ fontSize: 14, color: "#202124", fontWeight: 500 }}
+                  >
+                    {suggestion.mainText}
+                  </div>
+                  {suggestion.secondaryText && (
+                    <div style={{ fontSize: 12, color: "#70757a" }}>
+                      {suggestion.secondaryText}
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
 
-      {/* Popular Searches */}
-      <div className='flex flex-wrap items-center gap-2 pt-2'>
-        <p className='text-sm font-medium text-blue-100 dark:text-blue-300'>
-          Popular searches:
-        </p>
-        {["Las Vegas, NV", "Henderson, NV", "North Las Vegas, NV"].map(
-          (location) => (
-            <Button
-              key={location}
-              variant='ghost'
-              size='sm'
-              onClick={() => {
-                setSearchQuery(location);
-                onSearch(location);
+          {/* Suggestions loading */}
+          {isFetchingSuggestions && showSuggestions && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 4px)",
+                left: 0,
+                right: 0,
+                background: "#fff",
+                border: "1px solid #dadce0",
+                borderRadius: 8,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                zIndex: 100,
+                padding: "10px 14px",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 13,
+                color: "#70757a",
+                fontFamily: "'Google Sans', Roboto, Arial, sans-serif",
               }}
-              className='text-blue-100 dark:text-blue-300 hover:text-white dark:hover:text-blue-100 hover:bg-blue-500/20 dark:hover:bg-blue-400/20 h-8 px-3'
             >
-              {location}
-            </Button>
-          )
+              <Loader2
+                style={{ width: 15, height: 15 }}
+                className='animate-spin'
+              />
+              Finding suggestions…
+            </div>
+          )}
+        </div>
+
+        <button
+          type='submit'
+          disabled={disabled || isGeocoding || !address.trim()}
+          style={{
+            padding: "8px 18px",
+            background: isGeocoding || !address.trim() ? "#dadce0" : "#1a73e8",
+            color: isGeocoding || !address.trim() ? "#80868b" : "#fff",
+            border: "none",
+            borderRadius: 24,
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: isGeocoding || !address.trim() ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            fontFamily: "'Google Sans', Roboto, Arial, sans-serif",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+            minWidth: 120,
+          }}
+          className='md:min-w-auto'
+        >
+          {isGeocoding ? (
+            <Loader2
+              style={{ width: 16, height: 16 }}
+              className='animate-spin'
+            />
+          ) : (
+            <Search style={{ width: 16, height: 16 }} />
+          )}
+          <span className='hidden sm:inline'>Search</span>
+        </button>
+      </form>
+
+      {/* Use My Location */}
+      <button
+        type='button'
+        onClick={handleUseMyLocation}
+        disabled={disabled || isGettingLocation}
+        style={{
+          width: "100%",
+          padding: "8px 16px",
+          background: "none",
+          border: "1px solid #dadce0",
+          borderRadius: 24,
+          fontSize: 13,
+          fontWeight: 500,
+          color: "#1a73e8",
+          cursor: disabled || isGettingLocation ? "not-allowed" : "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          fontFamily: "'Google Sans', Roboto, Arial, sans-serif",
+          opacity: disabled || isGettingLocation ? 0.5 : 1,
+          transition: "opacity 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          if (!disabled && !isGettingLocation) {
+            (e.currentTarget as HTMLButtonElement).style.background = "#f1f3f4";
+          }
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = "none";
+        }}
+      >
+        {isGettingLocation ? (
+          <Loader2 style={{ width: 15, height: 15 }} className='animate-spin' />
+        ) : (
+          <Navigation style={{ width: 15, height: 15 }} />
         )}
-      </div>
-    </motion.div>
+        <span className='hidden sm:inline'>Use My Location</span>
+        <span className='inline sm:hidden'>My Location</span>
+      </button>
+    </div>
   );
 }

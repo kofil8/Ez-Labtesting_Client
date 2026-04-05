@@ -1,0 +1,528 @@
+/* ========================================
+   LOGIN PAGE FORM ANIMATIONS
+   Healthcare-appropriate micro-interactions
+   ======================================== */
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   INPUT FOCUS ANIMATIONS
+   Smooth transitions for professional feel
+   ======================================== */
+
+@keyframes inputFocus {
+  from {
+    border-color: rgb(229, 231, 235);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  to {
+    border-color: rgb(37, 99, 235);
+    box-shadow:
+      inset 0 1px 3px rgba(0, 0, 0, 0.1),
+      0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+@keyframes inputBlur {
+  from {
+    border-color: rgb(37, 99, 235);
+    box-shadow:
+      inset 0 1px 3px rgba(0, 0, 0, 0.1),
+      0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  to {
+    border-color: rgb(229, 231, 235);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@keyframes iconColorShift {
+  from {
+    color: rgb(156, 163, 175);
+  }
+  to {
+    color: rgb(37, 99, 235);
+  }
+}
+
+/* Apply animations to input elements */
+input:focus,
+textarea:focus {
+  animation: inputFocus 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Icon color change on input focus */
+.form-group:focus-within .input-icon {
+  animation: iconColorShift 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ========================================
+   LOADING STATE ANIMATIONS
+   Subtle, professional spinner
+   ======================================== */
+
+@keyframes spin-smooth {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.spinner-loading {
+  animation: spin-smooth 2s linear infinite;
+}
+
+/* Loading button state */
+@keyframes buttonLoadingPulse {
+  0% {
+    background-color: rgb(37, 99, 235);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+  }
+  50% {
+    background-color: rgb(29, 78, 216);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  }
+  100% {
+    background-color: rgb(37, 99, 235);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+  }
+}
+
+.button-loading {
+  animation: buttonLoadingPulse 2s ease-in-out infinite;
+}
+
+/* Loading text fade animation */
+@keyframes fadeOutIntoSpinner {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.button-text-fade {
+  animation: fadeOutIntoSpinner 0.3s ease-out forwards;
+}
+
+/* ========================================
+   SUCCESS STATE ANIMATIONS
+   Checkmark and confirmation feedback
+   ======================================== */
+
+@keyframes successSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes checkmarkDraw {
+  0% {
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+  }
+  100% {
+    stroke-dasharray: 50;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes checkmarkScale {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes successGlowPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+  }
+}
+
+.success-message {
+  animation: successSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.checkmark-icon {
+  animation: checkmarkScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.checkmark-svg {
+  animation: checkmarkDraw 0.6s ease-out forwards;
+}
+
+.success-badge {
+  animation: successGlowPulse 2s infinite;
+}
+
+/* ========================================
+   ERROR STATE ANIMATIONS
+   Slide-in with pulse for attention
+   ======================================== */
+
+@keyframes errorSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes errorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes errorPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes borderErrorPulse {
+  0%,
+  100% {
+    border-color: rgb(239, 68, 68);
+  }
+  50% {
+    border-color: rgb(220, 38, 38);
+  }
+}
+
+.error-message {
+  animation: errorSlideIn 0.3s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+}
+
+.error-field {
+  animation: borderErrorPulse 0.6s ease-out;
+}
+
+.error-shake {
+  animation: errorShake 0.4s ease-in-out;
+}
+
+.error-icon-pulse {
+  animation: errorPulse 1s ease-in-out;
+}
+
+/* ========================================
+   FORM FIELD STATE TRANSITIONS
+   Smooth background and border changes
+   ======================================== */
+
+@keyframes fieldDisabled {
+  from {
+    background-color: rgb(255, 255, 255);
+    opacity: 1;
+  }
+  to {
+    background-color: rgb(249, 250, 251);
+    opacity: 0.6;
+  }
+}
+
+@keyframes fieldEnabled {
+  from {
+    background-color: rgb(249, 250, 251);
+    opacity: 0.6;
+  }
+  to {
+    background-color: rgb(255, 255, 255);
+    opacity: 1;
+  }
+}
+
+.form-field-disabled {
+  animation: fieldDisabled 0.3s ease-out forwards;
+}
+
+.form-field-enabled {
+  animation: fieldEnabled 0.3s ease-out forwards;
+}
+
+/* ========================================
+   PASSWORD VISIBILITY TOGGLE
+   Smooth icon transition
+   ======================================== */
+
+@keyframes iconRotate {
+  from {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeSwitch {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.password-toggle-icon {
+  animation: fadeSwitch 0.3s ease-out forwards;
+}
+
+/* ========================================
+   CHECKBOX STATE ANIMATION
+   Smooth scale and color transition
+   ======================================== */
+
+@keyframes checkboxCheck {
+  0% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+input[type="checkbox"]:checked {
+  animation: checkboxCheck 0.2s ease-out;
+}
+
+/* ========================================
+   CARD AND CONTAINER ANIMATIONS
+   Smooth entrance and transitions
+   ======================================== */
+
+@keyframes cardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.card-entrance {
+  animation: cardSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fade-in-smooth {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in-left {
+  animation: slideInFromLeft 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.slide-in-right {
+  animation: slideInFromRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ========================================
+   HOVER EFFECTS
+   Subtle interactive feedback
+   ======================================== */
+
+.button-hover-lift {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.button-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);
+}
+
+.link-hover-underline {
+  position: relative;
+  transition: color 0.2s ease-out;
+}
+
+.link-hover-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: currentColor;
+  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.link-hover-underline:hover::after {
+  width: 100%;
+}
+
+/* ========================================
+   RESPONSIVE UTILITIES
+   Mobile-first animation adjustments
+   ======================================== */
+
+@media (max-width: 640px) {
+  /* Reduce motion on mobile for better performance */
+  .spinner-loading {
+    animation: spin-smooth 2.5s linear infinite;
+  }
+
+  /* Smaller animations for small screens */
+  @keyframes mobileSuccessSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .success-message {
+    animation: mobileSuccessSlideIn 0.3s ease-out forwards;
+  }
+}
+
+/* ========================================
+   FORM VALIDATION ANIMATIONS
+   Professional feedback for required fields
+   ======================================== */
+
+@keyframes validationGlowGreen {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes validationGlowRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.field-valid {
+  animation: validationGlowGreen 1.5s ease-out;
+}
+
+.field-invalid {
+  animation: validationGlowRed 1.5s ease-out;
+}
+
+/* ========================================
+   ACCESSIBILITY FOCUS STYLES
+   Visible focus indicators for keyboard users
+   ======================================== */
+
+@keyframes focusRing {
+  from {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5);
+  }
+  to {
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  }
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgb(37, 99, 235);
+  outline-offset: 2px;
+  animation: focusRing 0.3s ease-out;
+}

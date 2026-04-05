@@ -1,9 +1,26 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -13,65 +30,218 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hook/use-toast";
-import { createUser, deleteUser, getAllUsers, updateUser } from "@/lib/api";
+import {
+  createUser,
+  deleteUser,
+  getAllUsers,
+  getUserById,
+  updateUser,
+} from "@/lib/api";
 import { User } from "@/types/user";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { UserDetailsDialog } from "./UserDetailsDialog";
 import { UserEditDialog } from "./UserEditDialog";
 
 export function UserManagement() {
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // State from URL params
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || "",
+  );
+  const [roleFilter, setRoleFilter] = useState(
+    searchParams.get("role") || "all",
+  );
+  const [sortBy, setSortBy] = useState(
+    searchParams.get("sortBy") || "createdAt",
+  );
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">(
+    (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
+  );
+
+  // Component state
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [meta, setMeta] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [viewingUser, setViewingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState(searchQuery);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
+    null,
+  );
 
+  // Use refs to track dialog state without causing re-renders in loadData
+  const isDetailsDialogOpenRef = useRef(false);
+
+  useEffect(() => {
+    isDetailsDialogOpenRef.current = isDetailsDialogOpen;
+  }, [isDetailsDialogOpen]);
+
+  // Update URL with current state
+  const updateURL = useCallback(
+    (params: Record<string, string | number>) => {
+      const newParams = new URLSearchParams(searchParams.toString());
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) {
+          newParams.set(key, value.toString());
+        } else {
+          newParams.delete(key);
+        }
+      });
+      router.push(`?${newParams.toString()}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
+
+  // Load users data
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const usersData = await getAllUsers();
-      setUsers(usersData);
-      setFilteredUsers(usersData);
-    } catch (error) {
+      const roleParam =
+        roleFilter === "all" ? "CUSTOMER,LAB_PARTNER" : roleFilter;
+      const result = await getAllUsers({
+        page,
+        limit: 10,
+        searchTerm: searchQuery,
+        role: roleParam,
+        sortBy,
+        sortOrder,
+      });
+      setUsers(result.data);
+      setMeta(result.meta);
+
+      // Update viewingUser if details dialog is open and user is in the new data
+      // Using setViewingUser with callback and ref to avoid adding to dependencies
+      setViewingUser((currentViewingUser) => {
+        if (currentViewingUser && isDetailsDialogOpenRef.current) {
+          const updatedUser = result.data.find(
+            (u: User) => u.id === currentViewingUser.id,
+          );
+          return updatedUser || currentViewingUser;
+        }
+        return currentViewingUser;
+      });
+    } catch (error: any) {
       console.error("Error loading users:", error);
       toast({
         title: "Error",
-        description: "Failed to load users.",
+        description: error.message || "Failed to load users.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [page, searchQuery, roleFilter, sortBy, sortOrder, toast]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // Filter users based on search query
+  // Debounced search
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredUsers(users);
-      return;
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
     }
 
-    const query = searchQuery.toLowerCase();
-    const filtered = users.filter(
-      (user) =>
-        user.email.toLowerCase().includes(query) ||
-        user.firstName.toLowerCase().includes(query) ||
-        user.lastName.toLowerCase().includes(query) ||
-        user.phone?.toLowerCase().includes(query) ||
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(query)
+    const timeout = setTimeout(() => {
+      if (searchInput !== searchQuery) {
+        setSearchQuery(searchInput);
+        setPage(1);
+        updateURL({ search: searchInput, page: "1" });
+      }
+    }, 300);
+
+    setSearchTimeout(timeout);
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [searchInput]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    updateURL({ page: newPage.toString() });
+  };
+
+  const handleRoleFilterChange = (value: string) => {
+    setRoleFilter(value);
+    setPage(1);
+    updateURL({ role: value, page: "1" });
+  };
+
+  const handleSort = (column: string) => {
+    let newSortOrder: "asc" | "desc" = "asc";
+    if (sortBy === column) {
+      newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    }
+    setSortBy(column);
+    setSortOrder(newSortOrder);
+    updateURL({ sortBy: column, sortOrder: newSortOrder });
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) {
+      return <ArrowUpDown className='h-4 w-4 ml-1 opacity-40' />;
+    }
+    return sortOrder === "asc" ? (
+      <ArrowUp className='h-4 w-4 ml-1' />
+    ) : (
+      <ArrowDown className='h-4 w-4 ml-1' />
     );
-    setFilteredUsers(filtered);
-  }, [searchQuery, users]);
+  };
 
   const handleAdd = () => {
     setEditingUser(null);
     setIsDialogOpen(true);
+  };
+
+  const handleViewDetails = async (user: User) => {
+    console.log("[handleViewDetails] Opening details for user:", user.id);
+    console.log("[handleViewDetails] Initial user data:", user);
+
+    // Set initial data from list while fetching fresh details
+    setViewingUser(user);
+    setIsDetailsDialogOpen(true);
+
+    // Fetch fresh user data from the API to get complete details
+    try {
+      const freshUserData = await getUserById(user.id);
+      console.log(
+        "[handleViewDetails] Fresh user data received:",
+        freshUserData,
+      );
+      if (freshUserData) {
+        setViewingUser(freshUserData);
+        console.log("[handleViewDetails] Updated viewingUser with fresh data");
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
   };
 
   const handleEdit = (user: User) => {
@@ -79,49 +249,62 @@ export function UserManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (user: User) => {
-    if (confirm(`Are you sure you want to delete user "${user.email}"?`)) {
-      try {
-        await deleteUser(user.id);
-        setUsers(users.filter((u) => u.id !== user.id));
-        toast({
-          title: "User deleted",
-          description: `${user.email} has been removed.`,
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete user.",
-          variant: "destructive",
-        });
-      }
+  const handleDeleteClick = (user: User) => {
+    setDeletingUser(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingUser) return;
+
+    try {
+      await deleteUser(deletingUser.id);
+      toast({
+        title: "User deleted",
+        description: `${deletingUser.firstName} ${deletingUser.lastName} has been removed.`,
+      });
+      setIsDeleteDialogOpen(false);
+      setDeletingUser(null);
+      loadData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleSave = async (user: User) => {
     try {
       if (editingUser) {
-        // Update existing
-        const updatedUser = await updateUser(user.id, user);
-        setUsers(users.map((u) => (u.id === user.id ? updatedUser : u)));
+        await updateUser(user.id, user);
+
+        // After successful update, refresh the viewing user with fresh data from server
+        if (viewingUser?.id === user.id && isDetailsDialogOpen) {
+          const freshUserData = await getUserById(user.id);
+          if (freshUserData) {
+            setViewingUser(freshUserData);
+          }
+        }
+
         toast({
           title: "User updated",
-          description: `${user.email} has been updated.`,
+          description: `${user.firstName} ${user.lastName} has been updated.`,
         });
       } else {
-        // Add new
-        const newUser = await createUser(user);
-        setUsers([...users, newUser]);
+        await createUser(user);
         toast({
           title: "User created",
-          description: `${user.email} has been added.`,
+          description: `${user.firstName} ${user.lastName} has been added.`,
         });
       }
       setIsDialogOpen(false);
-    } catch (error) {
+      loadData();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to save user.",
+        description: error.message || "Failed to save user.",
         variant: "destructive",
       });
     }
@@ -135,9 +318,45 @@ export function UserManagement() {
     });
   };
 
-  if (loading) {
+  const getRoleBadge = (role: string) => {
+    const normalizedRole = role.toUpperCase();
+    if (normalizedRole === "LAB_PARTNER") {
+      return (
+        <Badge className='bg-blue-500 hover:bg-blue-600'>Lab Partner</Badge>
+      );
+    }
+    return <Badge variant='secondary'>Customer</Badge>;
+  };
+
+  const getStatusBadge = (status?: string) => {
+    const normalizedStatus = status?.toUpperCase() || "ACTIVE";
+    if (normalizedStatus === "BLOCKED") {
+      return (
+        <Badge className='bg-red-500 hover:bg-red-600 text-white'>
+          Blocked
+        </Badge>
+      );
+    }
+    if (normalizedStatus === "DISABLED") {
+      return (
+        <Badge className='bg-gray-500 hover:bg-gray-600 text-white'>
+          Disabled
+        </Badge>
+      );
+    }
+    return (
+      <Badge className='bg-green-500 hover:bg-green-600 text-white'>
+        Active
+      </Badge>
+    );
+  };
+
+  if (loading && page === 1) {
     return <div className='text-center py-12'>Loading users...</div>;
   }
+
+  const startRecord = (page - 1) * meta.limit + 1;
+  const endRecord = Math.min(page * meta.limit, meta.total);
 
   return (
     <div className='space-y-6'>
@@ -156,44 +375,109 @@ export function UserManagement() {
 
       <Card>
         <CardContent className='p-4'>
-          <div className='flex items-center space-x-2 mb-4'>
+          <div className='flex items-center gap-4 mb-4'>
             <div className='relative flex-1 max-w-sm'>
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
               <Input
                 placeholder='Search users by name, email, or phone...'
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className='pl-8'
               />
             </div>
+            <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
+              <SelectTrigger className='w-[200px]'>
+                <SelectValue placeholder='Filter by role' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All Users</SelectItem>
+                <SelectItem value='CUSTOMER'>Customers Only</SelectItem>
+                <SelectItem value='LAB_PARTNER'>Lab Partners Only</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          {meta.total > 0 && (
+            <div className='text-sm text-muted-foreground mb-2'>
+              Showing {startRecord}-{endRecord} of {meta.total} users
+            </div>
+          )}
         </CardContent>
+
         <CardContent className='p-0 pb-0'>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("firstName")}
+                    className='flex items-center hover:text-foreground transition-colors'
+                  >
+                    Name
+                    {getSortIcon("firstName")}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("email")}
+                    className='flex items-center hover:text-foreground transition-colors'
+                  >
+                    Email
+                    {getSortIcon("email")}
+                  </button>
+                </TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>MFA</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("role")}
+                    className='flex items-center hover:text-foreground transition-colors'
+                  >
+                    Role
+                    {getSortIcon("role")}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("status")}
+                    className='flex items-center hover:text-foreground transition-colors'
+                  >
+                    Status
+                    {getSortIcon("status")}
+                  </button>
+                </TableHead>
+                <TableHead>
+                  <button
+                    onClick={() => handleSort("createdAt")}
+                    className='flex items-center hover:text-foreground transition-colors'
+                  >
+                    Created
+                    {getSortIcon("createdAt")}
+                  </button>
+                </TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.length === 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className='text-center py-8'>
+                    <div className='flex items-center justify-center'>
+                      <div className='animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full'></div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className='text-center py-8'>
                     <p className='text-muted-foreground'>
-                      {searchQuery
-                        ? "No users found matching your search."
+                      {searchQuery || roleFilter !== "all"
+                        ? "No users found matching your filters."
                         : "No users found."}
                     </p>
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers.map((user) => (
+                users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       <span className='font-medium'>
@@ -204,22 +488,12 @@ export function UserManagement() {
                       <span className='text-sm'>{user.email}</span>
                     </TableCell>
                     <TableCell>
-                      <span className='text-sm'>{user.phone || "N/A"}</span>
+                      <span className='text-sm'>
+                        {user.phoneNumber || user.phone || "N/A"}
+                      </span>
                     </TableCell>
-                    <TableCell>
-                      {user.role === "admin" ? (
-                        <Badge className='bg-purple-500'>Admin</Badge>
-                      ) : (
-                        <Badge variant='secondary'>Customer</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {user.mfaEnabled ? (
-                        <Badge className='bg-green-500'>Enabled</Badge>
-                      ) : (
-                        <Badge variant='outline'>Disabled</Badge>
-                      )}
-                    </TableCell>
+                    <TableCell>{getRoleBadge(user.role)}</TableCell>
+                    <TableCell>{getStatusBadge(user.status)}</TableCell>
                     <TableCell>
                       <span className='text-sm text-muted-foreground'>
                         {formatDate(user.createdAt)}
@@ -230,14 +504,24 @@ export function UserManagement() {
                         <Button
                           variant='ghost'
                           size='icon'
+                          onClick={() => handleViewDetails(user)}
+                          title='View Details'
+                        >
+                          <Eye className='h-4 w-4 text-blue-600' />
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          size='icon'
                           onClick={() => handleEdit(user)}
+                          title='Edit User'
                         >
                           <Pencil className='h-4 w-4' />
                         </Button>
                         <Button
                           variant='ghost'
                           size='icon'
-                          onClick={() => handleDelete(user)}
+                          onClick={() => handleDeleteClick(user)}
+                          title='Delete User'
                         >
                           <Trash2 className='h-4 w-4 text-destructive' />
                         </Button>
@@ -249,7 +533,75 @@ export function UserManagement() {
             </TableBody>
           </Table>
         </CardContent>
+
+        {meta.totalPages > 1 && (
+          <CardContent className='p-4 border-t'>
+            <div className='flex items-center justify-between'>
+              <div className='text-sm text-muted-foreground'>
+                Page {page} of {meta.totalPages}
+              </div>
+              <div className='flex items-center gap-2'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className='h-4 w-4 mr-1' />
+                  Previous
+                </Button>
+
+                {/* Page numbers */}
+                <div className='flex items-center gap-1'>
+                  {Array.from(
+                    { length: Math.min(5, meta.totalPages) },
+                    (_, i) => {
+                      let pageNum;
+                      if (meta.totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (page <= 3) {
+                        pageNum = i + 1;
+                      } else if (page >= meta.totalPages - 2) {
+                        pageNum = meta.totalPages - 4 + i;
+                      } else {
+                        pageNum = page - 2 + i;
+                      }
+
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={page === pageNum ? "default" : "outline"}
+                          size='sm'
+                          onClick={() => handlePageChange(pageNum)}
+                          className='w-8 h-8 p-0'
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    },
+                  )}
+                </div>
+
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === meta.totalPages}
+                >
+                  Next
+                  <ChevronRight className='h-4 w-4 ml-1' />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        )}
       </Card>
+
+      <UserDetailsDialog
+        open={isDetailsDialogOpen}
+        onOpenChange={setIsDetailsDialogOpen}
+        user={viewingUser}
+      />
 
       <UserEditDialog
         open={isDialogOpen}
@@ -257,6 +609,47 @@ export function UserManagement() {
         user={editingUser}
         onSave={handleSave}
       />
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this user account?
+              {deletingUser && (
+                <div className='mt-4 p-4 bg-muted rounded-md space-y-2'>
+                  <div>
+                    <strong>Name:</strong> {deletingUser.firstName}{" "}
+                    {deletingUser.lastName}
+                  </div>
+                  <div>
+                    <strong>Email:</strong> {deletingUser.email}
+                  </div>
+                  <div>
+                    <strong>Role:</strong> {deletingUser.role}
+                  </div>
+                </div>
+              )}
+              <p className='mt-4 text-destructive font-semibold'>
+                This action cannot be undone. All user data will be permanently
+                removed.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            >
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

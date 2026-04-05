@@ -10,21 +10,37 @@ export async function verifyOtp(formData: FormData) {
     throw new Error("Email and OTP are required");
   }
 
-  const res = await fetch(
-    `${
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      "https://ezlabtesting-api.com/api/v1"
-    }/auth/verify-otp`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+  let res;
+  try {
+    res = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://ezlabtesting-api.com/api/v1"
+      }/auth/verify-otp`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, otp }),
+        credentials: "include",
+        cache: "no-store",
       },
-      body: JSON.stringify({ email, otp }),
-      credentials: "include",
-      cache: "no-store",
+    );
+  } catch (error: any) {
+    // Handle connection errors (ECONNREFUSED, network failures, etc.)
+    if (
+      error.cause?.code === "ECONNREFUSED" ||
+      error.message?.includes("fetch failed")
+    ) {
+      throw new Error(
+        "Unable to connect to server. The server may be down. Please try again later.",
+      );
     }
-  );
+    throw new Error(
+      "Network error occurred. Please check your connection and try again.",
+    );
+  }
 
   if (!res.ok) {
     const error = await res.json();
@@ -38,8 +54,8 @@ export async function verifyOtp(formData: FormData) {
   if (data?.data?.accessToken) {
     cookieStore.set("accessToken", data.data.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: process.env.NODE_ENV === "development" ? false : true,
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 15, // 15 minutes (matching JWT expiration)
     });
@@ -52,8 +68,8 @@ export async function verifyOtp(formData: FormData) {
     if (refreshTokenMatch) {
       cookieStore.set("refreshToken", refreshTokenMatch[1], {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: process.env.NODE_ENV === "development" ? false : true,
+        sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 24 * 7, // 7 days
       });

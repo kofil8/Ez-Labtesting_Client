@@ -1,9 +1,9 @@
+import { OrderJourneyPanel } from "@/components/results/OrderJourneyPanel";
 import { ResultViewer } from "@/components/results/ResultViewer";
+import { LazyFooter } from "@/components/shared/LazyFooter";
 import { PageContainer } from "@/components/shared/PageContainer";
-import { SiteFooter } from "@/components/shared/SiteFooter";
-import { SiteHeader } from "@/components/shared/SiteHeader";
-import { getResultsByOrderId, getOrderById } from "@/lib/api";
-import { notFound } from "next/navigation";
+import { getOrderById, getResultsByOrderId } from "@/lib/api";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Test Results | Ez LabTesting",
@@ -19,24 +19,27 @@ export default async function ResultViewerPage({
 
   const [results, order] = await Promise.all([
     getResultsByOrderId(orderId),
-    getOrderById(orderId)
+    getOrderById(orderId),
   ]);
 
-  if (!results || results.length === 0 || !order) {
-    notFound();
+  if (!order || !results || results.length === 0) {
+    redirect(`/results/${orderId}/pending`);
   }
 
   return (
-    <div className='flex min-h-screen flex-col'>
-      <SiteHeader />
-      <main className='flex-1'>
-        <PageContainer>
-          <div className='py-8'>
-            <ResultViewer results={results} order={order} />
-          </div>
-        </PageContainer>
-      </main>
-      <SiteFooter />
-    </div>
+    <>
+      <div className='flex min-h-screen flex-col'>
+        <main id='main-content-section' className='flex-1'>
+          <PageContainer>
+            <div className='py-8'>
+              <OrderJourneyPanel orderId={orderId} />
+              <div className='my-8' />
+              <ResultViewer results={results} order={order} />
+            </div>
+          </PageContainer>
+        </main>
+      </div>
+      <LazyFooter />
+    </>
   );
 }

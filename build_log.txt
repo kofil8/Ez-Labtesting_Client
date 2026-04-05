@@ -1,0 +1,95 @@
+
+> ezlabtesting-client@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 87s
+  Running TypeScript ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/57) ...
+(node:3208) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9128) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:10960) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+  Generating static pages using 3 workers (14/57) 
+  Generating static pages using 3 workers (28/57) 
+  Generating static pages using 3 workers (42/57) 
+✓ Generating static pages using 3 workers (57/57) in 7.5s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /accessibility
+├ ƒ /api/auth/verify
+├ ƒ /api/orders/create
+├ ƒ /api/payment/[paymentIntentId]
+├ ƒ /api/payment/confirm-payment-intent
+├ ƒ /api/payment/create-payment-intent
+├ ○ /cart
+├ ○ /cart/review
+├ ○ /change-password
+├ ○ /checkout
+├ ○ /checkout/confirmation
+├ ○ /checkout/success
+├ ƒ /dashboard
+├ ○ /dashboard/admin
+├ ○ /dashboard/admin/categories
+├ ○ /dashboard/admin/orders
+├ ○ /dashboard/admin/panels
+├ ○ /dashboard/admin/promo-codes
+├ ○ /dashboard/admin/tests
+├ ○ /dashboard/admin/users
+├ ○ /dashboard/customer
+├ ○ /dashboard/lab-partner
+├ ○ /dashboard/lab-partner/tests
+├ ○ /dashboard/superadmin
+├ ○ /dashboard/superadmin/admins
+├ ○ /dashboard/superadmin/audit-logs
+├ ○ /dashboard/superadmin/categories
+├ ○ /dashboard/superadmin/orders
+├ ○ /dashboard/superadmin/panels
+├ ○ /dashboard/superadmin/promo-codes
+├ ○ /dashboard/superadmin/system-settings
+├ ○ /dashboard/superadmin/tests
+├ ○ /dashboard/superadmin/users
+├ ○ /faqs
+├ ○ /find-lab-center
+├ ○ /forgot-password
+├ ○ /help-center
+├ ○ /hipaa-notice
+├ ○ /how-it-works
+├ ƒ /items/[id]
+├ ○ /lab-partner
+├ ○ /login
+├ ○ /mfa
+├ ○ /panels
+├ ƒ /panels/[id]
+├ ○ /payment-success
+├ ○ /privacy-policy
+├ ○ /profile
+├ ƒ /profile/security
+├ ○ /reset-password
+├ ○ /results
+├ ƒ /results/[orderId]
+├ ○ /signup
+├ ○ /terms-of-service
+├ ○ /test-preparation
+├ ○ /tests
+├ ƒ /tests/[testId]
+├ ○ /transactions
+└ ○ /verify-otp
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

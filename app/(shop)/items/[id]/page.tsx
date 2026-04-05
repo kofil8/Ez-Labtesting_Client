@@ -1,16 +1,11 @@
+import { getTestById } from "@/app/actions/tests";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { SiteFooter } from "@/components/shared/SiteFooter";
-import { SiteHeader } from "@/components/shared/SiteHeader";
 import { TestDetail } from "@/components/tests/TestDetail";
-import { getTestById } from "@/lib/api";
 import { notFound } from "next/navigation";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = (await params);
   const test = await getTestById(id);
 
   if (!test) {
@@ -30,7 +25,7 @@ export default async function ItemDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const { id } = (await params);
   const test = await getTestById(id);
 
   if (!test) {
@@ -39,8 +34,7 @@ export default async function ItemDetailPage({
 
   return (
     <div className='flex min-h-screen flex-col'>
-      <SiteHeader />
-      <main className='flex-1'>
+      <main id='main-content-section' className='flex-1'>
         <PageContainer>
           <div className='py-8'>
             <TestDetail test={test} />
@@ -51,4 +45,3 @@ export default async function ItemDetailPage({
     </div>
   );
 }
-

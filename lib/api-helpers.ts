@@ -17,14 +17,28 @@ async function refreshAccessToken(): Promise<string> {
   }
 
   // Call refresh-token endpoint - backend reads refreshToken from cookies automatically
-  const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // This sends cookies automatically
-    cache: "no-store",
-  });
+  let res;
+  try {
+    res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // This sends cookies automatically
+      cache: "no-store",
+    });
+  } catch (error: any) {
+    // Handle connection errors (ECONNREFUSED, network failures, etc.)
+    if (
+      error.cause?.code === "ECONNREFUSED" ||
+      error.message?.includes("fetch failed")
+    ) {
+      throw new Error(
+        "Unable to connect to server. Please check your connection and try again.",
+      );
+    }
+    throw new Error("Network error occurred. Please try again.");
+  }
 
   if (!res.ok) {
     const error = await res
@@ -52,27 +66,13 @@ async function refreshAccessToken(): Promise<string> {
   cookieStore.set("accessToken", newAccessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax",
     path: "/",
     maxAge: 60 * 15, // 15 minutes (matching JWT expiration)
   });
 
-  // Backend sets new refreshToken in cookie automatically via Set-Cookie header
-  // Extract it from Set-Cookie header and set it manually for Next.js
-  const setCookieHeader = res.headers.get("set-cookie");
-  if (setCookieHeader) {
-    const refreshTokenMatch = setCookieHeader.match(/refreshToken=([^;]+)/);
-    if (refreshTokenMatch) {
-      const newRefreshToken = refreshTokenMatch[1];
-      cookieStore.set("refreshToken", newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-      });
-    }
-  }
+  // Backend automatically sets refreshToken via Set-Cookie header
+  // Browser will handle it automatically with credentials: 'include'
 
   return newAccessToken;
 }
@@ -83,28 +83,50 @@ async function refreshAccessToken(): Promise<string> {
  */
 export async function authenticatedFetch(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   let cookieStore = await cookies();
   let accessToken = cookieStore.get("accessToken")?.value;
 
   if (!accessToken) {
-    // Clear any stale cookies
-    cookieStore.delete("accessToken");
-    cookieStore.delete("refreshToken");
-    throw new Error("Not authenticated. Please log in again.");
+    try {
+      accessToken = await refreshAccessToken();
+    } catch (error: any) {
+      // Clear any stale cookies if refresh fails
+      cookieStore.delete("accessToken");
+      cookieStore.delete("refreshToken");
+      throw new Error(
+        error?.message || "Not authenticated. Please log in again.",
+      );
+    }
   }
 
   // Make the initial request with access token
-  let response = await fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      Authorization: `Bearer ${accessToken}`,
-    },
-    credentials: "include", // Include cookies for refresh token
-    cache: "no-store",
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${accessToken}`,
+      },
+      credentials: "include", // Include cookies for refresh token
+      cache: "no-store",
+    });
+  } catch (error: any) {
+    // Handle connection errors (ECONNREFUSED, network failures, etc.)
+    if (
+      error.cause?.code === "ECONNREFUSED" ||
+      error.message?.includes("fetch failed")
+    ) {
+      throw new Error(
+        "Unable to connect to server. The server may be down. Please try again later.",
+      );
+    }
+    throw new Error(
+      "Network error occurred. Please check your connection and try again.",
+    );
+  }
 
   // If we get a 401 (Unauthorized), try to refresh the token and retry
   if (response.status === 401) {
@@ -113,15 +135,30 @@ export async function authenticatedFetch(
       const newAccessToken = await refreshAccessToken();
 
       // Retry the original request with the new token
-      response = await fetch(url, {
-        ...options,
-        headers: {
-          ...options.headers,
-          Authorization: `Bearer ${newAccessToken}`,
-        },
-        credentials: "include",
-        cache: "no-store",
-      });
+      try {
+        response = await fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            Authorization: `Bearer ${newAccessToken}`,
+          },
+          credentials: "include",
+          cache: "no-store",
+        });
+      } catch (retryError: any) {
+        // Handle connection errors on retry
+        if (
+          retryError.cause?.code === "ECONNREFUSED" ||
+          retryError.message?.includes("fetch failed")
+        ) {
+          throw new Error(
+            "Unable to connect to server. The server may be down. Please try again later.",
+          );
+        }
+        throw new Error(
+          "Network error occurred. Please check your connection and try again.",
+        );
+      }
 
       // If retry also fails with 401, the refresh token is also expired
       if (response.status === 401) {

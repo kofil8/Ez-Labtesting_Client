@@ -1,59 +1,183 @@
 "use client";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://ezlabtesting-api.com/api/v1";
+// Use relative URL to go through Next.js proxy (configured in next.config.ts)
+// This ensures API calls work with ngrok and in production
+const API_BASE_URL = "/api/v1";
+
+/**
+ * Public API helper for endpoints that don't require authentication
+ * Use this for public endpoints like /tests/all, /categories/all, etc.
+ */
+export async function publicFetch(
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+      cache: "no-store",
+    });
+
+    return response;
+  } catch (error: any) {
+    console.error("Fetch error:", error);
+
+    // Check for connection errors
+    if (
+      error.cause?.code === "ECONNREFUSED" ||
+      error.message?.includes("fetch failed")
+    ) {
+      throw new Error(
+        "Unable to connect to server. The server may be down. Please try again later.",
+      );
+    }
+
+    throw new Error(
+      error.message ||
+        "Network error occurred. Please check your connection and try again.",
+    );
+  }
+}
 
 /**
  * Client-side API helper that automatically handles token refresh
  * This is for client-side API calls (not server actions)
+ * Use this for authenticated endpoints that may require token refresh
  */
 export async function clientFetch(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   // Make the initial request
-  let response = await fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-    },
-    credentials: "include", // Include cookies (accessToken and refreshToken)
-    cache: "no-store",
-  });
+  let response;
+  try {
+    console.debug(`[API] Making ${options.method || "GET"} request to: ${url}`);
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+      },
+      credentials: "include", // Include cookies (accessToken and refreshToken)
+      cache: "no-store",
+    });
+    console.debug(`[API] Response status: ${response.status}`);
+  } catch (error: any) {
+    // Handle connection errors (ECONNREFUSED, network failures, etc.)
+    if (
+      error.cause?.code === "ECONNREFUSED" ||
+      error.message?.includes("fetch failed")
+    ) {
+      throw new Error(
+        "Unable to connect to server. The server may be down. Please try again later.",
+      );
+    }
+    throw new Error(
+      "Network error occurred. Please check your connection and try again.",
+    );
+  }
 
   // If we get a 401 (Unauthorized), try to refresh the token and retry
   if (response.status === 401) {
     try {
-      // Call the refresh-token server action
-      const { refreshToken } = await import("@/app/actions/refresh-token");
-      await refreshToken();
+      // Perform refresh directly against the backend so browser cookies are sent
+      const refreshUrl = getApiUrl("/auth/refresh-token");
+      let refreshRes: Response;
+      try {
+        refreshRes = await fetch(refreshUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          cache: "no-store",
+        });
+      } catch (refreshNetworkError: any) {
+        if (
+          refreshNetworkError.cause?.code === "ECONNREFUSED" ||
+          refreshNetworkError.message?.includes("fetch failed")
+        ) {
+          throw new Error(
+            "Unable to connect to server. The server may be down. Please try again later.",
+          );
+        }
+        throw new Error(
+          "Network error occurred. Please check your connection and try again.",
+        );
+      }
 
-      // Retry the original request
-      response = await fetch(url, {
-        ...options,
-        headers: {
-          ...options.headers,
-        },
-        credentials: "include",
-        cache: "no-store",
-      });
+      if (!refreshRes.ok) {
+        // Refresh failed: redirect to login and surface proper error
+        if (typeof window !== "undefined") {
+          window.location.href = "/login?expired=true";
+        }
+        const text = await refreshRes.text().catch(() => "");
+        let message = "Session expired. Please log in again.";
+        try {
+          const json = text ? JSON.parse(text) : null;
+          message = json?.message || message;
+        } catch {
+          // ignore JSON parse issues
+        }
+        throw new Error(message);
+      }
 
-      // If retry also fails with 401, the refresh token is also expired
+      // Extract new access token from refresh response body
+      let newAccessToken: string | null = null;
+      try {
+        const refreshData = await refreshRes.json();
+        newAccessToken = refreshData?.data?.accessToken;
+      } catch (jsonError) {
+        console.warn("Failed to parse refresh token response:", jsonError);
+      }
+
+      // Retry the original request after successful refresh
+      // Attach the new access token as Authorization header
+      try {
+        const retryHeaders: Record<string, string> = {
+          ...(options.headers as Record<string, string>),
+        };
+
+        // Add Authorization header with new access token
+        if (newAccessToken) {
+          retryHeaders["Authorization"] = `Bearer ${newAccessToken}`;
+        }
+
+        response = await fetch(url, {
+          ...options,
+          headers: retryHeaders,
+          credentials: "include",
+          cache: "no-store",
+        });
+      } catch (retryError: any) {
+        if (
+          retryError.cause?.code === "ECONNREFUSED" ||
+          retryError.message?.includes("fetch failed")
+        ) {
+          throw new Error(
+            "Unable to connect to server. The server may be down. Please try again later.",
+          );
+        }
+        throw new Error(
+          "Network error occurred. Please check your connection and try again.",
+        );
+      }
+
       if (response.status === 401) {
-        // Redirect to login or clear auth state
         if (typeof window !== "undefined") {
           window.location.href = "/login?expired=true";
         }
         throw new Error("Session expired. Please log in again.");
       }
-    } catch (refreshError: any) {
-      // If refresh fails, redirect to login
+    } catch (err) {
+      // Any error during refresh should result in logout
       if (typeof window !== "undefined") {
         window.location.href = "/login?expired=true";
       }
-      const errorMessage =
-        refreshError.message || "Session expired. Please log in again.";
-      throw new Error(errorMessage);
+      const message =
+        (err as any)?.message || "Session expired. Please log in again.";
+      throw new Error(message);
     }
   }
 

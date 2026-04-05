@@ -47,7 +47,7 @@ export function OrderManagement() {
       console.error("Error loading orders:", error);
       toast({
         title: "Error",
-        description: "Failed to load orders.",
+        description: "Unable to load orders. Please refresh the page.",
         variant: "destructive",
       });
     } finally {
@@ -108,7 +108,7 @@ export function OrderManagement() {
       } catch (error) {
         toast({
           title: "Error",
-          description: "Failed to delete order.",
+          description: "Unable to delete order. Please try again.",
           variant: "destructive",
         });
       }
@@ -127,7 +127,7 @@ export function OrderManagement() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update order.",
+        description: "Unable to update order. Please try again.",
         variant: "destructive",
       });
     }

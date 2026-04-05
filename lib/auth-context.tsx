@@ -17,6 +17,7 @@ interface UpdateProfileData {
   firstName: string;
   lastName: string;
   phone?: string;
+  gender?: string;
   dateOfBirth?: string;
 }
 
@@ -26,7 +27,7 @@ interface AuthContextType extends AuthState {
   fetchProfile: () => Promise<void>;
   updateProfile: (
     data: UpdateProfileData,
-    file?: File
+    file?: File,
   ) => Promise<{ success: boolean; profile?: User }>;
 }
 
@@ -36,9 +37,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
    CONSTANTS
 ------------------------------------------------------ */
 const AUTH_TOKEN_KEY = "auth_token";
-const USER_KEY = "user";
 const AUTH_COOKIE_NAME = "accessToken";
-const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 /* ------------------------------------------------------
    TOKEN HELPERS
@@ -63,14 +62,35 @@ function getOrCreateToken(): string {
   return placeholderToken;
 }
 
+function normalizeRole(role: string | null | undefined): User["role"] {
+  switch (role?.toLowerCase()) {
+    case "superadmin":
+    case "super_admin":
+      return "super_admin";
+    case "admin":
+      return "admin";
+    case "lab_partner":
+      return "lab_partner";
+    case "customer":
+    default:
+      return "customer";
+  }
+}
+
+function toAuthUser(profile: any): User {
+  return {
+    ...profile,
+    role: normalizeRole(profile?.role),
+  };
+}
+
 /* ------------------------------------------------------
    PERSISTENCE HELPERS
 ------------------------------------------------------ */
-function setAuthPersistence(token: string, user: User) {
+function setAuthPersistence(token: string, _user: User) {
   if (typeof window === "undefined") return;
 
   localStorage.setItem(AUTH_TOKEN_KEY, token);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
 
   // Note: Server-side actions set httpOnly cookies, so we don't set them here
   // This is just for client-side reference
@@ -80,7 +100,6 @@ function clearAuthPersistence() {
   if (typeof window === "undefined") return;
 
   localStorage.removeItem(AUTH_TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
   sessionStorage.removeItem("otp_email");
 
   const past = new Date(0).toUTCString();
@@ -102,33 +121,128 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /* ------------------------------------------------------
      INITIALIZATION
-     - Load user from localStorage if available
-     - If user exists, verify with server on mount (optional)
+     - Decode JWT token from cookie (client-side)
+     - Verify token hasn't expired
+      - Extract user info without API call
+      - Never trust localStorage as an authentication source
   ------------------------------------------------------ */
   useEffect(() => {
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    const rawUser = localStorage.getItem(USER_KEY);
-
-    if (token && rawUser) {
+    const initializeAuth = async () => {
+      // Try to decode token from httpOnly cookie indirectly via a server action
       try {
-        const user = JSON.parse(rawUser);
+        const { getAccessTokenFromServer } =
+          await import("@/app/actions/get-token");
+        const tokenResult = await getAccessTokenFromServer();
 
-        setAuthState({
-          user,
-          token,
-          isAuthenticated: true,
-          isLoading: false,
-        });
+        if (tokenResult?.token) {
+          const { isTokenValid, getUserFromToken } =
+            await import("@/lib/token-utils");
 
-        return;
-      } catch (error) {
-        console.error("Failed to parse user from localStorage:", error);
-        clearAuthPersistence();
+          // Verify token is valid (not expired)
+          if (isTokenValid(tokenResult.token)) {
+            const userInfo = getUserFromToken(tokenResult.token);
+            if (userInfo) {
+              // Create a user object from token info
+              const user: User = {
+                id: userInfo.id,
+                email: userInfo.email,
+                firstName: "",
+                lastName: "",
+                role: userInfo.role as any,
+                isVerified: false,
+                createdAt: new Date().toISOString(),
+              };
+
+              const newToken = getOrCreateToken();
+              try {
+                const { getProfile } =
+                  await import("@/app/actions/get-profile");
+                const profileResult = await getProfile();
+
+                if (profileResult?.success && profileResult.profile) {
+                  const user = toAuthUser(profileResult.profile);
+                  setAuthPersistence(newToken, user);
+                  setAuthState({
+                    user,
+                    token: newToken,
+                    isAuthenticated: true,
+                    isLoading: false,
+                  });
+                  return;
+                }
+              } catch (profileError: any) {
+                console.debug(
+                  "Profile fetch during auth init failed, using token payload user:",
+                  profileError?.message,
+                );
+              }
+
+              setAuthPersistence(newToken, user);
+              setAuthState({
+                user,
+                token: newToken,
+                isAuthenticated: true,
+                isLoading: false,
+              });
+              return;
+            }
+          }
+        }
+      } catch (error: any) {
+        console.debug("Token verification failed:", error?.message);
       }
+
+      // No valid auth found
+      clearAuthPersistence();
+      setAuthState({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+    };
+
+    initializeAuth();
+  }, []);
+
+  /* ------------------------------------------------------
+     AUTOMATIC TOKEN REFRESH
+     - Proactively refreshes access token every 12 minutes (before 15min expiry)
+     - Prevents token expiration during critical operations like checkout
+     - Only runs when user is authenticated
+  ------------------------------------------------------ */
+  useEffect(() => {
+    if (!authState.isAuthenticated || authState.isLoading) {
+      return;
     }
 
-    setAuthState((prev) => ({ ...prev, isLoading: false }));
-  }, []);
+    // Refresh token every 12 minutes (720000ms)
+    // This is before the 15-minute expiry to ensure seamless auth
+    const REFRESH_INTERVAL = 12 * 60 * 1000; // 12 minutes
+
+    const refreshTokenPeriodically = async () => {
+      try {
+        const { clientRefreshToken } = await import("@/lib/token-utils");
+        await clientRefreshToken();
+        console.debug("Token automatically refreshed");
+      } catch (error) {
+        console.error("Failed to auto-refresh token:", error);
+        // If refresh fails, user will be logged out on next API call
+      }
+    };
+
+    // Set up interval for periodic refresh
+    const intervalId = setInterval(refreshTokenPeriodically, REFRESH_INTERVAL);
+
+    // Also refresh immediately after 12 minutes from component mount
+    const timeoutId = setTimeout(refreshTokenPeriodically, REFRESH_INTERVAL);
+
+    // Cleanup on unmount or auth state change
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+    };
+  }, [authState.isAuthenticated, authState.isLoading]);
 
   /* ------------------------------------------------------
      FETCH PROFILE
@@ -143,11 +257,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (result?.success && result.profile) {
         // Get or create token placeholder (real auth is via httpOnly cookie)
         const token = getOrCreateToken();
+        const user = toAuthUser(result.profile);
 
-        setAuthPersistence(token, result.profile);
+        setAuthPersistence(token, user);
 
         setAuthState({
-          user: result.profile,
+          user,
           token,
           isAuthenticated: true,
           isLoading: false,
@@ -189,11 +304,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (result?.success && result.profile) {
         // Get or create token placeholder (real auth is via httpOnly cookie)
         const token = getOrCreateToken();
+        const user = toAuthUser(result.profile);
 
-        setAuthPersistence(token, result.profile);
+        setAuthPersistence(token, user);
 
         setAuthState({
-          user: result.profile,
+          user,
           token,
           isAuthenticated: true,
           isLoading: false,
@@ -231,12 +347,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(
     async (
       data: UpdateProfileData,
-      file?: File
+      file?: File,
     ): Promise<{ success: boolean; profile?: User }> => {
       try {
-        const { updateProfile: updateProfileAction } = await import(
-          "@/app/actions/update-profile"
-        );
+        const { updateProfile: updateProfileAction } =
+          await import("@/app/actions/update-profile");
 
         // Create FormData for the server action
         const formData = new FormData();
@@ -244,6 +359,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         formData.append("lastName", data.lastName);
         if (data.phone) {
           formData.append("phone", data.phone);
+        }
+        if (data.gender) {
+          formData.append("gender", data.gender);
         }
         if (data.dateOfBirth) {
           formData.append("dateOfBirth", data.dateOfBirth);
@@ -257,16 +375,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (result?.success && result.profile) {
           // Update auth state with new profile data
           const token = getOrCreateToken();
+          const user = toAuthUser(result.profile);
 
-          setAuthPersistence(token, result.profile);
+          setAuthPersistence(token, user);
           setAuthState((prev) => ({
             ...prev,
-            user: result.profile!,
+            user,
             token,
             isAuthenticated: true,
           }));
 
-          return { success: true, profile: result.profile };
+          return { success: true, profile: user };
         }
 
         throw new Error("Failed to update profile");
@@ -289,7 +408,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
     },
-    []
+    [],
   );
 
   /* ------------------------------------------------------
@@ -316,7 +435,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Don't throw - auth state is already cleared
       }
     },
-    []
+    [],
   );
 
   return (

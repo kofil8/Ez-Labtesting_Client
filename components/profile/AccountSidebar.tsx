@@ -1,10 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
+import {
+  Lock,
+  LogOut,
+  ReceiptText,
+  Shield,
+  ShoppingBag,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, Lock, ShoppingBag, LogOut } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
 
 interface SidebarItem {
   label: string;
@@ -23,14 +30,24 @@ export function AccountSidebar() {
       icon: <User className='w-4 h-4' />,
     },
     {
+      label: "Orders",
+      href: "/profile/orders",
+      icon: <ShoppingBag className='w-4 h-4' />,
+    },
+    {
+      label: "Transactions",
+      href: "/profile/transactions",
+      icon: <ReceiptText className='w-4 h-4' />,
+    },
+    {
       label: "Change Password",
       href: "/change-password",
       icon: <Lock className='w-4 h-4' />,
     },
     {
-      label: "Orders",
-      href: "/results",
-      icon: <ShoppingBag className='w-4 h-4' />,
+      label: "Security",
+      href: "/profile/security",
+      icon: <Shield className='w-4 h-4' />,
     },
   ];
 

@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import testsData from "@/data/tests.json";
 import { useToast } from "@/hook/use-toast";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatCurrency } from "@/lib/utils";
+import { Panel } from "@/types/panel";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -30,29 +30,8 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-interface Panel {
-  id: string;
-  name: string;
-  description: string;
-  testIds: string[];
-  originalPrice: number;
-  bundlePrice: number;
-  savings: number;
-}
-
-interface Test {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  price: number;
-  turnaroundDays: number;
-  sampleType: string;
-  preparation?: string;
-  labName?: string;
-}
 
 export function PanelDetail({ panel }: { panel: Panel }) {
   const [quantity, setQuantity] = useState(1);
@@ -60,36 +39,31 @@ export function PanelDetail({ panel }: { panel: Panel }) {
   const [activeTab, setActiveTab] = useState("overview");
   const addItem = useCartStore((state) => state.addItem);
   const { toast } = useToast();
+  const router = useRouter();
 
-  // Get tests included in the panel
-  const includedTests = (testsData as any[]).filter((test) =>
-    panel.testIds.includes(test.id)
-  ) as Test[];
+  // Calculate savings percentage from discount percent
+  const savingsAmount = panel.basePrice - panel.bundlePrice;
+  const savingsPercentage = panel.discountPercent;
 
-  const savingsPercentage = Math.round(
-    (panel.savings / panel.originalPrice) * 100
-  );
+  // Get tests from panel.tests array
+  const includedTests = panel.tests;
 
-  const totalTurnaround = Math.max(
-    ...includedTests.map((t) => t.turnaroundDays),
-    1
-  );
+  // Get max turnaround days (use a default if test data not available)
+  const totalTurnaround = 5; // Default value, would need test details for actual calculation
 
   const handleAddToCart = () => {
-    // Add all tests in the bundle
-    includedTests.forEach((test) => {
-      for (let i = 0; i < quantity; i++) {
-        addItem({
-          testId: test.id,
-          testName: test.name,
-          price: test.price,
-        });
-      }
+    addItem({
+      id: `panel-${panel.id}`,
+      itemType: "PANEL",
+      name: panel.name,
+      price: panel.bundlePrice,
+      panelId: panel.id,
+      testIds: includedTests.map((t) => t.id),
     });
 
     toast({
-      title: "Bundle added to cart",
-      description: `${panel.name} (${includedTests.length} tests) × ${quantity} has been added to your cart.`,
+      title: "Panel added to cart",
+      description: `${panel.name} has been added to your cart.`,
     });
   };
 
@@ -135,23 +109,37 @@ export function PanelDetail({ panel }: { panel: Panel }) {
         <div className='lg:col-span-2 space-y-6'>
           {/* Hero Card */}
           <Card className='border-2 overflow-hidden'>
-            <div className='h-64 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500 relative overflow-hidden'>
-              {/* Animated background */}
-              <div className='absolute inset-0 opacity-30'>
-                <svg className='w-full h-full' viewBox='0 0 400 300'>
-                  <defs>
-                    <pattern
-                      id='dots'
-                      width='30'
-                      height='30'
-                      patternUnits='userSpaceOnUse'
-                    >
-                      <circle cx='15' cy='15' r='2' fill='white' />
-                    </pattern>
-                  </defs>
-                  <rect width='400' height='300' fill='url(#dots)' />
-                </svg>
-              </div>
+            <div className='h-64 relative overflow-hidden'>
+              {panel.panelImage ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={panel.panelImage}
+                    alt={panel.name}
+                    className='absolute inset-0 w-full h-full object-cover'
+                  />
+                  <div className='absolute inset-0 bg-black/40' />
+                </>
+              ) : (
+                <>
+                  <div className='absolute inset-0 bg-gradient-to-br from-purple-500 via-blue-500 to-cyan-500' />
+                  <div className='absolute inset-0 opacity-30'>
+                    <svg className='w-full h-full' viewBox='0 0 400 300'>
+                      <defs>
+                        <pattern
+                          id='dots'
+                          width='30'
+                          height='30'
+                          patternUnits='userSpaceOnUse'
+                        >
+                          <circle cx='15' cy='15' r='2' fill='white' />
+                        </pattern>
+                      </defs>
+                      <rect width='400' height='300' fill='url(#dots)' />
+                    </svg>
+                  </div>
+                </>
+              )}
 
               {/* Content */}
               <div className='absolute inset-0 flex flex-col justify-end p-6'>
@@ -201,7 +189,7 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                     Savings
                   </div>
                   <div className='text-2xl font-bold text-green-600 dark:text-green-400'>
-                    {formatCurrency(panel.savings)}
+                    {formatCurrency(savingsAmount)}
                   </div>
                 </div>
                 <div className='p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800'>
@@ -269,10 +257,7 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                         </div>
                         <div className='flex items-center gap-2'>
                           <Clock className='h-4 w-4 text-blue-500' />
-                          <span>
-                            Fast results in {totalTurnaround} business day
-                            {totalTurnaround !== 1 ? "s" : ""}
-                          </span>
+                          <span>Fast results in 2-5 business day s</span>
                         </div>
                         <div className='flex items-center gap-2'>
                           <ShoppingCart className='h-4 w-4 text-purple-500' />
@@ -308,28 +293,18 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                               <div className='flex-1 min-w-0'>
                                 <div className='flex items-center gap-2 mb-1'>
                                   <h4 className='font-semibold group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-1'>
-                                    {test.name}
+                                    {test.testName}
                                   </h4>
                                   <Badge
                                     variant='outline'
                                     className='shrink-0 text-xs'
                                   >
-                                    {test.category}
+                                    {test.testCode}
                                   </Badge>
                                 </div>
                                 <p className='text-sm text-muted-foreground line-clamp-1'>
-                                  {test.description}
+                                  Included in this panel
                                 </p>
-                                <div className='flex items-center gap-4 mt-2 text-xs text-muted-foreground'>
-                                  <span className='flex items-center gap-1'>
-                                    <Clock className='h-3 w-3' />
-                                    {test.turnaroundDays}d
-                                  </span>
-                                  <span className='flex items-center gap-1'>
-                                    <Beaker className='h-3 w-3' />
-                                    {test.sampleType}
-                                  </span>
-                                </div>
                               </div>
                               <div className='text-right shrink-0'>
                                 <div className='font-semibold'>
@@ -373,8 +348,8 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                         {
                           title: "Maximum Savings",
                           description: `Save ${formatCurrency(
-                            panel.savings
-                          )} ({savingsPercentage}%) compared to individual test pricing`,
+                            savingsAmount,
+                          )} (${savingsPercentage}%) compared to individual test pricing`,
                           icon: "💰",
                         },
                         {
@@ -386,7 +361,7 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                         {
                           title: "Fast Results",
                           description: `Get results in as little as ${totalTurnaround} business day${
-                            totalTurnaround !== 1 ? "s" : ""
+                            Number(totalTurnaround) !== 1 ? "s" : ""
                           }`,
                           icon: "⚡",
                         },
@@ -446,7 +421,7 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                 </CardTitle>
                 <CardDescription>
                   <span className='line-through text-muted-foreground'>
-                    {formatCurrency(panel.originalPrice)}
+                    {formatCurrency(panel.basePrice)}
                   </span>
                 </CardDescription>
               </CardHeader>
@@ -495,6 +470,16 @@ export function PanelDetail({ panel }: { panel: Panel }) {
                   Add to Cart
                 </Button>
 
+                <Button
+                  onClick={() => router.push("/cart")}
+                  variant='outline'
+                  className='w-full text-base font-semibold'
+                  size='lg'
+                >
+                  <ArrowRight className='h-5 w-5 mr-2' />
+                  Go to Cart
+                </Button>
+
                 <div className='flex gap-2'>
                   <Button
                     onClick={() => setIsFavorite(!isFavorite)}
@@ -525,35 +510,36 @@ export function PanelDetail({ panel }: { panel: Panel }) {
               </CardHeader>
               <CardContent className='space-y-3 text-sm'>
                 <div>
-                  <div className='font-semibold mb-1'>Sample Types</div>
+                  <div className='font-semibold mb-1'>Included Tests</div>
                   <div className='flex flex-wrap gap-2'>
-                    {Array.from(
-                      new Set(includedTests.map((t) => t.sampleType))
-                    ).map((type) => (
-                      <Badge key={type} variant='secondary' className='text-xs'>
-                        {type}
+                    {includedTests.slice(0, 5).map((t) => (
+                      <Badge key={t.id} variant='secondary' className='text-xs'>
+                        {t.testCode}
                       </Badge>
                     ))}
+                    {includedTests.length > 5 && (
+                      <Badge variant='secondary' className='text-xs'>
+                        +{includedTests.length - 5} more
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <Separator />
                 <div>
-                  <div className='font-semibold mb-2'>Preparation Required</div>
+                  <div className='font-semibold mb-2'>Quick Facts</div>
                   <ul className='space-y-1.5 text-muted-foreground'>
-                    {Array.from(
-                      new Set(
-                        includedTests.map(
-                          (t) => t.preparation || "No preparation required"
-                        )
-                      )
-                    )
-                      .slice(0, 3)
-                      .map((prep, index) => (
-                        <li key={index} className='flex items-start gap-2'>
-                          <span className='mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0' />
-                          <span className='text-xs'>{prep}</span>
-                        </li>
-                      ))}
+                    <li className='flex items-start gap-2'>
+                      <span className='mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0' />
+                      <span className='text-xs'>
+                        Fast and convenient collection
+                      </span>
+                    </li>
+                    <li className='flex items-start gap-2'>
+                      <span className='mt-1 h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0' />
+                      <span className='text-xs'>
+                        Results typically within 2-5 business days
+                      </span>
+                    </li>
                   </ul>
                 </div>
               </CardContent>
