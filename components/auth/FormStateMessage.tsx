@@ -1,47 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { X } from "lucide-react";
-
-type FormStateMessageProps = {
-  type?: "error" | "success";
-  message: string;
-  details?: string;
-  onDismiss?: () => void;
-};
-
-export function FormStateMessage({
-  type = "error",
-  message,
-  details,
-  onDismiss,
-}: FormStateMessageProps) {
-  const isError = type === "error";
-
-  return (
-    <div
-      role={isError ? "alert" : "status"}
-      className={[
-        "relative rounded-2xl border p-4 pr-12 text-sm",
-        isError
-          ? "border-red-200 bg-red-50 text-red-800"
-          : "border-emerald-200 bg-emerald-50 text-emerald-800",
-      ].join(" ")}
-    >
-      <p className='font-semibold'>{message}</p>
-      {details ? <p className='mt-1 opacity-90'>{details}</p> : null}
-      {onDismiss ? (
-        <button
-          type='button'
-          onClick={onDismiss}
-          className='absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-md text-current hover:bg-black/5'
-          aria-label='Dismiss message'
-        >
-          <X className='h-4 w-4' />
-        </button>
-      ) : null}
-=======
-=======
->>>>>>> 79f18b8adbed41541c366ef4077ec9a710540515
 "use client";
 
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
@@ -56,15 +12,6 @@ interface FormStateMessageProps {
   showIcon?: boolean;
 }
 
-/**
- * FormStateMessage - Animated form feedback component
- * Features:
- * - Slide-in animation from top
- * - Auto-dismiss after configurable delay
- * - Accessible with proper ARIA attributes
- * - Respects prefers-reduced-motion
- * - Medical-appropriate styling
- */
 export function FormStateMessage({
   type,
   message,
@@ -123,7 +70,7 @@ export function FormStateMessage({
     error: "alert",
     success: "status",
     info: "status",
-  };
+  } as const;
 
   return (
     <div
@@ -140,28 +87,24 @@ export function FormStateMessage({
           aria-hidden='true'
         />
       )}
-      <div className='flex-1 min-w-0'>
+      <div className='min-w-0 flex-1'>
         <p
-          className={`font-semibold text-sm ${type === "success" ? "break-words" : ""}`}
+          className={`text-sm font-semibold ${type === "success" ? "break-words" : ""}`}
         >
           {message}
         </p>
-        {details && <p className='text-sm mt-1 opacity-90'>{details}</p>}
+        {details ? <p className='mt-1 text-sm opacity-90'>{details}</p> : null}
       </div>
-      {type !== "success" && (
+      {type !== "success" ? (
         <button
           onClick={handleDismiss}
-          className='flex-shrink-0 p-1 rounded-lg hover:bg-current hover:bg-opacity-10 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
+          className='flex-shrink-0 rounded-lg p-1 transition-colors hover:bg-current hover:bg-opacity-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
           aria-label='Dismiss message'
           type='button'
         >
           <X className='h-4 w-4' />
         </button>
-      )}
-<<<<<<< HEAD
->>>>>>> 79f18b8adbed41541c366ef4077ec9a710540515
-=======
->>>>>>> 79f18b8adbed41541c366ef4077ec9a710540515
+      ) : null}
     </div>
   );
 }
