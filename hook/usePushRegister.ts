@@ -42,12 +42,15 @@ export function usePushRegister(userId?: string, accessToken?: string) {
           headers.Authorization = `Bearer ${accessToken}`;
         }
 
-        const response = await fetch(`${getApiBaseUrl()}/notifications/register`, {
-          method: "POST",
-          headers,
-          credentials: "include",
-          body: JSON.stringify({ token, platform: "web" }),
-        });
+        const response = await fetch(
+          `${getApiBaseUrl()}/notifications/register`,
+          {
+            method: "POST",
+            headers,
+            credentials: "include",
+            body: JSON.stringify({ token, platform: "web" }),
+          },
+        );
 
         if (!response.ok) {
           throw new Error(`Push token registration failed: ${response.status}`);
