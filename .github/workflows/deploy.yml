@@ -32,7 +32,10 @@ jobs:
             cd "${{ secrets.APP_DIR }}" || { echo "APP_DIR not found"; exit 1; }
 
             git fetch origin "${{ secrets.BRANCH }}"
-            git checkout -B "${{ secrets.BRANCH }}" "origin/${{ secrets.BRANCH }}"
+            git reset --hard "origin/${{ secrets.BRANCH }}"
+            git clean -fd -e .env.production -e ecosystem.config.js
+
+            rm -rf .next
 
             export NODE_ENV=production
 
