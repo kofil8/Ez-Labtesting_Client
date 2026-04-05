@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { X } from "lucide-react";
 
 type FormStateMessageProps = {
@@ -39,6 +40,8 @@ export function FormStateMessage({
         </button>
       ) : null}
 =======
+=======
+>>>>>>> 79f18b8adbed41541c366ef4077ec9a710540515
 "use client";
 
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
@@ -155,6 +158,9 @@ export function FormStateMessage({
           <X className='h-4 w-4' />
         </button>
       )}
+<<<<<<< HEAD
+>>>>>>> 79f18b8adbed41541c366ef4077ec9a710540515
+=======
 >>>>>>> 79f18b8adbed41541c366ef4077ec9a710540515
     </div>
   );

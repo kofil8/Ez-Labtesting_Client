@@ -21,6 +21,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function ProfileForm() {
   const { toast } = useToast();
@@ -43,6 +50,7 @@ export function ProfileForm() {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<ProfileUpdateFormData>({
     resolver: zodResolver(profileUpdateSchema),
   });
@@ -101,6 +109,7 @@ export function ProfileForm() {
         lastName: user.lastName || "",
         email: user.email || "",
         phone: user.phone || user.phoneNumber || "",
+        gender: user.gender,
         dateOfBirth: user.dateOfBirth || "",
       });
       // Note: profileImage URL would come from user object if backend returns it
@@ -159,6 +168,7 @@ export function ProfileForm() {
           firstName: data.firstName,
           lastName: data.lastName,
           phone: data.phone || undefined,
+          gender: data.gender || undefined,
           dateOfBirth: data.dateOfBirth || undefined,
         },
         selectedFile || undefined
@@ -345,6 +355,38 @@ export function ProfileForm() {
               </p>
             </div>
 
+            <div>
+              <Label htmlFor='gender' className='text-sm sm:text-base'>
+                Gender
+              </Label>
+              <Select
+                onValueChange={(value) =>
+                  setValue("gender", value as any, { shouldValidate: true })
+                }
+                defaultValue={user?.gender}
+              >
+                <SelectTrigger className='h-10 text-sm sm:text-base'>
+                  <SelectValue placeholder='Select gender (optional)' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='MALE'>Male</SelectItem>
+                  <SelectItem value='FEMALE'>Female</SelectItem>
+                  <SelectItem value='NON_BINARY'>Non-binary</SelectItem>
+                  <SelectItem value='PREFER_NOT_TO_SAY'>
+                    Prefer not to say
+                  </SelectItem>
+                  <SelectItem value='OTHER'>Other</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.gender && (
+                <p className='text-xs sm:text-sm text-destructive mt-1'>
+                  {errors.gender.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
             <div>
               <Label htmlFor='dateOfBirth' className='text-sm sm:text-base'>
                 Date of birth

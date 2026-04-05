@@ -1,9 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Performance optimizations
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+  typedRoutes: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: 10 * 1024 * 1024,
+    },
+  },
   compress: true,
-  reactStrictMode: true,
+  reactStrictMode: false, // Disabled to reduce duplicate renders in development
   poweredByHeader: false,
 
   // Optimize production builds
@@ -25,7 +31,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.pexels.com",
+        hostname: "ez-labtesting-bucket.s3.us-west-1.amazonaws.com",
         port: "",
         pathname: "/**",
       },
@@ -34,11 +40,11 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    qualities: [50, 60, 70, 75, 80, 85, 90, 95, 100],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    unoptimized: process.env.NODE_ENV === "development",
   },
   // Ensure static files are properly served with correct headers
   async headers() {
@@ -68,6 +74,15 @@ const nextConfig: NextConfig = {
             value: "bytes",
           },
         ],
+      },
+    ];
+  },
+  // Proxy API requests to backend server
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: `${process.env.API_BASE_URL || "http://localhost:7001/api/v1"}/:path*`,
       },
     ];
   },

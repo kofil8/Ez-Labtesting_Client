@@ -4,121 +4,235 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hook/use-toast";
+import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/store/cart-store";
+import { formatTurnaroundDisplay } from "@/lib/test-utils";
 import { formatCurrency } from "@/lib/utils";
 import { Test } from "@/types/test";
-import { Beaker, Clock, ShoppingCart } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Beaker,
+  Clock,
+  ShieldCheck,
+  ShoppingCart,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface TestCardProps {
   test: Test;
+  variant?: "compact" | "detailed" | "animated";
+  index?: number;
+  onCheckout?: () => void;
 }
 
-export function TestCard({ test }: TestCardProps) {
-  const addItem = useCartStore((state) => state.addItem);
+export function TestCard({
+  test,
+  variant = "compact",
+  index = 0,
+  onCheckout,
+}: TestCardProps) {
+  const addToCart = useCartStore((state) => state.addItem);
   const { toast } = useToast();
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addItem({
-      testId: test.id,
-      testName: test.name,
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please login to book a test.",
+        variant: "destructive",
+      });
+      router.push(`/login?from=/tests`);
+      return;
+    }
+
+    addToCart({
+      id: `test-${test.id}`,
+      itemType: "TEST",
+      name: test.testName,
       price: test.price,
+      testId: test.id,
     });
+
     toast({
-      title: "Added to cart",
-      description: `${test.name} has been added to your cart.`,
+      title: "✅ Test added to cart!",
+      description: `${test.testName} has been added to your cart.`,
     });
+
+    if (onCheckout) {
+      onCheckout();
+    }
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      hormone:
-        "bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400 border-purple-300 dark:border-purple-800/50",
-      std: "bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400 border-rose-300 dark:border-rose-800/50",
-      general:
-        "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-cyan-300 dark:border-cyan-800/50",
-      nutrition:
-        "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/50",
-      thyroid:
-        "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400 border-indigo-300 dark:border-indigo-800/50",
-      cardiac:
-        "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border-red-300 dark:border-red-800/50",
-      metabolic:
-        "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border-amber-300 dark:border-amber-800/50",
-    };
-    return colors[category] || colors.general;
+  const getCategoryColor = () => {
+    return "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-cyan-300 dark:border-cyan-800/50";
   };
 
-  return (
-    <Link href={`/tests/${test.id}`}>
-      <Card className='h-full group hover:shadow-xl hover:shadow-blue-100/40 dark:hover:shadow-cyan-900/30 transition-all duration-200 cursor-pointer flex flex-col overflow-hidden hover:-translate-y-1 gpu-accelerated'>
-        {/* Image */}
-        {test.image && (
-          <div className='relative w-full h-48 bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 dark:from-cyan-950/30 dark:via-blue-950/30 dark:to-teal-950/30 overflow-hidden'>
-            <Image
-              src={test.image}
-              alt={test.name}
-              fill
-              className='object-cover group-hover:scale-110 transition-transform duration-300 gpu-accelerated'
-            />
-          </div>
+  const getCategoryName = () => {
+    if (typeof test.category === "string") {
+      return test.category.charAt(0).toUpperCase() + test.category.slice(1);
+    }
+    return test.category?.name || "General";
+  };
+
+  const isPopular =
+    test.price < 150 || test.testName.toLowerCase().includes("panel");
+  const isFastTrack = Math.ceil(test.turnaround / 24) <= 2;
+  const retailPrice = test.price * 1.67;
+
+  const cardContent = (
+    <Card
+      className={`h-full flex flex-col overflow-hidden border transition-all duration-300 ${
+        variant === "animated"
+          ? "group hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 relative"
+          : "group hover:shadow-lg hover:border-primary/30"
+      } border-slate-100 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900`}
+    >
+      {/* Top Accent Line */}
+      {variant === "animated" && (
+        <div className='absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-blue-400 to-secondary opacity-80' />
+      )}
+
+      {/* Image Section */}
+      {test.testImage && (
+        <div className='relative w-full h-40 bg-slate-100 dark:bg-slate-800 overflow-hidden'>
+          <Image
+            src={test.testImage}
+            alt={test.testName}
+            fill
+            sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+            className={`object-cover ${
+              variant === "animated"
+                ? "group-hover:scale-110 transition-transform duration-700"
+                : "transition-transform duration-500"
+            }`}
+          />
+          {/* Badges - Compact only */}
+          {variant === "compact" && (
+            <>
+              {isPopular && (
+                <div className='absolute top-3 left-3 z-10'>
+                  <Badge className='bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold shadow-lg border-0 px-3 py-1'>
+                    <TrendingUp className='h-3 w-3 mr-1' />
+                    Popular
+                  </Badge>
+                </div>
+              )}
+              {isFastTrack && (
+                <div className='absolute top-3 right-3 z-10'>
+                  <Badge className='bg-primary text-white font-bold shadow-lg border-0 px-3 py-1'>
+                    <Zap className='h-3 w-3 mr-1' />
+                    24-48hr
+                  </Badge>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      <CardContent className='p-5 flex flex-col flex-1'>
+        {/* Category & Certification */}
+        <div className='mb-3 flex items-center gap-2 flex-wrap'>
+          <Badge
+            variant='outline'
+            className={`text-[10px] font-bold uppercase tracking-wider border ${getCategoryColor()}`}
+          >
+            {getCategoryName()}
+          </Badge>
+          {variant !== "detailed" && (
+            <Badge
+              variant='outline'
+              className='text-[10px] font-bold uppercase tracking-wider border bg-emerald-500/5 text-emerald-600 border-emerald-200 dark:border-emerald-800'
+            >
+              <ShieldCheck className='h-3 w-3 mr-1' />
+              CLIA
+            </Badge>
+          )}
+        </div>
+
+        {/* Title */}
+        <h3 className='font-bold text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors mb-2 text-slate-900 dark:text-white'>
+          {test.testName}
+        </h3>
+
+        {/* Description */}
+        {variant === "animated" && (
+          <p className='text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 flex-1 italic leading-relaxed'>
+            &quot;{test.description}&quot;
+          </p>
         )}
 
-        <CardContent className='p-5 flex flex-col flex-1'>
-          {/* Header */}
-          <div className='flex items-start justify-between gap-3 mb-3'>
-            <div className='flex-1 min-w-0'>
+        {/* Pricing */}
+        <div className='mb-3 flex items-baseline gap-2'>
+          <div className='text-2xl font-bold text-slate-900 dark:text-white'>
+            {formatCurrency(test.price)}
+          </div>
+          {variant === "compact" && (
+            <>
+              <div className='text-xs text-slate-400 line-through font-medium'>
+                {formatCurrency(retailPrice)}
+              </div>
               <Badge
                 variant='outline'
-                className={`text-xs font-semibold mb-2 border-2 ${getCategoryColor(
-                  test.category
-                )}`}
+                className='text-[9px] bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-800 font-bold ml-auto'
               >
-                {test.category.charAt(0).toUpperCase() + test.category.slice(1)}
+                Save{" "}
+                {Math.round(((retailPrice - test.price) / retailPrice) * 100)}%
               </Badge>
-              <h3 className='font-bold text-base leading-snug line-clamp-2 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors'>
-                {test.name}
-              </h3>
-            </div>
-            <div className='text-right shrink-0'>
-              <div className='text-lg font-bold text-cyan-600 dark:text-cyan-400'>
-                {formatCurrency(test.price)}
-              </div>
-            </div>
+            </>
+          )}
+        </div>
+
+        {/* Features */}
+        <div className='grid grid-cols-2 gap-2 mb-4 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl'>
+          <div className='flex items-center gap-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-400'>
+            <Clock className='h-3.5 w-3.5 text-primary' />
+            <span>
+              {formatTurnaroundDisplay(test.turnaround, { style: "compact" })}
+            </span>
           </div>
-
-          {/* Description */}
-          <p className='text-sm text-muted-foreground line-clamp-2 mb-4 flex-1'>
-            {test.description}
-          </p>
-
-          {/* Details */}
-          <div className='flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-4'>
-            <div className='flex items-center gap-1.5'>
-              <Clock className='h-3.5 w-3.5' />
-              <span>{test.turnaroundDays}d</span>
-            </div>
-            <div className='flex items-center gap-1.5'>
-              <Beaker className='h-3.5 w-3.5' />
-              <span className='truncate max-w-[100px]'>{test.sampleType}</span>
-            </div>
+          <div className='flex items-center gap-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-400'>
+            <Beaker className='h-3.5 w-3.5 text-secondary' />
+            <span className='truncate'>{test.specimenType}</span>
           </div>
+        </div>
 
-          {/* Footer */}
-          <Button
-            onClick={handleAddToCart}
-            className='w-full mt-auto'
-            size='sm'
-            variant='default'
-          >
-            <ShoppingCart className='h-3.5 w-3.5 mr-2' />
-            Add to Cart
-          </Button>
-        </CardContent>
-      </Card>
-    </Link>
+        {/* CTA Button */}
+        <Button
+          onClick={handleAddToCart}
+          className='w-full bg-primary hover:bg-blue-600 text-white font-bold rounded-full h-10 shadow-lg shadow-blue-500/10 transition-all active:scale-95 text-sm'
+        >
+          <ShoppingCart className='h-4 w-4 mr-1.5' />
+          Add to Cart
+        </Button>
+      </CardContent>
+    </Card>
   );
+
+  // Wrap with motion div for animated variant
+  if (variant === "animated") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        className='h-full'
+      >
+        {cardContent}
+      </motion.div>
+    );
+  }
+
+  return <Link href={`/tests/${test.id}`}>{cardContent}</Link>;
 }
