@@ -1,9 +1,6 @@
 "use client";
 
 import { registerUser } from "@/app/actions/register-user";
-import { FormStateMessage } from "@/components/auth/FormStateMessage";
-import { FieldError } from "@/components/shared/FieldError";
-import { PasswordInput } from "@/components/shared/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +27,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
+import { FieldError } from "../../shared/FieldError";
+import { PasswordInput } from "../../shared/PasswordInput";
+import { FormStateMessage } from "../FormStateMessage";
 
 function getPasswordStrength(password: string) {
   if (!password) return { score: 0, label: "" };
@@ -86,7 +86,7 @@ export function RegisterAccountForm() {
       formData.append("lastName", data.lastName.trim());
       formData.append("email", data.email.trim());
       formData.append("password", data.password);
-      formData.append("phoneNumber", data.phone.replace(/\D/g, ""));
+      formData.append("phoneNumber", (data.phone ?? "").replace(/\D/g, ""));
       if (data.dateOfBirth?.trim()) {
         formData.append("dateOfBirth", data.dateOfBirth.trim());
       }
@@ -218,7 +218,10 @@ export function RegisterAccountForm() {
                   {...register("lastName")}
                 />
               </div>
-              <FieldError error={errors.lastName?.message} id='lastName-error' />
+              <FieldError
+                error={errors.lastName?.message}
+                id='lastName-error'
+              />
             </div>
 
             <div className='space-y-1.5'>
@@ -342,7 +345,10 @@ export function RegisterAccountForm() {
                   {...register("dateOfBirth")}
                 />
               </div>
-              <FieldError error={errors.dateOfBirth?.message} id='dateOfBirth-error' />
+              <FieldError
+                error={errors.dateOfBirth?.message}
+                id='dateOfBirth-error'
+              />
             </div>
 
             <div className='hidden sm:block' />
@@ -445,7 +451,7 @@ export function RegisterAccountForm() {
                 personal information.
               </p>
               <p className='text-sm text-slate-600'>
-                Already have an account?{' '}
+                Already have an account?{" "}
                 <Link
                   href='/login'
                   className='font-semibold text-blue-700 hover:text-blue-800'
@@ -460,7 +466,7 @@ export function RegisterAccountForm() {
               disabled={isSubmitting}
               className='h-12 min-w-[180px] rounded-xl bg-slate-950 px-6 text-white hover:bg-slate-900'
             >
-              {isSubmitting ? 'Creating account...' : 'Create account'}
+              {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </div>
         </section>
