@@ -48,6 +48,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type {
+  Formatter,
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 // Color palette for charts
 const CHART_COLORS = {
@@ -67,6 +72,36 @@ const PIE_COLORS = [
   "#ef4444",
   "#06b6d4",
 ];
+
+const formatCurrencyValue = (value: ValueType | undefined) => {
+  const numericValue = Array.isArray(value)
+    ? Number(value[0] ?? 0)
+    : Number(value ?? 0);
+
+  return `$${numericValue.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
+
+const revenueTooltipFormatter: Formatter<ValueType, NameType> = (value) => [
+  formatCurrencyValue(value),
+  "Revenue",
+];
+
+const topSellingTooltipFormatter: Formatter<ValueType, NameType> = (
+  value,
+  name,
+) => {
+  const numericValue = Array.isArray(value)
+    ? Number(value[0] ?? 0)
+    : Number(value ?? 0);
+
+  if (name === "count") return [numericValue, "Orders"];
+  if (name === "revenue") return [formatCurrencyValue(value), "Revenue"];
+
+  return numericValue;
+};
 
 export function AdminDashboard() {
   // Use useMemo to calculate stats from imported data
@@ -262,7 +297,7 @@ export function AdminDashboard() {
                 <XAxis
                   dataKey='month'
                   className='text-xs'
-                  tickFormatter={(value) => {
+                  tickFormatter={(value: string) => {
                     const [year, month] = value.split("-");
                     return new Date(
                       parseInt(year),
@@ -278,10 +313,7 @@ export function AdminDashboard() {
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                   }}
-                  formatter={(value: number | undefined) => [
-                    `$${(value || 0).toLocaleString()}`,
-                    "Revenue",
-                  ]}
+                  formatter={revenueTooltipFormatter}
                 />
                 <Area
                   type='monotone'
@@ -374,13 +406,7 @@ export function AdminDashboard() {
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                   }}
-                  formatter={(value: number | undefined, name?: string) => {
-                    const val = value || 0;
-                    if (name === "count") return [val, "Orders"];
-                    if (name === "revenue")
-                      return [`$${val.toFixed(2)}`, "Revenue"];
-                    return val;
-                  }}
+                  formatter={topSellingTooltipFormatter}
                 />
                 <Legend />
                 <Bar
@@ -418,13 +444,7 @@ export function AdminDashboard() {
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                   }}
-                  formatter={(value: number | undefined) => [
-                    `$${(value || 0).toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}`,
-                    "Revenue",
-                  ]}
+                  formatter={revenueTooltipFormatter}
                 />
                 <Bar
                   dataKey='revenue'
