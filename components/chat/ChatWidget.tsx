@@ -88,7 +88,7 @@ export function ChatWidget() {
       { role: "system", content: systemPrompt },
       ...messages.map((m) => ({ role: m.role, content: m.content })),
     ],
-    [messages]
+    [messages],
   );
 
   useEffect(() => {
@@ -118,7 +118,7 @@ export function ChatWidget() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsSending(true);
-    
+
     // API integration removed
     setTimeout(() => {
       setMessages((prev) => [
@@ -141,14 +141,14 @@ export function ChatWidget() {
   };
 
   return (
-    <div className='fixed bottom-6 right-6 z-50'>
+    <div className='fixed bottom-4 right-4 xs:bottom-5 xs:right-5 sm:bottom-6 sm:right-6 z-50'>
       {/* Toggle Button */}
       <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
         <Button
           size='lg'
           onClick={() => setIsOpen((v) => !v)}
           className={cn(
-            "h-14 w-14 rounded-full shadow-2xl bg-gradient-to-br from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700"
+            "h-12 w-12 xs:h-14 xs:w-14 rounded-full shadow-2xl bg-gradient-to-br from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700",
           )}
           aria-label={isOpen ? "Close chat" : "Open chat"}
         >
@@ -166,7 +166,7 @@ export function ChatWidget() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className='absolute bottom-20 right-0 w-[320px] sm:w-[380px]'
+          className='absolute bottom-16 xs:bottom-20 right-0 w-[calc(100vw-2rem)] max-w-[320px] xs:max-w-[340px] sm:w-[380px] sm:max-w-none'
         >
           <Card className='shadow-2xl border-primary/20'>
             <CardHeader className='px-4 py-3 border-b bg-kalles-card-strong'>
@@ -201,7 +201,7 @@ export function ChatWidget() {
                         "max-w-[85%] rounded-2xl px-3 py-2 text-sm",
                         m.role === "user"
                           ? "ml-auto bg-primary text-primary-foreground"
-                          : "mr-auto bg-muted"
+                          : "mr-auto bg-muted",
                       )}
                     >
                       {m.content}

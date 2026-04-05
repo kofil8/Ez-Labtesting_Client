@@ -27,7 +27,10 @@ export async function changePassword(formData: FormData) {
 
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.message || "Failed to change password");
+      throw new Error(
+        error.message ||
+          "Unable to change your password. Please check your current password and try again."
+      );
     }
 
     return { success: true };

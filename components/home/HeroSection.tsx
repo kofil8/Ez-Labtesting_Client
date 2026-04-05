@@ -1,516 +1,373 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { AnimatePresence, motion } from "framer-motion";
+import { publicFetch } from "@/lib/api-client";
+import type { Test } from "@/types/test";
+import { motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
-  Award,
-  ChevronLeft,
-  ChevronRight,
-  Shield,
-  Sparkles,
+  CheckCircle2,
+  Clock,
+  Lock,
+  Search,
   Zap,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-// Lab test carousel images - local images from public folder
-const MEDICAL_CAROUSEL_SLIDES = [
+const trustPoints = [
+  { icon: CheckCircle2, text: "CLIA-certified partner labs" },
+  { icon: Lock, text: "HIPAA-compliant data protection" },
+  { icon: CheckCircle2, text: "Physician-reviewed reports" },
+];
+
+const popularSearches = [
+  "CBC",
+  "Thyroid Panel",
+  "Lipid Panel",
+  "STD Screen",
+  "Vitamin D",
+  "A1C",
+];
+
+const metrics = [
   {
-    id: 1,
-    url: "/images/Pipetting.jpeg",
-    alt: "Lab technician pipetting samples for diagnostic testing",
-    title: "Pipetting Diagnostic Samples",
+    label: "Fast Results",
+    value: "24-72h",
+    icon: Clock,
+    subtitle: "Average turnaround",
   },
   {
-    id: 2,
-    url: "/images/Blood-Vial.webp",
-    alt: "Blood vials organized for laboratory analysis",
-    title: "Blood Vial Processing",
+    label: "Lab Network",
+    value: "2,000+",
+    icon: Zap,
+    subtitle: "Locations nationwide",
   },
   {
-    id: 3,
-    url: "/images/Manual-testing.webp",
-    alt: "Automated analyzer running clinical chemistry tests",
-    title: "Automated Analyzer",
-  },
-  {
-    id: 4,
-    url: "/images/analyzing.webp",
-    alt: "Scientist using microscope for lab diagnostics",
-    title: "Microscope Diagnostics",
-  },
-  {
-    id: 5,
-    url: "/images/consulting.jpeg",
-    alt: "Sample racks prepared for clinical lab testing",
-    title: "Sample Rack Prep",
-  },
-  {
-    id: 6,
-    url: "/images/collect-blood.webp",
-    alt: "Technician loading samples into automated lab equipment",
-    title: "Loading Automated Equipment",
+    label: "Secure",
+    value: "HIPAA",
+    icon: Lock,
+    subtitle: "Enterprise encryption",
   },
 ];
 
 export function HeroSection() {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [shuffledSlides, setShuffledSlides] = useState(MEDICAL_CAROUSEL_SLIDES);
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Initialize shuffled slides and hydration state on mount
-  useEffect(() => {
-    const slides = [...MEDICAL_CAROUSEL_SLIDES];
-    const start = Math.floor(Math.random() * slides.length);
-    setShuffledSlides(slides.slice(start).concat(slides.slice(0, start)));
-    setIsHydrated(true);
-  }, []);
-
-  // Check for reduced motion preference
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    const handleMediaChange = (e: MediaQueryListEvent) => {
-      setPrefersReducedMotion(e.matches);
-    };
-
-    mediaQuery.addEventListener("change", handleMediaChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleMediaChange);
-    };
-  }, []);
-
-  // Carousel auto-play logic
-  useEffect(() => {
-    if (!isAutoPlaying || prefersReducedMotion) return;
-
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) =>
-        prev === shuffledSlides.length - 1 ? 0 : prev + 1
-      );
-    }, 5500); // Change image every 5.5 seconds (2.5s transition + 3s display)
-
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, prefersReducedMotion, shuffledSlides.length]);
-
-  const goToNextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === shuffledSlides.length - 1 ? 0 : prev + 1
-    );
-    setIsAutoPlaying(false);
-    // Resume autoplay after 10 seconds of inactivity
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.2,
+      },
+    },
   };
 
-  const goToPreviousImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? shuffledSlides.length - 1 : prev - 1
-    );
-    setIsAutoPlaying(false);
-    // Resume autoplay after 10 seconds of inactivity
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+    },
   };
 
-  const goToImage = (index: number) => {
-    setCurrentImageIndex(index);
-    setIsAutoPlaying(false);
-    // Resume autoplay after 10 seconds of inactivity
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+  const router = useRouter();
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dropdownItems, setDropdownItems] = useState<Test[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        searchWrapperRef.current &&
+        !searchWrapperRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (val.trim().length < 2) {
+      setDropdownOpen(false);
+      setDropdownItems([]);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await publicFetch(
+          `/api/v1/tests/all?searchTerm=${encodeURIComponent(val.trim())}&limit=8&isActive=true`,
+        );
+        if (res.ok) {
+          const json = await res.json();
+          setDropdownItems(json.data || []);
+          setDropdownOpen(true);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+  };
+
+  const handleSearchSubmit = () => {
+    setDropdownOpen(false);
+    if (searchTerm.trim()) {
+      router.push(`/tests?searchTerm=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearchSubmit();
+    }
+    if (e.key === "Escape") setDropdownOpen(false);
+  };
+
+  const handleDropdownClick = (test: Test) => {
+    setDropdownOpen(false);
+    setSearchTerm(test.testName);
+    router.push(`/tests/${test.id}`);
   };
 
   return (
-    <section
-      data-hero-section
-      className='relative overflow-hidden bg-kalles-card awsmd-section'
-    >
-      {/* Kalles-style background with subtle patterns */}
-      <div className='absolute inset-0 bg-kalles-pattern opacity-10 z-0' />
-      <div className='absolute inset-0 bg-kalles-dots opacity-8 z-0' />
-
-      {/* Subtle animated gradient accents - Optimized */}
-      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute -top-40 -right-40 w-[500px] h-[500px] awsmd-gradient-purple-pink rounded-full blur-3xl opacity-20 animate-blob gpu-accelerated' />
-        <div className='absolute -bottom-40 -left-40 w-[600px] h-[600px] awsmd-gradient-blue-purple rounded-full blur-3xl opacity-15 animate-blob animation-delay-2000 gpu-accelerated' />
+    <section className='relative overflow-hidden pt-8 sm:pt-12 lg:pt-16 pb-6 sm:pb-10 lg:pb-16 bg-gradient-to-b from-slate-50 via-white to-blue-50/30'>
+      {/* Decorative background elements */}
+      <div className='absolute inset-0 -z-10 overflow-hidden'>
+        <div className='absolute top-0 right-1/4 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20'></div>
+        <div className='absolute bottom-0 left-1/3 w-80 h-80 bg-cyan-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20'></div>
       </div>
 
-      {/* Medical Image Carousel - Main Background */}
-      <div className='absolute inset-0 w-full h-full overflow-hidden z-0'>
-        <AnimatePresence mode='popLayout'>
-          {/* Current Image */}
+      <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
+        <div className='grid items-center gap-10 lg:grid-cols-[1fr_1.05fr]'>
+          {/* Left Content */}
           <motion.div
-            key={`img-${currentImageIndex}`}
-            initial={{ opacity: 1, filter: "blur(0px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            exit={{
-              opacity: 0,
-              filter: "blur(30px)",
-              scale: 0.9,
-            }}
-            transition={{
-              duration: prefersReducedMotion ? 0 : 2.5,
-              ease: "easeInOut",
-            }}
-            className='absolute inset-0 w-full h-full'
+            variants={containerVariants}
+            initial='hidden'
+            animate='visible'
+            className='space-y-6'
           >
-            <Image
-              src={shuffledSlides[currentImageIndex].url}
-              alt={shuffledSlides[currentImageIndex].alt}
-              fill
-              className='object-cover'
-              priority={currentImageIndex === 0}
-              sizes='100vw'
-              quality={85}
-            />
-            {/* Dark overlay for text readability */}
-            <div className='absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60' />
-          </motion.div>
-
-          {/* Advanced Shatter Glass Effect with Image Pieces */}
-          <motion.div
-            key={`shatter-${currentImageIndex}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 1 }}
-            transition={{
-              duration: prefersReducedMotion ? 0 : 2.5,
-              ease: "easeInOut",
-            }}
-            className='absolute inset-0 w-full h-full overflow-hidden'
-            style={{ pointerEvents: "none" }}
-          >
-            {/* Grid of shatter pieces with image background */}
-            {Array.from({ length: 24 }).map((_, i) => {
-              const row = Math.floor(i / 6);
-              const col = i % 6;
-              const randomRotation = Math.random() * 360;
-              const randomDelay = i * 0.08;
-              const staggerDirection = i % 2 === 0 ? 1 : -1;
-
-              // Map piece position to background position for image continuity
-              const bgPositionX = (col / 6) * 100;
-              const bgPositionY = (row / 4) * 100;
-
-              return (
-                <motion.div
-                  key={i}
-                  initial={{
-                    opacity: 1,
-                    x: 0,
-                    y: 0,
-                    rotate: 0,
-                    scale: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    x: (col - 2.5) * staggerDirection * 150,
-                    y: (row - 2) * staggerDirection * 150,
-                    rotate: randomRotation,
-                    scale: 0.1,
-                  }}
-                  transition={{
-                    duration: prefersReducedMotion ? 0 : 2.2,
-                    delay: randomDelay,
-                    ease: "easeInOut",
-                  }}
-                  className='absolute w-1/6 h-1/4 border-2 border-cyan-400/80 backdrop-blur-md shadow-2xl'
-                  style={{
-                    left: `${col * 16.666}%`,
-                    top: `${row * 25}%`,
-                    backgroundImage: `url('${shuffledSlides[currentImageIndex].url}')`,
-                    backgroundSize: "600% 400%",
-                    backgroundPosition: `${bgPositionX}% ${bgPositionY}%`,
-                    boxShadow:
-                      "0 0 30px rgba(34, 211, 238, 0.8), inset 0 0 15px rgba(168, 85, 247, 0.4)",
-                  }}
-                />
-              );
-            })}
-
-            {/* Radial burst lines */}
-            {Array.from({ length: 8 }).map((_, i) => {
-              const angle = (i / 8) * Math.PI * 2;
-              const distance = 200;
-              const x = Math.cos(angle) * distance;
-              const y = Math.sin(angle) * distance;
-
-              return (
-                <motion.div
-                  key={`burst-${i}`}
-                  initial={{
-                    opacity: 0.8,
-                    scaleX: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    scaleX: 1,
-                  }}
-                  transition={{
-                    duration: prefersReducedMotion ? 0 : 1.8,
-                    delay: i * 0.15,
-                    ease: "easeOut",
-                  }}
-                  className='absolute h-1 bg-gradient-to-r from-cyan-400 via-purple-500 to-transparent origin-left'
-                  style={{
-                    width: "400px",
-                    left: "50%",
-                    top: "50%",
-                    transform: `translate(-50%, -50%) rotate(${
-                      angle * (180 / Math.PI)
-                    }deg)`,
-                    boxShadow: "0 0 40px rgba(34, 211, 238, 0.9)",
-                  }}
-                />
-              );
-            })}
-
-            {/* Particle explosion */}
-            {Array.from({ length: 30 }).map((_, i) => {
-              const angle = (i / 30) * Math.PI * 2;
-              const velocity = 250 + Math.random() * 150;
-              const x = Math.cos(angle) * velocity;
-              const y = Math.sin(angle) * velocity;
-
-              return (
-                <motion.div
-                  key={`particle-${i}`}
-                  initial={{
-                    opacity: 1,
-                    x: 0,
-                    y: 0,
-                    scale: 1,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    x,
-                    y,
-                    scale: 0,
-                  }}
-                  transition={{
-                    duration: prefersReducedMotion ? 0 : 2,
-                    delay: Math.random() * 0.4,
-                    ease: "easeOut",
-                  }}
-                  className='absolute w-2 h-2 rounded-full bg-gradient-to-r from-cyan-300 to-purple-500 blur-sm'
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                    boxShadow: "0 0 20px rgba(34, 211, 238, 0.9)",
-                  }}
-                />
-              );
-            })}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10'>
-        <div className='text-center'>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, type: "spring" }}
-            className='inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 awsmd-rounded bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-bold mb-8 sm:mb-12 shadow-xl'
-          >
-            <Sparkles className='h-3 w-3 sm:h-4 sm:w-4 animate-pulse' />
-            <span className='hidden sm:inline'>
-              Trusted by 50,000+ health-conscious individuals
-            </span>
-            <span className='sm:hidden'>50,000+ Trusted Users</span>
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mb-6 sm:mb-8 leading-tight font-extrabold px-4 sm:px-0'
-          >
-            <span className='block mb-2 sm:mb-4 text-white drop-shadow-lg'>
-              Professional
-            </span>
-            <span className='relative inline-block'>
-              <span className='text-gradient-medical animate-gradient drop-shadow-lg'>
-                Lab Testing
+            {/* Badge */}
+            <motion.div variants={itemVariants} className='inline-block'>
+              <span className='inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-blue-700'>
+                <span className='w-2 h-2 rounded-full bg-blue-600'></span>
+                Healthcare Technology
               </span>
-            </span>
-            <br />
-            <span className='block mt-2 sm:mt-4 text-white drop-shadow-lg'>
-              Made Simple
-            </span>
-          </motion.h1>
+            </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className='text-base sm:text-lg md:text-xl lg:text-2xl text-white drop-shadow-lg max-w-4xl mx-auto mb-8 sm:mb-12 leading-relaxed font-normal px-4 sm:px-0'
-          >
-            Order confidential lab tests online without a doctor{"'"}s visit.
-            <br className='hidden sm:block' />
-            <span className='font-semibold text-cyan-300 drop-shadow-md'>
-              HIPAA-secure, CLIA-certified labs,
-            </span>{" "}
-            results in 24-48 hours.
-          </motion.p>
+            {/* Headline */}
+            <motion.div variants={itemVariants} className='space-y-2'>
+              <h1 className='text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-slate-900 leading-tight'>
+                Lab Testing,
+                <br />
+                <span className='bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent'>
+                  Simplified.
+                </span>
+              </h1>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.5 }}
-            className='flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-10 sm:mb-16 px-4 sm:px-0'
-          >
-            <Button
-              size='xl'
-              variant='medical'
-              className='text-white hover:opacity-95 transition-all shadow-2xl group rounded-xl px-8 py-6 sm:px-10 sm:py-7 text-base sm:text-lg font-bold'
-              asChild
-            >
-              <Link href='/tests'>
-                Browse Lab Tests
-                <ArrowRight className='ml-2 h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-2 transition-transform' />
-              </Link>
-            </Button>
-            <Button
-              size='xl'
-              variant='glass'
-              className='hover:scale-[1.02] transition-all shadow-xl rounded-xl px-8 py-6 sm:px-10 sm:py-7 text-base sm:text-lg font-bold'
-              asChild
-            >
-              <Link href='/login'>Sign In</Link>
-            </Button>
-          </motion.div>
-
-          {/* Trust indicators - Awsmd style */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.7 }}
-            className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 max-w-6xl mx-auto px-4 sm:px-0'
-          >
-            {[
-              {
-                icon: Shield,
-                title: "HIPAA Secure",
-                description: "Bank-level encryption protects your health data",
-                gradient: "from-blue-500 via-cyan-500 to-blue-600",
-                bgGradient: "gradient-medical",
-                iconColor: "text-white",
-              },
-              {
-                icon: Award,
-                title: "CLIA Certified",
-                description: "Processed by certified laboratories nationwide",
-                gradient: "from-emerald-500 via-teal-500 to-green-600",
-                bgGradient: "gradient-health",
-                iconColor: "text-white",
-              },
-              {
-                icon: Zap,
-                title: "Fast Results",
-                description:
-                  "Get your results in 24-48 hours with our reliable service",
-                gradient: "from-cyan-500 via-blue-500 to-indigo-600",
-                bgGradient: "gradient-lab",
-                iconColor: "text-white",
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 40, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
-                whileHover={{ y: -12, scale: 1.03 }}
-                className='relative group'
-              >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${item.gradient} awsmd-rounded-xl opacity-0 group-hover:opacity-30 blur-2xl transition-all duration-500`}
-                />
-                <div className='awsmd-glass-card p-6 sm:p-8 md:p-10 awsmd-hover-lift border-2 border-white/40 dark:border-gray-700/40 group-hover:border-white/60 dark:group-hover:border-gray-600/60 relative'>
-                  <div
-                    className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-4 sm:mb-6 awsmd-rounded ${item.bgGradient} flex items-center justify-center shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-110`}
-                  >
-                    <item.icon
-                      className={`h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 ${item.iconColor}`}
+            {/* Search Bar — top of interactive area */}
+            <motion.div variants={itemVariants}>
+              <div ref={searchWrapperRef} className='relative'>
+                <div className='flex gap-2'>
+                  <div className='relative flex-1'>
+                    <Search className='absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 pointer-events-none' />
+                    <input
+                      type='text'
+                      value={searchTerm}
+                      onChange={handleSearchInput}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => {
+                        if (dropdownItems.length > 0) setDropdownOpen(true);
+                      }}
+                      placeholder='Search for a lab test (e.g., CBC, A1C, thyroid…)'
+                      className='w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-md'
+                      aria-label='Search lab tests'
+                      autoComplete='off'
                     />
+                    {dropdownOpen && (
+                      <div className='absolute top-full left-0 right-0 mt-1.5 z-50 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden'>
+                        {isSearching ? (
+                          <div className='px-4 py-3 text-sm text-slate-500'>
+                            Searching…
+                          </div>
+                        ) : dropdownItems.length > 0 ? (
+                          dropdownItems.map((item) => (
+                            <button
+                              key={item.id}
+                              type='button'
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleDropdownClick(item);
+                              }}
+                              className='w-full flex items-center justify-between px-4 py-2.5 hover:bg-blue-50 text-left transition-colors border-b border-slate-100 last:border-0'
+                            >
+                              <div className='min-w-0'>
+                                <p className='text-sm font-medium text-slate-800 truncate'>
+                                  {item.testName}
+                                </p>
+                                <p className='text-xs text-slate-500 mt-0.5'>
+                                  {typeof item.category === "object" &&
+                                  item.category !== null
+                                    ? (item.category as { name: string }).name
+                                    : item.category}
+                                </p>
+                              </div>
+                              <span className='text-sm font-semibold text-blue-600 ml-4 shrink-0'>
+                                ${item.price.toFixed(2)}
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <div className='px-4 py-3 text-sm text-slate-500'>
+                            No tests found for &ldquo;{searchTerm}&rdquo;
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <h3 className='font-black text-xl sm:text-xl md:text-2xl mb-3 sm:mb-4 text-gray-900 dark:text-white'>
-                    {item.title}
-                  </h3>
-                  <p className='text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed'>
-                    {item.description}
-                  </p>
+                  <Button
+                    type='button'
+                    onClick={handleSearchSubmit}
+                    className='rounded-xl bg-blue-600 text-white hover:bg-blue-700 px-5 shadow-md shrink-0 py-3.5 h-auto'
+                  >
+                    Search
+                  </Button>
                 </div>
-              </motion.div>
-            ))}
+
+                {/* Popular search chips */}
+                <div className='flex flex-wrap items-center gap-2 mt-3'>
+                  <span className='text-xs text-slate-400 font-medium shrink-0'>
+                    Popular:
+                  </span>
+                  {popularSearches.map((term) => (
+                    <button
+                      key={term}
+                      type='button'
+                      onClick={() => {
+                        setSearchTerm(term);
+                        router.push(
+                          `/tests?searchTerm=${encodeURIComponent(term)}`,
+                        );
+                      }}
+                      className='text-xs px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors shadow-sm'
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Description */}
+            <motion.p
+              variants={itemVariants}
+              className='text-base sm:text-lg text-slate-600 leading-relaxed max-w-lg'
+            >
+              Get comprehensive lab results from CLIA-certified facilities.
+              Order online, visit your nearest collection center, and access
+              secure reports within 24-72 hours.
+            </motion.p>
+
+            {/* Trust Points — horizontal compact */}
+            <motion.div
+              variants={itemVariants}
+              className='flex flex-wrap gap-x-5 gap-y-2.5'
+            >
+              {trustPoints.map((point) => (
+                <div key={point.text} className='flex items-center gap-2'>
+                  <div className='flex-shrink-0 w-4.5 h-4.5 rounded-full bg-emerald-100 flex items-center justify-center'>
+                    <point.icon className='h-2.5 w-2.5 text-emerald-600' />
+                  </div>
+                  <span className='text-xs font-medium text-slate-600'>
+                    {point.text}
+                  </span>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* CTA */}
+            <motion.div variants={itemVariants} className='flex gap-3 pt-1'>
+              <Button
+                asChild
+                size='lg'
+                className='rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all'
+              >
+                <Link href='/tests' className='inline-flex items-center gap-2'>
+                  Browse All Tests
+                  <ArrowRight className='h-4 w-4' />
+                </Link>
+              </Button>
+            </motion.div>
           </motion.div>
 
-          {/* Carousel Controls - Dots and Navigation Arrows */}
+          {/* Right Image & Stats */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1 }}
-            className='mt-12 sm:mt-16 md:mt-20 flex flex-col items-center gap-6'
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className='relative'
           >
-            {/* Navigation Arrows */}
-            <div className='flex items-center gap-4 sm:gap-6'>
-              <motion.button
-                onClick={goToPreviousImage}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className='p-2 sm:p-3 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 transition-all duration-300 text-white'
-                aria-label='Previous image'
-              >
-                <ChevronLeft className='h-5 w-5 sm:h-6 sm:w-6' />
-              </motion.button>
-
-              {/* Dot Indicators */}
-              <div className='flex gap-2 sm:gap-3'>
-                {shuffledSlides.map((_, index) => (
-                  <motion.button
-                    key={index}
-                    onClick={() => goToImage(index)}
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.9 }}
-                    className={`h-2 sm:h-3 rounded-full transition-all duration-300 ${
-                      index === currentImageIndex
-                        ? "bg-white w-8 sm:w-10"
-                        : "bg-white/50 w-2 sm:w-3 hover:bg-white/70"
-                    }`}
-                    aria-label={`Go to image ${index + 1}`}
-                    aria-current={index === currentImageIndex}
-                  />
-                ))}
+            <div className='relative'>
+              {/* Image Container */}
+              <div className='relative overflow-hidden rounded-2xl lg:rounded-3xl border border-slate-200 bg-white shadow-2xl'>
+                <div className='absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none z-10'></div>
+                <Image
+                  src='/images/Pipetting.jpeg'
+                  alt='Professional lab testing environment'
+                  width={900}
+                  height={700}
+                  className='h-full w-full object-cover'
+                  priority
+                />
+                {/* Badge */}
+                <div className='absolute top-4 right-4 z-20 inline-flex items-center gap-2 rounded-full bg-white/95 backdrop-blur-sm px-4 py-2 shadow-lg border border-white/50'>
+                  <span className='w-2 h-2 rounded-full bg-emerald-500'></span>
+                  <span className='text-xs font-semibold text-slate-900'>
+                    Physician-reviewed
+                  </span>
+                </div>
               </div>
 
-              <motion.button
-                onClick={goToNextImage}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className='p-2 sm:p-3 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 transition-all duration-300 text-white'
-                aria-label='Next image'
-              >
-                <ChevronRight className='h-5 w-5 sm:h-6 sm:w-6' />
-              </motion.button>
-            </div>
-
-            {/* Slide Title/Caption */}
-            <AnimatePresence mode='wait'>
+              {/* Metrics Grid - Below Image */}
               <motion.div
-                key={currentImageIndex}
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.3 }}
-                className='text-white/80 text-sm sm:text-base font-medium drop-shadow-md'
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className='mt-6 grid grid-cols-3 gap-3'
               >
-                {shuffledSlides[currentImageIndex].title}
+                {metrics.map((metric) => (
+                  <div
+                    key={metric.label}
+                    className='rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow'
+                  >
+                    <div className='mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50'>
+                      <metric.icon className='h-5 w-5 text-blue-600' />
+                    </div>
+                    <p className='text-sm font-bold text-slate-900'>
+                      {metric.value}
+                    </p>
+                    <p className='text-xs text-slate-500 mt-1'>
+                      {metric.subtitle}
+                    </p>
+                  </div>
+                ))}
               </motion.div>
-            </AnimatePresence>
+            </div>
           </motion.div>
         </div>
       </div>

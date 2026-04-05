@@ -126,7 +126,7 @@ export function VerifyOTPForm() {
   const onSubmit = async (data: MFAFormData) => {
     if (!email) {
       toast.error("Email not found. Restart signup.");
-      router.push("/signup");
+      router.push("/register");
       return;
     }
 
@@ -139,15 +139,34 @@ export function VerifyOTPForm() {
       try {
         const res = await verifyOtp(formData);
         if (res?.success) {
-          await authContext.refreshAuth();
+          // Only refresh auth if coming from login flow (user is already authenticated)
+          if (fromLogin) {
+            await authContext.refreshAuth();
+          }
 
-          toast.success("Email verified successfully!");
+          // Clear stored email after successful verification
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem("otp_email");
+          }
+
+          // Show appropriate success message based on flow
+          if (fromLogin) {
+            toast.success("Email verified successfully!");
+          } else {
+            toast.success("Account verified! Please log in to continue.", {
+              duration: 5000,
+            });
+          }
 
           setTimeout(() => {
             const from = searchParams.get("from");
-            if (fromLogin) router.push(from || "/results");
-            else router.push("/login");
-          }, 1000);
+            if (fromLogin) {
+              router.push(from || "/results");
+            } else {
+              // New registration - redirect to login with verified flag
+              router.push("/login?verified=true");
+            }
+          }, 1500);
         }
       } catch (err: any) {
         const msg = err.message || "Invalid OTP. Try again.";
@@ -174,7 +193,9 @@ export function VerifyOTPForm() {
           setTimer(60);
         }
       } catch (err: any) {
-        toast.error("Failed to resend OTP.");
+        toast.error(
+          "Unable to resend verification code. Please try again in a moment.",
+        );
       }
     });
   };
@@ -250,15 +271,15 @@ export function VerifyOTPForm() {
             {timer > 0
               ? `Resend in ${timer}s`
               : isResending
-              ? "Sending..."
-              : "Resend OTP"}
+                ? "Sending..."
+                : "Resend OTP"}
           </Button>
 
           <Button
             type='button'
             variant='ghost'
             className='w-full'
-            onClick={() => router.push(fromLogin ? "/login" : "/signup")}
+            onClick={() => router.push(fromLogin ? "/login" : "/register")}
           >
             Back
           </Button>

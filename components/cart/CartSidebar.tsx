@@ -87,7 +87,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to validate promo code.",
+        description:
+          "Unable to validate promo code. Please check the code and try again.",
         variant: "destructive",
       });
     } finally {
@@ -103,9 +104,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     });
   };
 
-  const handleCheckout = () => {
+  const handleReviewCheckout = () => {
     onClose();
-    router.push("/checkout");
+    router.push("/cart");
   };
 
   if (!isMounted) return null;
@@ -173,17 +174,41 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <>
                   {/* Cart Items */}
                   <div className='space-y-2 sm:space-y-3'>
-                    {items.map((item) => (
+                    {items.map((item, index) => {
+                      const legacyItem = item as {
+                        id?: string;
+                        itemType?: "TEST" | "PANEL";
+                        name?: string;
+                        testName?: string;
+                        testId?: string;
+                        panelId?: string;
+                      };
+                      const itemKey =
+                        legacyItem.id ||
+                        legacyItem.testId ||
+                        legacyItem.panelId ||
+                        `cart-item-${index}`;
+                      const itemIdToRemove =
+                        legacyItem.id ||
+                        legacyItem.testId ||
+                        legacyItem.panelId ||
+                        "";
+                      const itemName =
+                        legacyItem.name || legacyItem.testName || "Lab Item";
+                      const itemTypeLabel =
+                        legacyItem.itemType === "PANEL" ? "Panel" : "Lab Test";
+
+                      return (
                       <div
-                        key={item.testId}
+                        key={itemKey}
                         className='flex items-start justify-between gap-2 sm:gap-3 p-2.5 sm:p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700'
                       >
                         <div className='flex-1 min-w-0 pr-2'>
                           <h4 className='font-semibold text-xs sm:text-sm break-words leading-tight'>
-                            {item.testName}
+                            {itemName}
                           </h4>
                           <p className='text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1'>
-                            Lab Test
+                            {itemTypeLabel}
                           </p>
                         </div>
                         <div className='text-right flex-shrink-0'>
@@ -194,10 +219,12 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                             variant='ghost'
                             size='sm'
                             onClick={() => {
-                              removeItem(item.testId);
+                              if (itemIdToRemove) {
+                                removeItem(itemIdToRemove);
+                              }
                               toast({
                                 title: "Removed from cart",
-                                description: `${item.testName} has been removed.`,
+                                description: `${itemName} has been removed.`,
                               });
                             }}
                             className='mt-1.5 sm:mt-2 text-destructive hover:text-destructive hover:bg-destructive/10 text-[10px] sm:text-xs h-6 sm:h-7 px-2'
@@ -207,7 +234,8 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Divider */}
@@ -273,10 +301,13 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             {/* Footer - Only show if cart has items */}
             {items.length > 0 && (
               <div className='border-t border-gray-200 dark:border-gray-700 p-4 sm:p-5 md:p-6 space-y-3 sm:space-y-4 bg-gray-50 dark:bg-gray-900/50 flex-shrink-0'>
-                {/* Totals */}
+                {/* Enhanced Pricing Breakdown */}
                 <div className='space-y-1.5 sm:space-y-2'>
                   <div className='flex justify-between text-xs sm:text-sm'>
-                    <span className='text-muted-foreground'>Subtotal</span>
+                    <span className='text-muted-foreground'>
+                      Subtotal ({items.length}{" "}
+                      {items.length === 1 ? "test" : "tests"})
+                    </span>
                     <span className='font-medium'>
                       {formatCurrency(subtotal)}
                     </span>
@@ -291,21 +322,39 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       </span>
                     </div>
                   )}
+                  {/* Processing Fee */}
+                  <div className='flex justify-between text-xs sm:text-sm'>
+                    <span className='text-muted-foreground flex items-center gap-1'>
+                      Processing Fee
+                      <span className='text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded'>
+                        Secure
+                      </span>
+                    </span>
+                    <span className='font-medium'>{formatCurrency(2.5)}</span>
+                  </div>
+                  {/* Tax (if applicable) */}
+                  <div className='flex justify-between text-xs sm:text-sm'>
+                    <span className='text-muted-foreground'>Tax</span>
+                    <span className='font-medium'>{formatCurrency(0)}</span>
+                  </div>
                   <div className='flex justify-between text-sm sm:text-base font-bold pt-2 border-t border-gray-200 dark:border-gray-700'>
-                    <span>Total</span>
-                    <span className='text-base sm:text-lg'>
-                      {formatCurrency(total)}
+                    <span>Total Due</span>
+                    <span className='text-base sm:text-lg text-primary'>
+                      {formatCurrency(total + 2.5)}
                     </span>
                   </div>
+                  <p className='text-[10px] sm:text-xs text-muted-foreground text-center pt-1'>
+                    ✓ Includes lab processing, secure report delivery
+                  </p>
                 </div>
 
                 {/* Buttons */}
                 <div className='space-y-2'>
                   <Button
-                    onClick={handleCheckout}
+                    onClick={handleReviewCheckout}
                     className='w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-sm sm:text-base h-10 sm:h-11'
                   >
-                    Proceed to Checkout
+                    Review Checkout
                   </Button>
                   <Button
                     variant='outline'

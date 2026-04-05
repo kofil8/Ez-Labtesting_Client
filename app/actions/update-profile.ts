@@ -2,14 +2,61 @@
 
 import { authenticatedFetch } from "@/lib/api-helpers";
 
+const GENDER_ALIASES: Record<string, string> = {
+  male: "MALE",
+  female: "FEMALE",
+  non_binary: "NON_BINARY",
+  prefer_not_to_say: "PREFER_NOT_TO_SAY",
+  other: "OTHER",
+};
+
+const GENDER_ENUM_VALUES = new Set(Object.values(GENDER_ALIASES));
+
+function normalizeGender(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return trimmed;
+  }
+
+  const upper = trimmed.toUpperCase();
+  if (GENDER_ENUM_VALUES.has(upper)) {
+    return upper;
+  }
+
+  return GENDER_ALIASES[trimmed.toLowerCase()] || trimmed;
+}
+
 export async function updateProfile(formData: FormData) {
   try {
     // Extract form fields
     const firstName = formData.get("firstName") as string | null;
     const lastName = formData.get("lastName") as string | null;
     const bio = formData.get("bio") as string | null;
-    const phone = formData.get("phone") as string | null;
+    const phone = formData.get("phoneNumber") as string | null;
+    const gender = formData.get("gender") as string | null;
     const dateOfBirth = formData.get("dateOfBirth") as string | null;
+    const profileImage = formData.get("profileImage") as string | null;
+    const addressLine1 = formData.get("addressLine1") as string | null;
+    const addressLine2 = formData.get("addressLine2") as string | null;
+    const city = formData.get("city") as string | null;
+    const state = formData.get("state") as string | null;
+    const zipCode = formData.get("zipCode") as string | null;
+    const address = formData.get("address") as string | null;
+    const bloodType = formData.get("bloodType") as string | null;
+    const allergies = formData.get("allergies") as string | null;
+    const medicalConditions = formData.get("medicalConditions") as
+      | string
+      | null;
+    const medications = formData.get("medications") as string | null;
+    const emergencyContactName = formData.get("emergencyContactName") as
+      | string
+      | null;
+    const emergencyContactPhone = formData.get("emergencyContactPhone") as
+      | string
+      | null;
+    const removeProfileImage = formData.get("removeProfileImage") as
+      | string
+      | null;
     const file = formData.get("file") as File | null;
 
     // Build data object with only provided fields
@@ -18,10 +65,30 @@ export async function updateProfile(formData: FormData) {
     if (lastName !== null) dataObj.lastName = lastName;
     if (bio !== null) dataObj.bio = bio;
     if (phone !== null) dataObj.phoneNumber = phone;
+    if (gender !== null) dataObj.gender = normalizeGender(gender);
     if (dateOfBirth !== null) {
       // Convert "YYYY-MM-DD" to ISO-8601 DateTime format
       dataObj.dateOfBirth = new Date(dateOfBirth).toISOString();
     }
+    if (profileImage !== null) dataObj.profileImage = profileImage;
+    if (addressLine1 !== null) dataObj.addressLine1 = addressLine1;
+    if (addressLine2 !== null) dataObj.addressLine2 = addressLine2;
+    if (city !== null) dataObj.city = city;
+    if (state !== null) dataObj.state = state;
+    if (zipCode !== null) dataObj.zipCode = zipCode;
+    if (address !== null) dataObj.address = address;
+    if (bloodType !== null) dataObj.bloodType = bloodType;
+    if (allergies !== null) dataObj.allergies = allergies;
+    if (medicalConditions !== null)
+      dataObj.medicalConditions = medicalConditions;
+    if (medications !== null) dataObj.medications = medications;
+    if (emergencyContactName !== null)
+      dataObj.emergencyContactName = emergencyContactName;
+    if (emergencyContactPhone !== null)
+      dataObj.emergencyContactPhone = emergencyContactPhone;
+    if (removeProfileImage !== null)
+      dataObj.removeProfileImage =
+        removeProfileImage === "true" || removeProfileImage === "1";
 
     // Create FormData for multipart/form-data request
     const requestFormData = new FormData();
@@ -40,11 +107,12 @@ export async function updateProfile(formData: FormData) {
       {
         method: "PATCH",
         body: requestFormData,
-      }
+      },
     );
 
     if (!res.ok) {
-      let errorMessage = "Failed to update profile";
+      let errorMessage =
+        "Unable to update your profile. Your data remains secure. Please try again.";
       try {
         const error = await res.json();
         errorMessage = error.message || errorMessage;

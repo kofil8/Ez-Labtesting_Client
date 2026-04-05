@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -110,7 +109,7 @@ export function OrderDetailDialog({
                 <Label htmlFor='paymentMethod'>Payment Method</Label>
                 <Select
                   value={watch("paymentMethod")}
-                  onValueChange={(value: "ach" | "card") =>
+                  onValueChange={(value: Order["paymentMethod"]) =>
                     setValue("paymentMethod", value)
                   }
                 >
@@ -119,7 +118,11 @@ export function OrderDetailDialog({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='card'>Card</SelectItem>
-                    <SelectItem value='ach'>ACH</SelectItem>
+                    <SelectItem value='link'>Link</SelectItem>
+                    <SelectItem value='paypal'>PayPal</SelectItem>
+                    <SelectItem value='apple_pay'>Apple Pay</SelectItem>
+                    <SelectItem value='google_pay'>Google Pay</SelectItem>
+                    <SelectItem value='crypto'>Crypto</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -236,7 +239,11 @@ export function OrderDetailDialog({
               {order.promoCode && (
                 <div className='space-y-2'>
                   <Label>Promo Code</Label>
-                  <Input value={order.promoCode} readOnly className='bg-muted' />
+                  <Input
+                    value={order.promoCode}
+                    readOnly
+                    className='bg-muted'
+                  />
                 </div>
               )}
             </div>
@@ -304,4 +311,3 @@ export function OrderDetailDialog({
     </Dialog>
   );
 }
-

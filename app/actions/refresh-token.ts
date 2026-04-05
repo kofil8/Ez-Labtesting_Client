@@ -14,14 +14,30 @@ export async function refreshToken() {
   }
 
   // Backend reads refreshToken from cookies automatically via credentials: "include"
-  const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include", // This sends cookies automatically
-    cache: "no-store",
-  });
+  let res;
+  try {
+    res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // This sends cookies automatically
+      cache: "no-store",
+    });
+  } catch (error: any) {
+    // Handle connection errors (ECONNREFUSED, network failures, etc.)
+    if (
+      error.cause?.code === "ECONNREFUSED" ||
+      error.message?.includes("fetch failed")
+    ) {
+      throw new Error(
+        "Unable to connect to server. The server may be down. Please try again later.",
+      );
+    }
+    throw new Error(
+      "Network error occurred. Please check your connection and try again.",
+    );
+  }
 
   if (!res.ok) {
     const error = await res
@@ -43,28 +59,22 @@ export async function refreshToken() {
   if (data?.data?.accessToken) {
     cookieStore.set("accessToken", data.data.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict", // Match backend setting
+      secure: process.env.NODE_ENV === "development" ? false : true,
+      sameSite: "lax",
       path: "/",
-      maxAge: 60 * 15, // 15 minutes (matching JWT expiration)
+      maxAge: 60 * 15,
     });
   }
 
-  // Backend sets new refreshToken in cookie automatically via Set-Cookie header
-  // Extract it from Set-Cookie header and set it manually for Next.js
-  const setCookieHeader = res.headers.get("set-cookie");
-  if (setCookieHeader) {
-    const refreshTokenMatch = setCookieHeader.match(/refreshToken=([^;]+)/);
-    if (refreshTokenMatch) {
-      const newRefreshToken = refreshTokenMatch[1];
-      cookieStore.set("refreshToken", newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict", // Match backend setting
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-      });
-    }
+  // Extract refreshToken from Set-Cookie header since server-side fetch doesn't auto-handle it
+  if (data?.data?.refreshToken) {
+    cookieStore.set("refreshToken", data.data.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "development" ? false : true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
   }
 
   return { success: true, accessToken: data?.data?.accessToken };
