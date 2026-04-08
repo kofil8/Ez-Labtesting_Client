@@ -1,5 +1,6 @@
 "use client";
 
+import { PhoneInputField } from "@/components/shared/PhoneInputField";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +13,6 @@ import {
 } from "@/components/ui/select";
 import { Calendar, ShieldCheck, User } from "lucide-react";
 import { useEffect, useState } from "react";
-import { PhoneInput } from "react-international-phone";
-import "react-international-phone/style.css";
 
 export interface PatientFormData {
   firstName: string;
@@ -338,30 +337,18 @@ export function PatientInfoForm({
         </div>
 
         {/* Phone Number */}
-        <div className='space-y-2'>
-          <Label htmlFor='phone' className='text-sm font-medium'>
-            Phone Number <span className='text-red-500'>*</span>
-          </Label>
-          <PhoneInput
-            defaultCountry='us'
-            value={formData.phone}
-            onChange={(value) => handleInputChange("phone", value || "")}
-            onBlur={() => handleBlur("phone")}
-            className='w-full'
-            inputClassName={`h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${
-              touched.phone && errors.phone
-                ? "border-red-500 focus-visible:ring-red-500"
-                : ""
-            }`}
-            required
-          />
-          {touched.phone && errors.phone && (
-            <p className='text-xs text-red-500 mt-1'>{errors.phone}</p>
-          )}
-          <p className='text-xs text-muted-foreground'>
-            Include your country code
-          </p>
-        </div>
+        <PhoneInputField
+          id='phone'
+          label='Phone Number'
+          required
+          value={formData.phone}
+          onChange={(value) => handleInputChange("phone", value || "")}
+          onBlur={() => handleBlur("phone")}
+          error={touched.phone && errors.phone ? errors.phone : undefined}
+          helperText='Include your country code'
+          defaultCountry='us'
+          variant='compact'
+        />
 
         {/* Email */}
         <div className='space-y-2'>
