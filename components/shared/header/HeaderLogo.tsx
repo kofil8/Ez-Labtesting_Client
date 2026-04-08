@@ -16,7 +16,7 @@ export function HeaderLogo({ onClick }: HeaderLogoProps) {
     >
       <div className='relative h-9 w-9 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm transition-transform duration-200 group-hover:scale-[1.03] min-[600px]:h-10 min-[600px]:w-10'>
         <Image
-          src='/images/logo.png'
+          src='/images/logo.svg'
           alt='Ez LabTesting'
           fill
           className='object-contain p-1.5'

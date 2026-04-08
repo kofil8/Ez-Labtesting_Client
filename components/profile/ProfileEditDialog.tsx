@@ -2,6 +2,7 @@
 
 import { getProfile } from "@/app/actions/get-profile";
 import { updateProfile } from "@/app/actions/update-profile";
+import { PhoneInputField } from "@/components/shared/PhoneInputField";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,8 +24,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle, Heart, Loader2, Stethoscope, User } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
-import { PhoneInput } from "react-international-phone";
-import "react-international-phone/style.css";
 import { toast } from "sonner";
 
 interface ProfileEditDialogProps {
@@ -262,46 +261,17 @@ export function ProfileEditDialog({
                   {/* Phone and Date of Birth */}
                   <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                     <div className='space-y-2'>
-                      <Label htmlFor='phone' className='text-sm font-medium'>
-                        Phone number
-                      </Label>
-                      <PhoneInput
-                        defaultCountry='us'
+                      <PhoneInputField
+                        id='phone'
+                        label='Phone number'
                         value={phone}
                         onChange={setPhone}
                         placeholder='Enter phone number'
-                        className='react-international-phone-input-custom'
-                        inputClassName='h-10 text-sm'
-                        countrySelectorStyleProps={{
-                          buttonClassName:
-                            "h-10 border-gray-200 hover:bg-gray-50 focus:outline-none transition-all duration-200",
-                          flagClassName: "h-4 w-6 rounded",
-                        }}
-                        style={
-                          {
-                            "--react-international-phone-height": "40px",
-                            "--react-international-phone-border-radius":
-                              "0.5rem",
-                            "--react-international-phone-border-color":
-                              "#e5e7eb",
-                            "--react-international-phone-background-color":
-                              "#ffffff",
-                            "--react-international-phone-text-color": "#111827",
-                            "--react-international-phone-selected-dropdown-item-background-color":
-                              "#dbeafe",
-                            "--react-international-phone-country-selector-background-color-hover":
-                              "#f3f4f6",
-                            "--react-international-phone-input-border-color":
-                              "#e5e7eb",
-                            "--react-international-phone-input-focus-border-color":
-                              "#3b82f6",
-                          } as React.CSSProperties
-                        }
-                        inputProps={{ id: "phone", name: "phone" }}
+                        helperText='Include country code when needed'
+                        defaultCountry='us'
+                        variant='compact'
+                        showIcon={false}
                       />
-                      <p className='text-xs text-muted-foreground'>
-                        Include country code when needed
-                      </p>
                     </div>
 
                     <div className='space-y-2'>
@@ -509,48 +479,15 @@ export function ProfileEditDialog({
                     </div>
 
                     <div className='space-y-2'>
-                      <Label
-                        htmlFor='emergencyContactPhone'
-                        className='text-sm font-medium'
-                      >
-                        Contact Phone
-                      </Label>
-                      <PhoneInput
-                        defaultCountry='us'
+                      <PhoneInputField
+                        id='emergencyContactPhone'
+                        label='Contact Phone'
                         value={emergencyContactPhone}
                         onChange={setEmergencyContactPhone}
                         placeholder='Enter phone number'
-                        className='react-international-phone-input-custom'
-                        inputClassName='h-10 text-sm'
-                        countrySelectorStyleProps={{
-                          buttonClassName:
-                            "h-10 border-gray-200 hover:bg-gray-50 focus:outline-none transition-all duration-200",
-                          flagClassName: "h-4 w-6 rounded",
-                        }}
-                        style={
-                          {
-                            "--react-international-phone-height": "40px",
-                            "--react-international-phone-border-radius":
-                              "0.5rem",
-                            "--react-international-phone-border-color":
-                              "#e5e7eb",
-                            "--react-international-phone-background-color":
-                              "#ffffff",
-                            "--react-international-phone-text-color": "#111827",
-                            "--react-international-phone-selected-dropdown-item-background-color":
-                              "#dbeafe",
-                            "--react-international-phone-country-selector-background-color-hover":
-                              "#f3f4f6",
-                            "--react-international-phone-input-border-color":
-                              "#e5e7eb",
-                            "--react-international-phone-input-focus-border-color":
-                              "#3b82f6",
-                          } as React.CSSProperties
-                        }
-                        inputProps={{
-                          id: "emergencyContactPhone",
-                          name: "emergencyContactPhone",
-                        }}
+                        defaultCountry='us'
+                        variant='compact'
+                        showIcon={false}
                       />
                     </div>
                   </div>

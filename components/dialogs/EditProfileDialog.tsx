@@ -1,6 +1,7 @@
 "use client";
 
 import { Profile, UpdateProfilePayload } from "@/app/profile/types/profile";
+import { PhoneInputField } from "@/components/shared/PhoneInputField";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,8 +25,6 @@ import { useToast } from "@/hook/use-toast";
 import { cn } from "@/lib/utils";
 import { AlertCircle, HeartPulse, Phone, Shield } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { PhoneInput } from "react-international-phone";
-import "react-international-phone/style.css";
 
 interface FormValues {
   phone: string;
@@ -248,48 +247,17 @@ export function EditProfileDialog({
 
               <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
                 <div className='sm:col-span-2'>
-                  <Label htmlFor='phone'>Phone Number</Label>
-                  <PhoneInput
-                    defaultCountry='us'
+                  <PhoneInputField
+                    id='phone'
+                    label='Phone Number'
                     value={formValues.phone}
                     onChange={(value) => handleInputChange("phone", value)}
+                    error={errors.phone}
+                    defaultCountry='us'
                     placeholder='Enter phone number'
-                    className='mt-1 react-international-phone-input-custom'
-                    inputClassName={cn(
-                      "h-11 text-sm",
-                      errors.phone && "border-red-300",
-                    )}
-                    countrySelectorStyleProps={{
-                      buttonClassName: cn(
-                        "h-11 border-blue-100",
-                        errors.phone && "border-red-300",
-                      ),
-                      flagClassName: "h-4 w-6 rounded",
-                    }}
-                    style={
-                      {
-                        "--react-international-phone-height": "44px",
-                        "--react-international-phone-border-radius": "0.5rem",
-                        "--react-international-phone-border-color": errors.phone
-                          ? "#fca5a5"
-                          : "#dbeafe",
-                        "--react-international-phone-background-color":
-                          "#ffffff",
-                        "--react-international-phone-text-color": "#0f172a",
-                        "--react-international-phone-input-border-color":
-                          errors.phone ? "#fca5a5" : "#dbeafe",
-                        "--react-international-phone-input-focus-border-color":
-                          errors.phone ? "#ef4444" : "#93c5fd",
-                      } as React.CSSProperties
-                    }
-                    inputProps={{
-                      id: "phone",
-                      name: "phone",
-                    }}
+                    variant='compact'
+                    showIcon={false}
                   />
-                  {errors.phone && (
-                    <p className='mt-1 text-xs text-red-600'>{errors.phone}</p>
-                  )}
                 </div>
 
                 <div>
@@ -459,51 +427,19 @@ export function EditProfileDialog({
                 </div>
 
                 <div>
-                  <Label htmlFor='emergencyContactPhone'>Contact Phone</Label>
-                  <PhoneInput
-                    defaultCountry='us'
+                  <PhoneInputField
+                    id='emergencyContactPhone'
+                    label='Contact Phone'
                     value={formValues.emergencyContactPhone}
                     onChange={(value) =>
                       handleInputChange("emergencyContactPhone", value)
                     }
+                    error={errors.emergencyContactPhone}
                     placeholder='Enter phone number'
-                    className='mt-1 react-international-phone-input-custom'
-                    inputClassName={cn(
-                      "h-11 text-sm",
-                      errors.emergencyContactPhone && "border-red-300",
-                    )}
-                    countrySelectorStyleProps={{
-                      buttonClassName: cn(
-                        "h-11 border-blue-100",
-                        errors.emergencyContactPhone && "border-red-300",
-                      ),
-                      flagClassName: "h-4 w-6 rounded",
-                    }}
-                    style={
-                      {
-                        "--react-international-phone-height": "44px",
-                        "--react-international-phone-border-radius": "0.5rem",
-                        "--react-international-phone-border-color":
-                          errors.emergencyContactPhone ? "#fca5a5" : "#dbeafe",
-                        "--react-international-phone-background-color":
-                          "#ffffff",
-                        "--react-international-phone-text-color": "#0f172a",
-                        "--react-international-phone-input-border-color":
-                          errors.emergencyContactPhone ? "#fca5a5" : "#dbeafe",
-                        "--react-international-phone-input-focus-border-color":
-                          errors.emergencyContactPhone ? "#ef4444" : "#93c5fd",
-                      } as React.CSSProperties
-                    }
-                    inputProps={{
-                      id: "emergencyContactPhone",
-                      name: "emergencyContactPhone",
-                    }}
+                    defaultCountry='us'
+                    variant='compact'
+                    showIcon={false}
                   />
-                  {errors.emergencyContactPhone && (
-                    <p className='mt-1 text-xs text-red-600'>
-                      {errors.emergencyContactPhone}
-                    </p>
-                  )}
                 </div>
               </div>
             </section>
