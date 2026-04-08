@@ -1,5 +1,6 @@
 "use client";
 
+import { sendTestNotification } from "@/lib/services/notifications.api";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,35 +10,13 @@ export function NotificationTestButton() {
   const sendTest = async () => {
     setLoading(true);
 
-    const token = localStorage.getItem("accessToken");
-    console.log("Access Token:", token);
-
     try {
-      const res = await fetch(
-        "https://ezlabtesting-api.com/api/v1/notifications/test-user",
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-          body: JSON.stringify({
-            title: "Test Notification",
-            body: "Test from header",
-          }),
-        }
-      );
+      const data = await sendTestNotification({
+        title: "Test Notification",
+        body: "Test from header",
+      });
 
-      console.log("Response status:", res.status);
-
-      const data = await res.json();
       console.log("Response data:", data);
-
-      if (!res.ok) {
-        toast.error("Failed");
-        return;
-      }
 
       toast.success("Test notification sent!");
     } catch (err) {

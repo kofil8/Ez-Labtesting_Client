@@ -3,20 +3,63 @@
 import { LoginForm } from "@/components/auth/LoginForm";
 import { MedicalSpinner } from "@/components/auth/MedicalSpinner";
 import { useAuth } from "@/lib/auth-context";
-import { Clock3, FlaskConical, Lock, MapPin, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  FileText,
+  FlaskConical,
+  Lock,
+  MapPin,
+  ShieldCheck,
+  ShoppingBag,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect } from "react";
+
+const trustHighlights = [
+  {
+    icon: ShoppingBag,
+    title: "Order tests with confidence",
+    description:
+      "Shop physician-reviewed diagnostics online with transparent access to your account, orders, and results.",
+  },
+  {
+    icon: FileText,
+    title: "Results in one secure portal",
+    description:
+      "Track orders, review reports, and keep your testing history organized in one place.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Built for protected health data",
+    description:
+      "HIPAA-conscious access patterns, encrypted sessions, and CLIA-certified partner lab workflows.",
+  },
+];
+
+const trustStats = [
+  {
+    icon: Clock3,
+    label: "Typical results window",
+    value: "24-72 h",
+  },
+  {
+    icon: MapPin,
+    label: "Partner lab reach",
+    value: "Nationwide",
+  },
+  {
+    icon: Lock,
+    label: "Account access",
+    value: "Encrypted",
+  },
+];
 
 export function LoginPageContent() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -45,7 +88,7 @@ export function LoginPageContent() {
 
   if (isLoading) {
     return (
-      <div className='flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-cyan-50'>
+      <div className='flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#f7f9fc_0%,#eef3f8_100%)]'>
         <MedicalSpinner size='lg' />
       </div>
     );
@@ -56,171 +99,155 @@ export function LoginPageContent() {
   }
 
   return (
-    <div className='min-h-[calc(100vh-4.25rem)] bg-gradient-to-b from-[#eef2f7] to-[#e4eaf3] overflow-x-hidden'>
-      <div className='mx-auto w-full max-w-[1280px] px-3 pb-8 pt-4 sm:px-5 sm:pt-6 md:pt-8 lg:px-8 lg:pt-10'>
-        {/* ---- Main Card ---- */}
-        <div
-          className={`overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xl transition-all duration-700 ease-out md:rounded-3xl ${
-            mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-          }`}
-        >
-          <div className='grid lg:grid-cols-[1.05fr_1fr]'>
-            {/* ======= LEFT PANEL — Brand / Trust ======= */}
+    <div className='min-h-[calc(100vh-4rem)] bg-[radial-gradient(circle_at_top_left,rgba(20,124,184,0.08),transparent_28%),linear-gradient(180deg,#f7f9fc_0%,#eef3f8_100%)]'>
+      <div className='mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-10 xl:py-12'>
+        <div className='grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,30rem)] lg:items-stretch xl:gap-6'>
+          <section className='order-2 overflow-hidden rounded-[24px] border border-slate-200/80 bg-[linear-gradient(180deg,#10283f_0%,#14324c_100%)] text-white shadow-[0_28px_70px_-42px_rgba(15,23,42,0.8)] sm:rounded-[28px] lg:order-1 lg:rounded-[32px]'>
+            <div className='border-b border-white/10 px-4 py-5 sm:px-6 sm:py-6 md:px-8 lg:px-8 xl:px-10'>
+              <div className='inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-100 sm:text-[11px]'>
+                <FlaskConical className='h-3.5 w-3.5 shrink-0' />
+                <span className='truncate'>EzLabTesting account access</span>
+              </div>
 
-            {/* Mobile: compact blue banner */}
-            <div className='flex flex-col gap-3 bg-gradient-to-r from-[#2845a7] to-[#1d327f] px-5 py-5 text-white sm:flex-row sm:items-center sm:gap-5 sm:px-7 sm:py-6 lg:hidden'>
-              <div className='flex items-center gap-3'>
-                <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15'>
-                  <FlaskConical className='h-5 w-5 text-blue-100' />
-                </span>
-                <div>
-                  <h1 className='text-lg font-bold leading-tight sm:text-xl'>
-                    Order tests, view results, stay informed
-                  </h1>
-                  <p className='mt-0.5 text-xs text-blue-100/90 sm:text-sm'>
-                    CLIA-certified · HIPAA-compliant · Nationwide
+              <h1 className='mt-4 max-w-[13ch] text-[2rem] font-semibold tracking-[-0.03em] text-white xs:text-[2.25rem] sm:text-[2.7rem] lg:text-[3rem] xl:text-[3.35rem]'>
+                Modern access to lab testing and results
+              </h1>
+
+              <p className='mt-3 max-w-2xl text-sm leading-6 text-slate-200 sm:mt-4 sm:text-[15px] sm:leading-7'>
+                Sign in to manage orders, review reports, and move through your
+                testing journey with the confidence of a medical-grade
+                experience designed for online care.
+              </p>
+
+              <div className='mt-5 flex flex-col gap-2.5 xs:flex-row xs:flex-wrap sm:gap-3'>
+                <Link
+                  href='/tests'
+                  className='inline-flex min-h-11 w-full items-center justify-center rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100 xs:w-auto'
+                >
+                  Browse tests
+                </Link>
+                <Link
+                  href='/find-lab-center'
+                  className='inline-flex min-h-11 w-full items-center justify-center rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10 xs:w-auto'
+                >
+                  Find a lab center
+                </Link>
+              </div>
+            </div>
+
+            <div className='px-4 py-5 sm:px-6 sm:py-6 md:px-8 lg:px-8 lg:py-8 xl:px-10'>
+              <div className='grid gap-3 sm:gap-4'>
+                {trustHighlights.map((item) => (
+                  <div
+                    key={item.title}
+                    className='rounded-[22px] border border-white/10 bg-white/[0.04] px-4 py-4 backdrop-blur-sm sm:rounded-3xl'
+                  >
+                    <div className='flex items-start gap-3 sm:gap-4'>
+                      <span className='mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-sky-100 sm:h-10 sm:w-10 sm:rounded-2xl'>
+                        <item.icon className='h-4 w-4 sm:h-5 sm:w-5' />
+                      </span>
+                      <div className='min-w-0'>
+                        <h2 className='text-[15px] font-semibold text-white sm:text-base'>
+                          {item.title}
+                        </h2>
+                        <p className='mt-1 text-sm leading-6 text-slate-200'>
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className='mt-5 grid grid-cols-1 gap-3 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3'>
+                {trustStats.map((item) => (
+                  <div
+                    key={item.label}
+                    className='rounded-[22px] border border-white/10 bg-[#173854] px-4 py-4 sm:rounded-3xl'
+                  >
+                    <div className='flex min-w-0 items-center gap-2 text-sky-100'>
+                      <item.icon className='h-4 w-4 shrink-0' />
+                      <span className='text-[11px] font-medium uppercase tracking-[0.12em] text-slate-300 sm:text-xs sm:tracking-[0.14em]'>
+                        {item.label}
+                      </span>
+                    </div>
+                    <p className='mt-2 text-[1.65rem] font-semibold tracking-[-0.02em] text-white sm:mt-3 sm:text-2xl'>
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className='mt-5 flex items-start gap-3 rounded-[22px] border border-emerald-300/15 bg-emerald-400/8 px-4 py-4 text-sm text-emerald-50 sm:rounded-3xl'>
+                <CheckCircle2 className='mt-0.5 h-4 w-4 shrink-0 text-emerald-300' />
+                <p className='leading-6'>
+                  Your sign-in gives you access to test orders, digital reports,
+                  and secure account tools without leaving the storefront
+                  experience.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className='order-1 overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_24px_56px_-38px_rgba(15,23,42,0.35)] sm:rounded-[28px] lg:order-2 lg:rounded-[32px]'>
+            <div className='border-b border-slate-200/80 px-4 py-5 sm:px-6 sm:py-6 md:px-8 lg:px-8 lg:py-7'>
+              <p className='text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700 sm:text-[11px] sm:tracking-[0.22em]'>
+                Patient and provider sign in
+              </p>
+              <h2 className='mt-2 text-[1.9rem] font-semibold tracking-[-0.03em] text-slate-950 sm:mt-3 sm:text-[2rem]'>
+                Sign in securely
+              </h2>
+              <p className='mt-2 max-w-md text-sm leading-6 text-slate-600 sm:mt-3'>
+                Access your account to view orders, monitor testing progress,
+                and download reports from a professional, privacy-conscious
+                portal.
+              </p>
+            </div>
+
+            <div className='px-4 py-5 sm:px-6 sm:py-6 md:px-8 lg:px-8 lg:py-8'>
+              <Suspense
+                fallback={
+                  <div className='flex items-center justify-center py-10'>
+                    <MedicalSpinner size='md' />
+                  </div>
+                }
+              >
+                <LoginForm />
+              </Suspense>
+
+              <div className='mt-5 rounded-[22px] border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-sm text-slate-600 sm:mt-6 sm:rounded-3xl'>
+                <div className='flex items-start gap-3'>
+                  <Lock className='mt-0.5 h-4 w-4 shrink-0 text-emerald-600' />
+                  <p className='leading-6'>
+                    Session access is encrypted to help protect personal health
+                    information and testing activity.
                   </p>
                 </div>
               </div>
             </div>
-
-            {/* Desktop: full aside */}
-            <aside className='relative hidden overflow-hidden bg-gradient-to-b from-[#2845a7] via-[#213f9e] to-[#1d327f] p-10 text-white xl:p-12 lg:flex'>
-              {/* Decorative circles */}
-              <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/[0.04]' />
-              <div className='pointer-events-none absolute -bottom-20 -left-12 h-56 w-56 rounded-full bg-white/[0.03]' />
-
-              <div className='relative z-10 flex h-full flex-col justify-between gap-10'>
-                <div className='space-y-7'>
-                  <div className='flex items-center gap-2'>
-                    <span className='flex h-9 w-9 items-center justify-center rounded-xl bg-white/15'>
-                      <FlaskConical className='h-5 w-5 text-blue-100' />
-                    </span>
-                    <span className='text-xs font-bold uppercase tracking-[0.16em] text-blue-200'>
-                      EzLabTesting
-                    </span>
-                  </div>
-
-                  <h1 className='max-w-[14ch] text-[40px] font-bold leading-[1.08] xl:text-[46px]'>
-                    Order tests, view results, stay informed
-                  </h1>
-
-                  <p className='max-w-[42ch] text-[15px] leading-relaxed text-blue-50/90'>
-                    Secure, physician-reviewed reports from CLIA-certified
-                    partner labs, with fast digital access for patients,
-                    clinicians, and lab partners.
-                  </p>
-
-                  <div className='space-y-2.5'>
-                    {[
-                      {
-                        icon: ShieldCheck,
-                        label: "HIPAA-compliant data protection",
-                      },
-                      { icon: Lock, label: "Bank-grade encryption" },
-                    ].map((item) => (
-                      <div
-                        key={item.label}
-                        className='flex items-center gap-3 rounded-xl border border-white/[0.12] bg-white/[0.08] px-4 py-3 backdrop-blur-sm transition-colors hover:bg-white/[0.12]'
-                      >
-                        <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#3b78ef]/80'>
-                          <item.icon className='h-4 w-4' />
-                        </span>
-                        <span className='text-sm font-medium text-blue-50'>
-                          {item.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-2 gap-3'>
-                  <div className='rounded-xl border border-white/[0.12] bg-white/[0.07] px-4 py-3.5'>
-                    <div className='mb-1.5 flex items-center gap-2'>
-                      <Clock3 className='h-4 w-4 text-blue-200' />
-                      <p className='text-2xl font-bold leading-none xl:text-3xl'>
-                        24–72 h
-                      </p>
-                    </div>
-                    <p className='text-[11px] text-blue-200/80'>
-                      Typical results window*
-                    </p>
-                  </div>
-                  <div className='rounded-xl border border-white/[0.12] bg-white/[0.07] px-4 py-3.5'>
-                    <div className='mb-1.5 flex items-center gap-2'>
-                      <MapPin className='h-4 w-4 text-blue-200' />
-                      <p className='text-2xl font-bold leading-none xl:text-3xl'>
-                        Nationwide
-                      </p>
-                    </div>
-                    <p className='text-[11px] text-blue-200/80'>
-                      Partner lab network
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </aside>
-
-            {/* ======= RIGHT PANEL — Login Form ======= */}
-            <section className='flex items-center justify-center bg-[#f8fafc] px-4 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-0'>
-              <div className='w-full max-w-[440px]'>
-                <div className='rounded-2xl border border-slate-100 bg-white px-5 pb-7 pt-7 shadow-[0_8px_30px_-18px_rgba(15,23,42,0.25)] sm:rounded-3xl sm:px-8 sm:pb-9 sm:pt-9'>
-                  {/* Form header */}
-                  <div className='mb-6 text-center sm:mb-7'>
-                    <p className='text-[10px] font-bold uppercase tracking-[0.2em] text-[#2156d4]'>
-                      EZLABTESTING
-                    </p>
-                    <h2 className='mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl'>
-                      Sign in to your account
-                    </h2>
-                    <p className='mt-2 text-sm leading-relaxed text-slate-500'>
-                      Patients &amp; providers — access lab testing, orders, and
-                      results in one place.
-                    </p>
-                  </div>
-
-                  <Suspense
-                    fallback={
-                      <div className='flex items-center justify-center py-10'>
-                        <MedicalSpinner size='md' />
-                      </div>
-                    }
-                  >
-                    <LoginForm />
-                  </Suspense>
-                </div>
-
-                {/* HIPAA badge below card */}
-                <p className='mt-5 flex items-center justify-center gap-2 text-[11px] font-medium text-slate-400'>
-                  <Lock className='h-3.5 w-3.5 text-emerald-500' />
-                  HIPAA-compliant · your health data is encrypted
-                </p>
-              </div>
-            </section>
-          </div>
+          </section>
         </div>
 
-        {/* ---- Footer strip ---- */}
-        <footer className='mt-6 flex flex-col items-center gap-2 border-t border-slate-300/60 pt-4 text-[10px] uppercase tracking-[0.14em] text-slate-400 sm:flex-row sm:justify-between sm:text-[11px]'>
+        <footer className='mt-6 flex flex-col gap-3 border-t border-slate-300/70 px-1 pt-4 text-xs text-slate-500 md:flex-row md:items-center md:justify-between'>
           <p>© 2026 EzLabTesting. All rights reserved.</p>
-          <nav className='flex items-center gap-5'>
+          <nav className='flex flex-wrap items-center gap-x-4 gap-y-2'>
             <Link
               href='/privacy-policy'
-              className='transition-colors hover:text-slate-600'
+              className='transition-colors hover:text-slate-700'
             >
               Privacy Policy
             </Link>
             <Link
               href='/terms-of-service'
-              className='transition-colors hover:text-slate-600'
+              className='transition-colors hover:text-slate-700'
             >
               Terms of Service
             </Link>
             <Link
               href='/hipaa-notice'
-              className='transition-colors hover:text-slate-600'
+              className='transition-colors hover:text-slate-700'
             >
-              Compliance
+              HIPAA Notice
             </Link>
           </nav>
         </footer>

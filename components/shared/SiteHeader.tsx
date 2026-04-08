@@ -1,11 +1,13 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useCartSidebar } from "@/lib/cart-sidebar-context";
-import { getPushToken } from "@/lib/firebase/getPushToken";
 import { useCartStore } from "@/lib/store/cart-store";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { LifeBuoy, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { HeaderActions } from "./header/HeaderActions";
 import { HeaderAuthButtons } from "./header/HeaderAuthButtons";
 import { HeaderLogo } from "./header/HeaderLogo";
@@ -37,17 +39,18 @@ const ADMIN_NAV_LINKS: NavLink[] = [
 
 export function SiteHeader() {
   const { isAuthenticated, user, logout } = useAuth();
+  const pathname = usePathname();
   const router = useRouter();
   const itemCount = useCartStore((state) => state.getItemCount());
   const { toggleCart } = useCartSidebar();
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     let ticking = false;
@@ -76,6 +79,7 @@ export function SiteHeader() {
   const isCustomer = normalizedRole === "customer";
   const isSuperAdmin = normalizedRole === "super_admin";
   const isAdmin = normalizedRole === "admin";
+  const isLoginPage = pathname === "/login";
 
   const filteredLinks = useMemo(
     () => {
@@ -97,13 +101,7 @@ export function SiteHeader() {
   );
 
   const handleLogout = async () => {
-    const shouldAttachPushToken =
-      typeof window !== "undefined" &&
-      "Notification" in window &&
-      Notification.permission === "granted";
-
-    const token = shouldAttachPushToken ? await getPushToken() : null;
-    await logout(token);
+    await logout();
     setIsMobileMenuOpen(false);
     router.push("/");
   };
@@ -111,6 +109,45 @@ export function SiteHeader() {
   const handleLinkClick = () => {
     setIsMobileMenuOpen(false);
   };
+
+  if (isLoginPage) {
+    return (
+      <>
+        <a
+          href='#page-content'
+          className='sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:font-semibold focus:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+        >
+          Skip to main content
+        </a>
+
+        <header className='sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl'>
+          <div className='container mx-auto px-4 min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
+            <div className='flex h-16 items-center justify-between gap-2 min-[600px]:h-[4.25rem]'>
+              <HeaderLogo onClick={handleLinkClick} />
+
+              <div className='flex shrink-0 items-center gap-2 sm:gap-3'>
+                <span className='hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-800 sm:inline-flex'>
+                  <ShieldCheck className='h-3.5 w-3.5' />
+                  Secure access
+                </span>
+
+                <Button
+                  variant='ghost'
+                  asChild
+                  className='h-10 min-w-10 rounded-full px-0 text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 xs:px-3.5'
+                >
+                  <Link href='/help-center' onClick={handleLinkClick}>
+                    <LifeBuoy className='h-4 w-4' />
+                    <span className='sr-only xs:not-sr-only'>Support</span>
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+      </>
+    );
+  }
 
   return (
     <>

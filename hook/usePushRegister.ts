@@ -1,67 +1,68 @@
 "use client";
 
-import { requestPushPermissionAndToken } from "@/lib/push";
+import {
+  getPushRegistrationAttemptKey,
+  getStoredPushRegistration,
+  requestPushPermissionAndToken,
+  setStoredPushRegistration,
+} from "@/lib/push";
+import {
+  registerPushToken,
+  unregisterPushToken,
+} from "@/lib/services/notifications.api";
 import { useEffect } from "react";
 
-const REGISTERED_PUSH_TOKEN_KEY = "registered_push_token";
-const PUSH_ATTEMPT_KEY_PREFIX = "push_register_attempted";
-
-function getApiBaseUrl() {
-  return (
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:7001/api/v1"
-  );
-}
-
-export function usePushRegister(userId?: string, accessToken?: string) {
+export function usePushRegister(userId?: string) {
   useEffect(() => {
     if (!userId) return;
     if (typeof window === "undefined" || !("Notification" in window)) return;
-
     if (Notification.permission === "denied") return;
 
-    const attemptKey = `${PUSH_ATTEMPT_KEY_PREFIX}:${userId}`;
+    const attemptKey = getPushRegistrationAttemptKey(userId);
     if (sessionStorage.getItem(attemptKey) === "1") return;
+
+    let cancelled = false;
 
     async function register() {
       sessionStorage.setItem(attemptKey, "1");
 
       try {
         const token = await requestPushPermissionAndToken();
-        if (!token) return;
+        if (cancelled || !token) return;
 
-        const registeredToken = localStorage.getItem(REGISTERED_PUSH_TOKEN_KEY);
-        if (registeredToken === token) return;
-
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-
-        if (accessToken && accessToken !== "authenticated") {
-          headers.Authorization = `Bearer ${accessToken}`;
+        const storedRegistration = getStoredPushRegistration();
+        if (
+          storedRegistration?.token === token &&
+          storedRegistration.userId === userId
+        ) {
+          return;
         }
 
-        const response = await fetch(
-          `${getApiBaseUrl()}/notifications/register`,
-          {
-            method: "POST",
-            headers,
-            credentials: "include",
-            body: JSON.stringify({ token, platform: "web" }),
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error(`Push token registration failed: ${response.status}`);
+        if (
+          storedRegistration?.token &&
+          storedRegistration.token !== token
+        ) {
+          try {
+            await unregisterPushToken(storedRegistration.token);
+          } catch (error) {
+            console.warn("Failed to unregister stale push token", error);
+          }
         }
 
-        localStorage.setItem(REGISTERED_PUSH_TOKEN_KEY, token);
+        await registerPushToken({ token, platform: "web" });
+        if (cancelled) return;
+
+        setStoredPushRegistration({ token, userId: userId ?? null });
       } catch (err) {
         console.error("Push registration failed", err);
+        sessionStorage.removeItem(attemptKey);
       }
     }
 
-    register();
-  }, [userId, accessToken]);
+    void register();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 }

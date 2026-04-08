@@ -1,11 +1,8 @@
 "use client";
 
-import { useFirebasePush } from "@/hook/useFirebasePush";
 import { useEffect } from "react";
 
 export function ClientInit() {
-  useFirebasePush();
-
   // Validate token on app initialization
   // If token doesn't exist or is invalid, clear all auth data
   useEffect(() => {

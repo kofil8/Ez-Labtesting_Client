@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hook/use-toast";
 import { useAuth } from "@/lib/auth-context";
-import { getPushToken } from "@/lib/firebase/getPushToken";
 import { LoginFormData, loginSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail } from "lucide-react";
@@ -42,31 +41,13 @@ export function LoginForm() {
     ? "email-error email-help"
     : "email-help";
 
-  // -------------------------
-  //  MAIN LOGIN HANDLER
-  // -------------------------
   const handleAction = (formData: FormData) => {
     setError("");
 
     startTransition(async () => {
       try {
-        // 🔥 Get push token before sending login
-        const shouldAttachPushToken =
-          typeof window !== "undefined" &&
-          "Notification" in window &&
-          Notification.permission === "granted";
-
-        const pushToken = shouldAttachPushToken ? await getPushToken() : null;
-        if (pushToken) {
-          formData.append("pushToken", pushToken);
-          formData.append("platform", "web");
-        }
-
         const res = await loginUser(formData);
 
-        // ---------------------------
-        // MFA REQUIRED
-        // ---------------------------
         if (res?.mfaRequired && res.tempToken) {
           toast({ title: "Two-factor authentication required" });
           setTimeout(() => {
@@ -75,9 +56,6 @@ export function LoginForm() {
           return;
         }
 
-        // ---------------------------
-        // SUCCESS
-        // ---------------------------
         if (res?.success) {
           await authContext.refreshAuth();
           toast({ title: "Login successful!" });
@@ -90,7 +68,6 @@ export function LoginForm() {
               ? fromParam
               : null;
 
-          // Check if user needs to set up MFA (mandatory for admin/lab partner)
           const user = authContext.user;
           const mandatoryRoles = ["ADMIN", "LAB_PARTNER"];
           const roleKey = user?.role?.toUpperCase();
@@ -125,7 +102,6 @@ export function LoginForm() {
             return;
           }
 
-          // Prefer explicit `from` redirect when provided and safe.
           if (safeFrom) {
             setTimeout(() => {
               router.push(safeFrom);
@@ -133,7 +109,6 @@ export function LoginForm() {
             return;
           }
 
-          // Otherwise redirect based on user role
           const role = authContext.user?.role;
           const roleRedirect =
             role === "admin"
@@ -149,20 +124,15 @@ export function LoginForm() {
           return;
         }
 
-        // ---------------------------
-        // EMAIL NOT VERIFIED
-        // ---------------------------
         if (res?.requiresVerification) {
           const email = res.email || (formData.get("email") as string);
 
-          // Save email locally for OTP page
           if (typeof window !== "undefined") {
             sessionStorage.setItem("otp_email", email);
           }
 
           toast({ title: "Please verify your email." });
 
-          // Auto resend OTP
           try {
             const resendForm = new FormData();
             resendForm.append("email", email);
@@ -188,9 +158,6 @@ export function LoginForm() {
           return;
         }
 
-        // ---------------------------
-        // FAILURE (non-verification)
-        // ---------------------------
         const failMessage = res?.message || "Login failed";
         setError(failMessage);
         toast({ title: failMessage, variant: "destructive" });
@@ -204,9 +171,6 @@ export function LoginForm() {
     });
   };
 
-  // -------------------------
-  //  FORM SUBMISSION
-  // -------------------------
   const onSubmit = async (data: LoginFormData) => {
     const formData = new FormData();
     formData.append("email", data.email);
@@ -216,8 +180,7 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
-      {/* Success Message */}
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-5 sm:space-y-6'>
       {searchParams.get("verified") === "true" && (
         <FormStateMessage
           type='success'
@@ -236,7 +199,6 @@ export function LoginForm() {
         />
       )}
 
-      {/* Error Message */}
       {error && (
         <FormStateMessage
           type='error'
@@ -246,23 +208,22 @@ export function LoginForm() {
         />
       )}
 
-      {/* Email / Phone Field */}
-      <div className='space-y-1.5'>
+      <div className='space-y-2'>
         <Label
           htmlFor='email'
-          className='block text-[13px] font-semibold text-slate-800'
+          className='block text-[13px] font-semibold uppercase tracking-[0.08em] text-slate-700'
         >
-          Email or Mobile Number
+          Email address or mobile number
         </Label>
         <div className='group relative'>
-          <Mail className='pointer-events-none absolute left-3 top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-blue-600' />
+          <Mail className='pointer-events-none absolute left-4 top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-sky-700' />
           <Input
             id='email'
             type='text'
             autoComplete='email'
             inputMode='email'
             placeholder='you@example.com or 555-000-1234'
-            className='h-11 rounded-xl border border-slate-300 bg-slate-50/60 pl-10 text-sm placeholder:text-slate-400 transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100 disabled:text-slate-500'
+            className='h-11 rounded-[20px] border border-slate-200 bg-white pl-11 pr-4 text-sm text-slate-900 shadow-none placeholder:text-slate-400 transition-colors focus:border-sky-700 focus:ring-4 focus:ring-sky-100 hover:border-slate-300 disabled:bg-slate-50 disabled:text-slate-500 sm:h-12 sm:rounded-2xl'
             aria-required='true'
             aria-invalid={errors.email ? "true" : "false"}
             aria-describedby={emailDescriptionId}
@@ -281,18 +242,17 @@ export function LoginForm() {
         )}
       </div>
 
-      {/* Password Field */}
-      <div className='space-y-1.5'>
-        <div className='flex items-center justify-between'>
+      <div className='space-y-2'>
+        <div className='flex flex-col items-start gap-1.5 xs:flex-row xs:items-center xs:justify-between xs:gap-3'>
           <Label
             htmlFor='password'
-            className='text-[13px] font-semibold text-slate-800'
+            className='text-[13px] font-semibold uppercase tracking-[0.08em] text-slate-700'
           >
             Password
           </Label>
           <Link
             href='/forgot-password'
-            className='text-xs font-semibold text-blue-600 transition-colors hover:text-blue-800'
+            className='text-xs font-semibold text-sky-700 transition-colors hover:text-sky-900'
           >
             Forgot password?
           </Link>
@@ -305,27 +265,26 @@ export function LoginForm() {
           disabled={isPending}
           {...register("password")}
           error={errors.password?.message}
-          className='h-11 rounded-xl border-slate-300 bg-slate-50/60 text-sm transition-all focus:bg-white'
+          className='h-11 rounded-[20px] border-slate-200 bg-white text-sm shadow-none transition-colors focus:border-sky-700 focus:ring-4 focus:ring-sky-100 hover:border-slate-300 sm:h-12 sm:rounded-2xl'
         />
         <CapsLockIndicator />
       </div>
 
-      {/* Remember Me + Submit */}
-      <div className='flex items-center gap-2'>
+      <div className='flex items-start gap-2.5 rounded-[20px] border border-slate-200 bg-slate-50/70 px-3.5 py-3 sm:items-center sm:rounded-2xl'>
         <input
           type='checkbox'
           id='rememberMe'
           checked={rememberMe}
           onChange={(e) => setRememberMe(e.target.checked)}
           disabled={isPending}
-          className='h-[15px] w-[15px] cursor-pointer rounded border-slate-300 accent-blue-600 focus:ring-2 focus:ring-blue-500'
+          className='h-4 w-4 cursor-pointer rounded border-slate-300 accent-sky-700 focus:ring-2 focus:ring-sky-700'
           aria-label='Keep me signed in on this device'
         />
         <label
           htmlFor='rememberMe'
-          className='cursor-pointer text-[13px] text-slate-600'
+          className='cursor-pointer text-[13px] font-medium text-slate-600'
         >
-          Keep me signed in
+          Keep me signed in on this device
         </label>
       </div>
 
@@ -333,49 +292,48 @@ export function LoginForm() {
         type='submit'
         disabled={isPending}
         loading={isPending}
-        loadingText='Signing in…'
-        className='h-[46px] w-full rounded-xl bg-[#2763e8] text-[15px] font-semibold text-white shadow-[0_10px_24px_-12px_rgba(37,99,235,0.7)] transition-all hover:bg-[#1e54d0] hover:shadow-[0_12px_28px_-10px_rgba(37,99,235,0.85)] active:translate-y-px disabled:opacity-60'
+        loadingText='Signing in...'
+        className='h-11 w-full rounded-[20px] bg-[#123c66] text-[15px] font-semibold text-white shadow-sm transition-colors hover:bg-[#0f3355] disabled:opacity-60 sm:h-12 sm:rounded-2xl'
       >
         Sign In
       </LoadingButton>
 
-      {/* ---- Secondary actions ---- */}
       <div className='relative flex items-center gap-3 py-1'>
         <span className='flex-1 border-t border-slate-200' />
         <span className='text-[11px] font-medium uppercase tracking-wider text-slate-400'>
-          or
+          account help
         </span>
         <span className='flex-1 border-t border-slate-200' />
       </div>
 
-      <p className='text-center text-[13px] leading-relaxed text-slate-500'>
-        Patients can{" "}
+      <p className='text-left text-[13px] leading-6 text-slate-500 sm:text-center'>
+        New to EzLabTesting? Patients can{" "}
         <Link
           href='/signup'
-          className='font-semibold text-blue-600 transition-colors hover:text-blue-800'
+          className='font-semibold text-sky-700 transition-colors hover:text-sky-900'
         >
           create an account online
         </Link>
-        . Clinics &amp; lab partners,{" "}
+        . Clinics and lab partners can{" "}
         <Link
           href='mailto:support@ezlabtesting.com?subject=Lab%20partner%20onboarding'
-          className='font-semibold text-blue-600 transition-colors hover:text-blue-800'
+          className='font-semibold text-sky-700 transition-colors hover:text-sky-900'
         >
           contact our team
         </Link>
         .
       </p>
 
-      <div className='grid grid-cols-2 gap-3'>
+      <div className='grid grid-cols-1 gap-3 xs:grid-cols-2'>
         <Link
           href='/help-center'
-          className='rounded-xl border border-slate-200 bg-slate-50/80 py-2.5 text-center text-[13px] font-medium text-slate-600 transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700'
+          className='rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-center text-[13px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 sm:rounded-2xl'
         >
           Help Center
         </Link>
         <Link
           href='mailto:support@ezlabtesting.com'
-          className='rounded-xl border border-slate-200 bg-slate-50/80 py-2.5 text-center text-[13px] font-medium text-slate-600 transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700'
+          className='rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-center text-[13px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 sm:rounded-2xl'
         >
           Contact Support
         </Link>

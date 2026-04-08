@@ -1,38 +1,90 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
+import {
+  markAllNotificationsRead,
+  markNotificationRead,
+  type NotificationItem,
+} from "@/lib/services/notifications.api";
 import { useNotificationsStore } from "@/lib/store/notifications-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 export function NotificationsBell() {
-  const unread = useNotificationsStore((s) => s.getUnreadCount());
-  const items = useNotificationsStore((s) => s.items);
-  const markRead = useNotificationsStore((s) => s.markRead);
-  const markAllRead = useNotificationsStore((s) => s.markAllRead);
-  const clearAll = useNotificationsStore((s) => s.clearAll);
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const hydrated = useNotificationsStore((state) => state.hydrated);
+  const ownerUserId = useNotificationsStore((state) => state.ownerUserId);
+  const notifications = useNotificationsStore((state) => state.notifications);
+  const unreadCount = useNotificationsStore((state) => state.unreadCount);
+  const markAsReadLocal = useNotificationsStore(
+    (state) => state.markAsReadLocal,
+  );
+  const markAllAsReadLocal = useNotificationsStore(
+    (state) => state.markAllAsReadLocal,
+  );
 
   const [open, setOpen] = useState(false);
+  const [isMarkingAll, startMarkAllTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  const items = useMemo(() => {
+    if (!hydrated || ownerUserId !== user?.id) return [];
+    return notifications;
+  }, [hydrated, notifications, ownerUserId, user?.id]);
+
+  const unread =
+    hydrated && ownerUserId === user?.id ? unreadCount : 0;
+
   useEffect(() => {
-    const onDocClick = (e: MouseEvent) => {
+    const onDocClick = (event: MouseEvent) => {
       if (!containerRef.current) return;
-      if (!containerRef.current.contains(e.target as Node)) {
+      if (!containerRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
+
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
   }, []);
+
+  const handleNotificationClick = (notification: NotificationItem) => {
+    if (!notification.isRead) {
+      markAsReadLocal(notification.id);
+      void markNotificationRead(notification.id).catch((error) => {
+        console.error("Failed to mark notification as read", error);
+        toast.error("Failed to update notification status");
+      });
+    }
+
+    const clickAction = notification.data["clickAction"];
+    if (typeof clickAction === "string" && clickAction.startsWith("/")) {
+      setOpen(false);
+      router.push(clickAction);
+    }
+  };
+
+  const handleMarkAllRead = () => {
+    markAllAsReadLocal();
+    startMarkAllTransition(() => {
+      void markAllNotificationsRead().catch((error) => {
+        console.error("Failed to mark all notifications as read", error);
+        toast.error("Failed to update notifications");
+      });
+    });
+  };
 
   return (
     <div ref={containerRef} className='relative'>
       <Button
         variant='ghost'
         size='icon'
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((value) => !value)}
         className='relative hover:bg-primary/10 transition-colors group h-11 w-11 touch-manipulation'
         aria-label={
           unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
@@ -66,24 +118,15 @@ export function NotificationsBell() {
           >
             <div className='flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-800'>
               <p className='text-sm font-bold'>Notifications</p>
-              <div className='flex items-center gap-2'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='text-xs'
-                  onClick={markAllRead}
-                >
-                  Mark all read
-                </Button>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='text-xs text-destructive'
-                  onClick={clearAll}
-                >
-                  Clear
-                </Button>
-              </div>
+              <Button
+                variant='ghost'
+                size='sm'
+                className='text-xs'
+                onClick={handleMarkAllRead}
+                disabled={items.length === 0 || unread === 0 || isMarkingAll}
+              >
+                Mark all read
+              </Button>
             </div>
 
             <div className='max-h-80 overflow-auto py-1'>
@@ -92,25 +135,25 @@ export function NotificationsBell() {
                   No notifications yet
                 </div>
               ) : (
-                items.slice(0, 20).map((n) => (
+                items.slice(0, 20).map((notification) => (
                   <button
-                    key={n.id}
-                    onClick={() => markRead(n.id)}
+                    key={notification.id}
+                    onClick={() => handleNotificationClick(notification)}
                     className={`w-full text-left px-4 py-3 flex flex-col gap-1 hover:bg-muted transition-colors ${
-                      n.read ? "opacity-70" : ""
+                      notification.isRead ? "opacity-70" : ""
                     }`}
                   >
-                    <div className='flex items-center justify-between'>
+                    <div className='flex items-center justify-between gap-3'>
                       <span className='text-sm font-semibold truncate'>
-                        {n.title}
+                        {notification.title}
                       </span>
-                      <span className='text-[11px] text-muted-foreground'>
-                        {new Date(n.createdAt).toLocaleString()}
+                      <span className='text-[11px] text-muted-foreground shrink-0'>
+                        {new Date(notification.createdAt).toLocaleString()}
                       </span>
                     </div>
-                    {n.body && (
+                    {notification.body && (
                       <span className='text-sm text-muted-foreground line-clamp-2'>
-                        {n.body}
+                        {notification.body}
                       </span>
                     )}
                   </button>

@@ -1,5 +1,11 @@
 "use client";
 
+import { cleanupPushOnLogout } from "@/lib/logoutPushCleanup";
+import {
+  clearPushRegistrationAttempts,
+  clearRegisteredPushTokenMarker,
+} from "@/lib/push";
+import { useNotificationsStore } from "@/lib/store/notifications-store";
 import { AuthState, User } from "@/types/user";
 import {
   createContext,
@@ -23,7 +29,7 @@ interface UpdateProfileData {
 
 interface AuthContextType extends AuthState {
   refreshAuth: () => Promise<boolean>;
-  logout: (pushToken?: string | null) => Promise<void>;
+  logout: () => Promise<void>;
   fetchProfile: () => Promise<void>;
   updateProfile: (
     data: UpdateProfileData,
@@ -100,7 +106,10 @@ function clearAuthPersistence() {
   if (typeof window === "undefined") return;
 
   localStorage.removeItem(AUTH_TOKEN_KEY);
+  clearRegisteredPushTokenMarker();
+  clearPushRegistrationAttempts();
   sessionStorage.removeItem("otp_email");
+  useNotificationsStore.getState().resetNotifications();
 
   const past = new Date(0).toUTCString();
 
@@ -414,10 +423,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /* ------------------------------------------------------
      LOGOUT
      - Clears auth persistence and calls server logout
-     - Unregisters FCM push token if provided
+     - Unregisters FCM push token before ending the session
   ------------------------------------------------------ */
   const logout = useCallback(
-    async (pushToken?: string | null): Promise<void> => {
+    async (): Promise<void> => {
+      try {
+        await cleanupPushOnLogout();
+      } catch (error) {
+        console.error("Push cleanup failed during logout:", error);
+      }
+
       clearAuthPersistence();
 
       setAuthState({
@@ -429,7 +444,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         const { logoutUser } = await import("@/app/actions/logout-user");
-        await logoutUser(pushToken || "");
+        await logoutUser();
       } catch (err) {
         console.error("Logout failed:", err);
         // Don't throw - auth state is already cleared
