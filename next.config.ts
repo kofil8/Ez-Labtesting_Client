@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   typedRoutes: false,
+  turbopack: {
+    root: ".",
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: 10 * 1024 * 1024,
