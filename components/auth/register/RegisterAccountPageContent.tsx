@@ -38,7 +38,7 @@ export function RegisterAccountPageContent() {
   return (
     <RegisterFlowShell
       title='Create your secure account'
-      subtitle='Open your account in minutes to manage lab orders, appointments, delivery details, and results from one secure place.'
+      subtitle='Set up secure access in minutes, add a profile photo if you want, and save optional details only when they improve future orders, delivery, and results access.'
       badgeText='Medical checkout ready'
     >
       <RegisterAccountForm />
