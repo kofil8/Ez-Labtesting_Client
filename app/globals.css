@@ -1626,38 +1626,7 @@
   background: #0b5ed7;
 }
 
-/* International Phone Input Styles */
-.react-international-phone-input-custom
-  .react-international-phone-input-container {
-  width: 100%;
-}
-
-.react-international-phone-input-custom .react-international-phone-input {
-  width: 100%;
-  height: 48px;
-  padding: 0 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.react-international-phone-input-custom .react-international-phone-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
-
-.react-international-phone-input-custom
-  .react-international-phone-country-selector-button {
-  height: 48px;
-  border: 1px solid #e5e7eb;
-  border-right: none;
-  border-radius: 0.5rem 0 0 0.5rem;
-  padding: 0 8px;
-  transition: all 0.2s;
-}
-
+/* International Phone Input Styles - Optimized */
 .react-international-phone-input-custom {
   width: 100%;
   max-width: 100%;
@@ -1667,33 +1636,17 @@
 .react-international-phone-input-custom
   .react-international-phone-input-container {
   width: 100%;
-  max-width: 100%;
   overflow: hidden;
-}
-
-.react-international-phone-input-custom .react-international-phone-input {
-  border-color: #e5e7eb;
-  border-radius: 0.5rem;
-  height: 48px;
-  background-color: white;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.react-international-phone-input-custom .react-international-phone-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .react-international-phone-input-custom
   .react-international-phone-country-selector-button {
-  border-right: 1px solid #e5e7eb;
-  padding: 0 12px;
   display: flex;
   align-items: center;
   gap: 6px;
   font-weight: 500;
   color: #111827;
+  border-right: 1px solid var(--react-international-phone-border-color);
   transition: all 0.2s ease;
 }
 
@@ -1705,7 +1658,7 @@
 .react-international-phone-input-custom
   .react-international-phone-country-selector-button:focus {
   outline: none;
-  background-color: #e0e7ff;
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .react-international-phone-input-custom
@@ -1784,6 +1737,7 @@
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 }
+
 /* Emergency Contact Phone Input - Red Theme */
 .react-international-phone-input-emergency {
   width: 100%;
@@ -1794,7 +1748,6 @@
 .react-international-phone-input-emergency
   .react-international-phone-input-container {
   width: 100%;
-  max-width: 100%;
   overflow: hidden;
 }
 

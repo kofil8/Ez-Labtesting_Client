@@ -20,7 +20,7 @@ messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || "EZ Lab Testing";
   const options = {
     body: payload.notification?.body || "",
-    icon: "/images/logo.png",
+    icon: "/images/logo.svg",
     data: payload.data || {},
   };
 
@@ -30,8 +30,7 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
 
-  const targetUrl =
-    event.notification?.data?.clickAction || "/dashboard";
+  const targetUrl = event.notification?.data?.clickAction || "/dashboard";
 
   event.waitUntil(
     clients

@@ -27,10 +27,10 @@ const signupBaseSchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z
     .string()
-    .min(1, "Phone number is required")
-    .min(10, "Phone must be at least 10 digits")
-    .max(15, "Phone must not exceed 15 digits")
-    .or(z.literal("")),
+    .refine(
+      (value) => value === "" || (value.length >= 10 && value.length <= 15),
+      "Phone number must be 10 to 15 digits",
+    ),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -97,6 +97,7 @@ export const signupAccountSchema = signupBaseSchema
     phone: true,
     password: true,
     confirmPassword: true,
+    profileImage: true,
     dateOfBirth: true,
     gender: true,
     addressLine1: true,

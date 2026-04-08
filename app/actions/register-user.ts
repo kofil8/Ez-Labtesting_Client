@@ -9,23 +9,20 @@ export async function registerUser(formData: FormData) {
     email: String(formData.get("email") ?? "").trim(),
     password: String(formData.get("password") ?? ""),
     phone: String(formData.get("phoneNumber") ?? "").replace(/\D/g, ""),
-    confirmPassword: String(formData.get("confirmPassword") ?? formData.get("password") ?? ""),
+    confirmPassword: String(
+      formData.get("confirmPassword") ?? formData.get("password") ?? "",
+    ),
     gender: String(formData.get("gender") ?? "").trim() || undefined,
     profileImage: String(formData.get("profileImage") ?? "").trim(),
     bio: String(formData.get("bio") ?? "").trim(),
     dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
-    address: String(formData.get("address") ?? "").trim(),
     addressLine1: String(formData.get("addressLine1") ?? "").trim(),
     addressLine2: String(formData.get("addressLine2") ?? "").trim(),
     city: String(formData.get("city") ?? "").trim(),
-    state: String(formData.get("state") ?? "").trim().toUpperCase(),
+    state: String(formData.get("state") ?? "")
+      .trim()
+      .toUpperCase(),
     zipCode: String(formData.get("zipCode") ?? "").trim(),
-    bloodType: String(formData.get("bloodType") ?? "").trim(),
-    allergies: String(formData.get("allergies") ?? "").trim(),
-    medicalConditions: String(formData.get("medicalConditions") ?? "").trim(),
-    medications: String(formData.get("medications") ?? "").trim(),
-    emergencyContactName: String(formData.get("emergencyContactName") ?? "").trim(),
-    emergencyContactPhone: String(formData.get("emergencyContactPhone") ?? "").trim(),
   };
 
   const validated = signupSchema.parse(requestData);
@@ -42,21 +39,11 @@ export async function registerUser(formData: FormData) {
   if (validated.profileImage) requestBody.profileImage = validated.profileImage;
   if (validated.bio) requestBody.bio = validated.bio;
   if (validated.dateOfBirth) requestBody.dateOfBirth = validated.dateOfBirth;
-  if (validated.address) requestBody.address = validated.address;
   if (validated.addressLine1) requestBody.addressLine1 = validated.addressLine1;
   if (validated.addressLine2) requestBody.addressLine2 = validated.addressLine2;
   if (validated.city) requestBody.city = validated.city;
   if (validated.state) requestBody.state = validated.state;
   if (validated.zipCode) requestBody.zipCode = validated.zipCode;
-  if (validated.bloodType) requestBody.bloodType = validated.bloodType;
-  if (validated.allergies) requestBody.allergies = validated.allergies;
-  if (validated.medicalConditions)
-    requestBody.medicalConditions = validated.medicalConditions;
-  if (validated.medications) requestBody.medications = validated.medications;
-  if (validated.emergencyContactName)
-    requestBody.emergencyContactName = validated.emergencyContactName;
-  if (validated.emergencyContactPhone)
-    requestBody.emergencyContactPhone = validated.emergencyContactPhone;
 
   let res;
   try {

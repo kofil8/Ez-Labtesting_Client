@@ -1,5 +1,6 @@
 "use client";
 
+import { PhoneInputField } from "@/components/shared/PhoneInputField";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -25,8 +26,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { PhoneInput } from "react-international-phone";
-import "react-international-phone/style.css";
 
 interface UserEditDialogProps {
   open: boolean;
@@ -320,39 +319,29 @@ export function UserEditDialog({
                     </div>
                   )}
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='phoneNumber'>Phone Number</Label>
-                    <PhoneInput
-                      defaultCountry='us'
-                      value={phoneNumber}
-                      onChange={(phone) => {
-                        setPhoneNumber(phone);
-                        setValue("phoneNumber", phone);
-                      }}
-                      inputProps={{
-                        id: "phoneNumber",
-                        placeholder: "Enter phone number",
-                      }}
-                    />
-                  </div>
+                  <PhoneInputField
+                    id='phoneNumber'
+                    label='Phone Number'
+                    value={phoneNumber}
+                    onChange={(phone) => {
+                      setPhoneNumber(phone);
+                      setValue("phoneNumber", phone);
+                    }}
+                    defaultCountry='us'
+                    showIcon={false}
+                  />
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='emergencyContactPhone'>
-                      Emergency Contact Phone
-                    </Label>
-                    <PhoneInput
-                      defaultCountry='us'
-                      value={emergencyContactPhone}
-                      onChange={(phone) => {
-                        setEmergencyContactPhone(phone);
-                        setValue("emergencyContactPhone", phone);
-                      }}
-                      inputProps={{
-                        id: "emergencyContactPhone",
-                        placeholder: "Enter emergency contact phone",
-                      }}
-                    />
-                  </div>
+                  <PhoneInputField
+                    id='emergencyContactPhone'
+                    label='Emergency Contact Phone'
+                    value={emergencyContactPhone}
+                    onChange={(phone) => {
+                      setEmergencyContactPhone(phone);
+                      setValue("emergencyContactPhone", phone);
+                    }}
+                    defaultCountry='us'
+                    showIcon={false}
+                  />
 
                   <div className='space-y-2'>
                     <Label htmlFor='emergencyContactName'>
