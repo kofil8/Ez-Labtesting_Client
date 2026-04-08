@@ -54,7 +54,6 @@ const signupBaseSchema = z.object({
     .optional()
     .or(z.literal("")),
   dateOfBirth: z.string().optional().or(z.literal("")),
-  address: z.string().optional().or(z.literal("")),
   addressLine1: z
     .string()
     .max(255, "Address line 1 must be less than 255 characters")
@@ -80,12 +79,6 @@ const signupBaseSchema = z.object({
     .max(10, "Zip code must be 10 characters or less")
     .optional()
     .or(z.literal("")),
-  bloodType: z.string().optional().or(z.literal("")),
-  allergies: z.string().max(500).optional().or(z.literal("")),
-  medicalConditions: z.string().max(500).optional().or(z.literal("")),
-  medications: z.string().max(500).optional().or(z.literal("")),
-  emergencyContactName: z.string().optional().or(z.literal("")),
-  emergencyContactPhone: z.string().optional().or(z.literal("")),
 });
 
 export const signupSchema = signupBaseSchema.refine(
@@ -105,6 +98,7 @@ export const signupAccountSchema = signupBaseSchema
     password: true,
     confirmPassword: true,
     dateOfBirth: true,
+    gender: true,
     addressLine1: true,
     addressLine2: true,
     city: true,
@@ -115,18 +109,6 @@ export const signupAccountSchema = signupBaseSchema
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
-
-export const signupMedicalSchema = signupBaseSchema.pick({
-  gender: true,
-  dateOfBirth: true,
-  address: true,
-  bloodType: true,
-  allergies: true,
-  medicalConditions: true,
-  medications: true,
-  emergencyContactName: true,
-  emergencyContactPhone: true,
-});
 
 export const mfaSchema = z.object({
   code: z
@@ -181,12 +163,6 @@ export const profileUpdateSchema = z.object({
   city: z.string().max(100).optional().or(z.literal("")),
   state: z.string().max(2).optional().or(z.literal("")),
   zipCode: z.string().max(10).optional().or(z.literal("")),
-  bloodType: z.string().optional().or(z.literal("")),
-  allergies: z.string().max(500).optional().or(z.literal("")),
-  medicalConditions: z.string().max(500).optional().or(z.literal("")),
-  medications: z.string().max(500).optional().or(z.literal("")),
-  emergencyContactName: z.string().optional().or(z.literal("")),
-  emergencyContactPhone: z.string().optional().or(z.literal("")),
 });
 
 export const changePasswordSchema = z
@@ -210,7 +186,6 @@ export const changePasswordSchema = z
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type SignupAccountFormData = z.infer<typeof signupAccountSchema>;
-export type SignupMedicalFormData = z.infer<typeof signupMedicalSchema>;
 export type MFAFormData = z.infer<typeof mfaSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
