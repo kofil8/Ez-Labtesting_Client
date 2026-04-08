@@ -35,7 +35,7 @@ jobs:
             git reset --hard "origin/${{ secrets.BRANCH }}"
             git clean -fd -e .env.production -e ecosystem.config.js
 
-            rm -rf .next
+            rm -rf .next && rm -rf node_modules && rm -f yarn.lock
 
             export NODE_ENV=production
 
