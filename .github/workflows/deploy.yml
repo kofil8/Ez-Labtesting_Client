@@ -39,7 +39,7 @@ jobs:
 
             export NODE_ENV=production
 
-            yarn install --frozen-lockfile || { echo "Failed to install dependencies"; exit 1; }
+            yarn install || { echo "Failed to install dependencies"; exit 1; }
             yarn build || { echo "Failed to build application"; exit 1; }
 
             if pm2 describe "${{ secrets.PM2_PROCESS }}" > /dev/null 2>&1; then
