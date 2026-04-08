@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   typedRoutes: false,
   turbopack: {
-    root: ".",
+    root: path.resolve(__dirname),
   },
   experimental: {
     serverActions: {
