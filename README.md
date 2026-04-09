@@ -38,6 +38,7 @@ yarn install
 
 # Set up environment variables
 # Create a .env.local file and add your API keys:
+# OPENAI_API_KEY=your_openai_api_key_here
 # NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
 
 # Run development server
@@ -59,6 +60,9 @@ npm start
 Create a `.env.local` file in the root directory with the following variables:
 
 ```bash
+# OpenAI API key (required for the homepage AI lab assistant)
+OPENAI_API_KEY=your_openai_api_key_here
+
 # Google Maps API Key (optional - for lab center finder feature)
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
 ```
@@ -186,7 +190,11 @@ npm run build
 
 ## 📝 Environment Variables
 
-No API environment variables are currently required. The application uses mock data.
+The homepage AI assistant requires:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
 
 ## 🧪 Testing
 

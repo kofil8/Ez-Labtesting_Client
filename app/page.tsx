@@ -6,7 +6,7 @@ import { PopularCategoriesSection } from "@/components/home/PopularCategoriesSec
 import { PopularTestsSection } from "@/components/home/PopularTestsSection";
 import { TestimonialSection } from "@/components/home/TestimonialSection";
 import { WhyChooseUsSection } from "@/components/home/WhyChooseUsSection";
-import { FloatingActionButton } from "@/components/shared/FloatingActionButton";
+import { HomepageLabAssistant } from "@/components/chat/HomepageLabAssistant";
 import { LazyFooter } from "@/components/shared/LazyFooter";
 
 export default function HomePage() {
@@ -26,7 +26,7 @@ export default function HomePage() {
         <ComplianceBanner />
       </main>
       <LazyFooter />
-      <FloatingActionButton />
+      <HomepageLabAssistant />
     </>
   );
 }
