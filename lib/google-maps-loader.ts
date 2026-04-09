@@ -10,12 +10,20 @@ interface LoaderOptions {
 }
 
 const CALLBACK_NAME = "__ezLabGoogleMapsInit";
+export const GOOGLE_MAPS_LIBRARIES: GoogleMapsLibrary[] = [
+  "marker",
+  "places",
+  "routes",
+];
+export const GOOGLE_MAPS_LANGUAGE = "en";
+export const GOOGLE_MAPS_REGION = "US";
+export const GOOGLE_MAPS_VERSION = "weekly";
 
 export function loadGoogleMapsApi({
   apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-  libraries = ["places", "marker"],
-  language = "en",
-  region = "US",
+  libraries = GOOGLE_MAPS_LIBRARIES,
+  language = GOOGLE_MAPS_LANGUAGE,
+  region = GOOGLE_MAPS_REGION,
 }: LoaderOptions = {}): Promise<typeof google> {
   if (typeof window === "undefined") {
     return Promise.reject(
@@ -68,7 +76,7 @@ export function loadGoogleMapsApi({
 
     const query = new URLSearchParams({
       key: apiKey,
-      v: "weekly",
+      v: GOOGLE_MAPS_VERSION,
       loading: "async",
       callback: CALLBACK_NAME,
       libraries: libraries.join(","),

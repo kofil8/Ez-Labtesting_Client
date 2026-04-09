@@ -1,9 +1,14 @@
 export { FindLabCenter } from "./FindLabCenter";
+export { FindLabCenterV2 } from "./FindLabCenterV2";
 export { LabCard } from "./LabCard";
 export { LabCardSkeleton, LabListSkeleton } from "./LabCardSkeleton";
 export { LabCenterFilters } from "./LabCenterFilters";
+export { LabCenterFiltersV2 } from "./LabCenterFiltersV2";
 export { LabCenterList } from "./LabCenterList";
 export { LabCenterMap } from "./LabCenterMap";
+export { LabCenterMapV2 } from "./LabCenterMapV2";
 export { LabCenterSearch } from "./LabCenterSearch";
+export { LabCenterSearchV2 } from "./LabCenterSearchV2";
+export { LabCenterResultsV2 } from "./LabCenterResultsV2";
 export { LabInfoWindow } from "./LabInfoWindow";
 export { LabMarker } from "./LabMarker";

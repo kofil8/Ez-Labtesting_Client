@@ -280,9 +280,6 @@ export class LabCenterService {
       const data = await response.json();
       return data.data || [];
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.warn("Failed to fetch suggestions:", error);
-      }
       return [];
     }
   }

@@ -8,8 +8,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/hook/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { shouldRouteToVisitLab } from "@/lib/checkout/flow-guards";
+import { buildCreateOrderRequest } from "@/lib/checkout/build-create-order-request";
 import { finalizePaymentAfterStripe } from "@/lib/checkout/payment-finalization";
 import { useCheckout } from "@/lib/context/CheckoutContext";
+import { trackLocatorEvent } from "@/lib/locator/analytics";
 import { createOrder, getResumableOrder } from "@/lib/services";
 import { confirmOrderPayment } from "@/lib/services/order.service";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -27,6 +29,7 @@ export default function CheckoutPaymentPage() {
   const {
     patientInfo,
     order,
+    selectedLab,
     accessOrderPayload,
     validateAccessFields,
     validatePatientInfo,
@@ -171,21 +174,21 @@ export default function CheckoutPaymentPage() {
           throw new Error("No lab test selected for checkout.");
         }
 
-        const patientData = {
-          firstName: patientInfo.firstName,
-          lastName: patientInfo.lastName,
-          dob: patientInfo.dob,
-          gender: patientInfo.gender as "Male" | "Female" | "Other",
-        };
+        const response = await createOrder(
+          buildCreateOrderRequest({
+            accessOrderPayload,
+            getSubtotal: getSubtotal(),
+            getTotal: getTotal(),
+            labTestId,
+            patientInfo,
+            processingFee,
+            selectedLab: selectedLab || null,
+          }),
+        );
 
-        const response = await createOrder({
-          userId: undefined,
-          labTestId,
-          patient: patientData,
-          subtotal: getSubtotal(),
-          processingFee,
-          total: getTotal() + processingFee,
-          accessPayloadJson: accessOrderPayload,
+        trackLocatorEvent("booking_started", {
+          lab_id: selectedLab?.id || null,
+          order_id: response.orderId,
         });
 
         if (cancelled) return;
@@ -225,11 +228,9 @@ export default function CheckoutPaymentPage() {
     isRecovering,
     items,
     order?.orderId,
-    patientInfo.dob,
-    patientInfo.firstName,
-    patientInfo.gender,
-    patientInfo.lastName,
+    patientInfo,
     processingFee,
+    selectedLab,
     setOrder,
     validatePatientInfo,
   ]);
@@ -265,6 +266,10 @@ export default function CheckoutPaymentPage() {
           router.replace("/checkout/patient-info");
         },
         onNavigateToVisitLab: () => {
+          trackLocatorEvent("booking_completed", {
+            lab_id: selectedLab?.id || null,
+            order_id: order?.orderId || null,
+          });
           router.push("/checkout/visit-lab");
         },
         onFinalizeError: (message) => {
@@ -349,6 +354,14 @@ export default function CheckoutPaymentPage() {
               Encrypted Session
             </div>
           </div>
+
+          {selectedLab ? (
+            <div className='rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm'>
+              <p className='font-medium text-primary'>Selected lab</p>
+              <p className='mt-1 text-foreground'>{selectedLab.name}</p>
+              <p className='text-muted-foreground'>{selectedLab.address}</p>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </CheckoutShell>

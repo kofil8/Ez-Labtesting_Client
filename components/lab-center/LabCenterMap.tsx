@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  GOOGLE_MAPS_LANGUAGE,
+  GOOGLE_MAPS_LIBRARIES,
+  GOOGLE_MAPS_REGION,
+  GOOGLE_MAPS_VERSION,
+} from "@/lib/google-maps-loader";
 import { LabCenter } from "@/types/lab-center";
 import type { Marker } from "@googlemaps/markerclusterer";
 import {
@@ -813,7 +819,13 @@ export function LabCenterMap({
 
   return (
     <div className='relative w-full h-full'>
-      <APIProvider apiKey={apiKey} libraries={["marker", "places", "routes"]}>
+      <APIProvider
+        apiKey={apiKey}
+        libraries={GOOGLE_MAPS_LIBRARIES}
+        language={GOOGLE_MAPS_LANGUAGE}
+        region={GOOGLE_MAPS_REGION}
+        version={GOOGLE_MAPS_VERSION}
+      >
         <Map
           mapId={mapId}
           center={camera.center}

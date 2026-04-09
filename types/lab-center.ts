@@ -19,6 +19,20 @@ export interface LabCenter {
   distance?: number;
 }
 
+export interface SelectedLabCenter {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone?: string;
+  hours?: string;
+  status?: string;
+  type?: string;
+  source?: "locator" | "order";
+  selectedAt?: string;
+}
+
 export interface LabCenterQuery {
   lat?: number;
   lng?: number;
@@ -120,4 +134,31 @@ export interface LabCenterFilterState {
   type: string;
   status: string;
   rating: "all" | "4" | "3";
+}
+
+export type LabLocatorStatus =
+  | "idle"
+  | "locating"
+  | "searching"
+  | "results"
+  | "empty"
+  | "error";
+
+export type LabLocatorViewMode = "list" | "map";
+
+export type LabLocatorSearchMethod = "typed" | "geolocate" | "order";
+
+export type LabCenterSortOption = "distance" | "rating";
+
+export interface LabLocatorFilters {
+  radius: number;
+  type: string;
+  status: string;
+  rating: "all" | "4" | "3";
+  sort: LabCenterSortOption;
+}
+
+export interface AppliedFilterChip {
+  key: keyof LabLocatorFilters;
+  label: string;
 }

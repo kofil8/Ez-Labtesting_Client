@@ -1,6 +1,12 @@
 "use client";
 
 import { AccessOrderPayload } from "@/lib/api-contracts/access-order.contract";
+import {
+  clearSelectedLabCenter,
+  readSelectedLabCenter,
+  writeSelectedLabCenter,
+} from "@/lib/locator/selected-lab-session";
+import { SelectedLabCenter } from "@/types/lab-center";
 import React, {
   createContext,
   useCallback,
@@ -37,12 +43,14 @@ interface CheckoutContextType {
   patientInfo: PatientInfo;
   orderId: string | null;
   order: OrderData | null;
+  selectedLab: SelectedLabCenter | null;
   accessOrderPayload: AccessOrderPayload | null;
   lastRecoveredAt: number | null;
   goToStep: (nextStep: CheckoutStep) => boolean;
   setPatientInfo: (info: Partial<PatientInfo>) => void;
   setOrderId: (id: string) => void;
   setOrder: (order: OrderData) => void;
+  setSelectedLab: (lab: SelectedLabCenter | null) => void;
   setAccessOrderPayload: (payload: AccessOrderPayload) => void;
   setLastRecoveredAt: (timestamp: number | null) => void;
   resetCheckout: () => void;
@@ -75,6 +83,9 @@ export const CheckoutProvider = ({
     useState<PatientInfo>(initialPatientInfo);
   const [orderId, setOrderIdState] = useState<string | null>(null);
   const [order, setOrderState] = useState<OrderData | null>(null);
+  const [selectedLab, setSelectedLabState] = useState<SelectedLabCenter | null>(
+    null,
+  );
   const [accessOrderPayload, setAccessOrderPayloadState] =
     useState<AccessOrderPayload | null>(null);
   const [lastRecoveredAt, setLastRecoveredAtState] = useState<number | null>(
@@ -85,6 +96,7 @@ export const CheckoutProvider = ({
     step?: CheckoutStep;
     orderId?: string | null;
     order?: OrderData | null;
+    selectedLab?: SelectedLabCenter | null;
     lastRecoveredAt?: number | null;
   };
 
@@ -97,11 +109,19 @@ export const CheckoutProvider = ({
         if (parsed.step) setStep(parsed.step);
         if (typeof parsed.orderId === "string") setOrderIdState(parsed.orderId);
         if (parsed.order) setOrderState(parsed.order);
+        if (parsed.selectedLab) {
+          setSelectedLabState(parsed.selectedLab);
+        } else {
+          setSelectedLabState(readSelectedLabCenter());
+        }
         if (parsed.lastRecoveredAt)
           setLastRecoveredAtState(parsed.lastRecoveredAt);
       } catch {
         // Ignore invalid persisted state and continue with a clean checkout session.
+        setSelectedLabState(readSelectedLabCenter());
       }
+    } else {
+      setSelectedLabState(readSelectedLabCenter());
     }
   }, []);
 
@@ -111,11 +131,12 @@ export const CheckoutProvider = ({
       step,
       orderId,
       order,
+      selectedLab,
       lastRecoveredAt,
     };
 
     sessionStorage.setItem("checkout-storage", JSON.stringify(persisted));
-  }, [step, orderId, order, lastRecoveredAt]);
+  }, [step, orderId, order, selectedLab, lastRecoveredAt]);
 
   const validatePatientInfo = useCallback((): boolean => {
     const required = [
@@ -191,6 +212,16 @@ export const CheckoutProvider = ({
     setOrderIdState(orderData.orderId);
   }, []);
 
+  const setSelectedLab = useCallback((lab: SelectedLabCenter | null) => {
+    setSelectedLabState(lab);
+    if (lab) {
+      writeSelectedLabCenter(lab);
+      return;
+    }
+
+    clearSelectedLabCenter();
+  }, []);
+
   const setAccessOrderPayload = useCallback((payload: AccessOrderPayload) => {
     setAccessOrderPayloadState(payload);
   }, []);
@@ -215,11 +246,13 @@ export const CheckoutProvider = ({
       patientInfo,
       orderId,
       order,
+      selectedLab,
       accessOrderPayload,
       goToStep,
       setPatientInfo,
       setOrderId,
       setOrder,
+      setSelectedLab,
       setAccessOrderPayload,
       setLastRecoveredAt,
       resetCheckout,
@@ -240,6 +273,8 @@ export const CheckoutProvider = ({
       setOrder,
       setOrderId,
       setPatientInfo,
+      setSelectedLab,
+      selectedLab,
       step,
       validateAccessFields,
       validatePatientInfo,

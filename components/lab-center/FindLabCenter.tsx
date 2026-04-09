@@ -3,7 +3,6 @@
 import { LabCenterMap } from "@/components/lab-center/LabCenterMap";
 import { useClientLocationFromOrder } from "@/hook/useClientLocationFromOrder";
 import { usePlacesSearch } from "@/hook/usePlacesSearch";
-import { loadGoogleMapsApi } from "@/lib/google-maps-loader";
 import { LabCenterService } from "@/lib/services/lab-centers.service";
 import { LabCenter } from "@/types/lab-center";
 import { Menu, Share2, X } from "lucide-react";
@@ -49,14 +48,6 @@ export function FindLabCenter() {
 
   const { labs, isLoading, error, searchByLocation, clearError } =
     usePlacesSearch();
-
-  useEffect(() => {
-    loadGoogleMapsApi().catch((err) => {
-      if (process.env.NODE_ENV === "development") {
-        console.warn("Failed to preload Google Maps API", err);
-      }
-    });
-  }, []);
 
   useEffect(() => {
     if (!clientLocation) return;

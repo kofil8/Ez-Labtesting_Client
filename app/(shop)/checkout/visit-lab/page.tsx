@@ -50,6 +50,7 @@ export default function CheckoutVisitLabPage() {
     orderId,
     patientInfo,
     order,
+    selectedLab,
     setOrderId,
     setOrder,
     setLastRecoveredAt,
@@ -363,10 +364,18 @@ export default function CheckoutVisitLabPage() {
           </CardHeader>
           <CardContent className='space-y-4'>
             <p className='text-sm text-muted-foreground'>
-              Use Find Lab Center to pick your preferred nearby ACCESS location.
+              Use Find Lab Center to confirm or change the lab for this visit.
               Your paid order remains valid even if partner APIs are temporarily
               unavailable.
             </p>
+
+            {selectedLab && (
+              <div className='rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm'>
+                <p className='font-medium text-primary'>Current selected lab</p>
+                <p className='mt-1 text-foreground'>{selectedLab.name}</p>
+                <p className='text-muted-foreground'>{selectedLab.address}</p>
+              </div>
+            )}
 
             {requisitionPdfUrl && (
               <Button variant='outline' onClick={handleDownloadRequisition}>
@@ -388,7 +397,7 @@ export default function CheckoutVisitLabPage() {
                 ) : (
                   <>
                     <MapPin className='mr-2 h-4 w-4' />
-                    Continue to Find Lab Center
+                    Select or review lab center
                   </>
                 )}
               </Button>
