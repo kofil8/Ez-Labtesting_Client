@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { authenticatedFetch } from "@/lib/api-helpers";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
@@ -57,22 +57,13 @@ type ActionResult<T> = {
  * Handles authentication via cookies
  */
 async function serverFetch(url: string, options: RequestInit = {}) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken")?.value;
-
-  if (!accessToken) {
-    throw new Error("Session expired. Please log in again.");
-  }
-
   try {
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
         ...options.headers,
       },
-      cache: "no-store",
     });
 
     return response;

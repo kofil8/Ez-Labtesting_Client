@@ -6,9 +6,7 @@ import {
   SearchSuggestion,
   UpdateLabCenterRequest,
 } from "@/types/lab-center";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
+import { clientFetch, getApiUrl, publicFetch } from "@/lib/api-client";
 
 export class LabCenterService {
   /**
@@ -30,17 +28,16 @@ export class LabCenterService {
     if (query?.isActive !== undefined)
       params.append("isActive", query.isActive.toString());
 
-    const url = `${API_BASE_URL}/lab-centers${params.toString() ? `?${params.toString()}` : ""}`;
+    const url = getApiUrl(
+      `/lab-centers${params.toString() ? `?${params.toString()}` : ""}`,
+    );
 
     if (process.env.NODE_ENV === "development") {
       console.log("[LabCenterService] Fetching labs with URL:", url);
     }
 
-    const response = await fetch(url, {
+    const response = await publicFetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {
@@ -61,11 +58,8 @@ export class LabCenterService {
    * Get a single lab center by ID
    */
   static async getLabCenterById(id: string): Promise<LabCenter> {
-    const response = await fetch(`${API_BASE_URL}/lab-centers/${id}`, {
+    const response = await publicFetch(getApiUrl(`/lab-centers/${id}`), {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {
@@ -83,7 +77,7 @@ export class LabCenterService {
    * Geocode an address to get latitude and longitude
    */
   static async geocodeAddress(address: string): Promise<GeocodeResponse> {
-    const response = await fetch(`${API_BASE_URL}/lab-centers/geocode`, {
+    const response = await publicFetch(getApiUrl("/lab-centers/geocode"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -107,13 +101,11 @@ export class LabCenterService {
    */
   static async createLabCenter(
     labCenter: CreateLabCenterRequest,
-    token: string,
   ): Promise<LabCenter> {
-    const response = await fetch(`${API_BASE_URL}/lab-centers`, {
+    const response = await clientFetch(getApiUrl("/lab-centers"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(labCenter),
     });
@@ -135,13 +127,11 @@ export class LabCenterService {
   static async updateLabCenter(
     id: string,
     updates: UpdateLabCenterRequest,
-    token: string,
   ): Promise<LabCenter> {
-    const response = await fetch(`${API_BASE_URL}/lab-centers/${id}`, {
+    const response = await clientFetch(getApiUrl(`/lab-centers/${id}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(updates),
     });
@@ -160,13 +150,9 @@ export class LabCenterService {
   /**
    * Delete a lab center (admin only, soft delete)
    */
-  static async deleteLabCenter(id: string, token: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/lab-centers/${id}`, {
+  static async deleteLabCenter(id: string): Promise<void> {
+    const response = await clientFetch(getApiUrl(`/lab-centers/${id}`), {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
     });
 
     if (!response.ok) {
@@ -261,12 +247,11 @@ export class LabCenterService {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/lab-centers/autocomplete?input=${encodeURIComponent(query.trim())}`,
+        getApiUrl(
+          `/lab-centers/autocomplete?input=${encodeURIComponent(query.trim())}`,
+        ),
         {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
         },
       );
 
@@ -285,13 +270,10 @@ export class LabCenterService {
   }
 
   static async getPlaceDetails(placeId: string): Promise<Partial<LabCenter>> {
-    const response = await fetch(
-      `${API_BASE_URL}/lab-centers/place-details/${encodeURIComponent(placeId)}`,
+    const response = await publicFetch(
+      getApiUrl(`/lab-centers/place-details/${encodeURIComponent(placeId)}`),
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       },
     );
 

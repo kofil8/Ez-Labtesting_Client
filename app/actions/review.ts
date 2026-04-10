@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { authenticatedFetch } from "@/lib/api-helpers";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
@@ -94,18 +94,10 @@ export async function getTestReviews(
  * Create a new review
  */
 export async function createReview(data: CreateReviewInput): Promise<Review> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value;
-
-  if (!token) {
-    throw new Error("User not authenticated");
-  }
-
-  const response = await fetch(`${API_BASE_URL}/reviews`, {
+  const response = await authenticatedFetch(`${API_BASE_URL}/reviews`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Cookie: `accessToken=${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -126,18 +118,10 @@ export async function updateReview(
   reviewId: string,
   data: UpdateReviewInput,
 ): Promise<Review> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value;
-
-  if (!token) {
-    throw new Error("User not authenticated");
-  }
-
-  const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}`, {
+  const response = await authenticatedFetch(`${API_BASE_URL}/reviews/${reviewId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Cookie: `accessToken=${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -155,18 +139,10 @@ export async function updateReview(
  * Delete a review
  */
 export async function deleteReview(reviewId: string): Promise<void> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value;
-
-  if (!token) {
-    throw new Error("User not authenticated");
-  }
-
-  const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}`, {
+  const response = await authenticatedFetch(`${API_BASE_URL}/reviews/${reviewId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
-      Cookie: `accessToken=${token}`,
     },
   });
 
@@ -182,18 +158,10 @@ export async function deleteReview(reviewId: string): Promise<void> {
 export async function markReviewHelpful(
   reviewId: string,
 ): Promise<{ helpful: boolean }> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("accessToken")?.value;
-
-  if (!token) {
-    throw new Error("User not authenticated");
-  }
-
-  const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/helpful`, {
+  const response = await authenticatedFetch(`${API_BASE_URL}/reviews/${reviewId}/helpful`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Cookie: `accessToken=${token}`,
     },
   });
 

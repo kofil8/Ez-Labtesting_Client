@@ -1,6 +1,5 @@
 "use client";
 
-import { loginUser } from "@/app/actions/login-user";
 import { resendOtp } from "@/app/actions/resend-otp";
 import { FormStateMessage } from "@/components/auth/FormStateMessage";
 import { CapsLockIndicator } from "@/components/shared/CapsLockIndicator";
@@ -9,6 +8,7 @@ import { PasswordInput } from "@/components/shared/PasswordInput";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hook/use-toast";
+import { loginUser } from "@/lib/auth/client";
 import { useAuth } from "@/lib/auth-context";
 import { LoginFormData, loginSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";

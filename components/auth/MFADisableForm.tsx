@@ -1,10 +1,10 @@
 "use client";
 
-import { disableMFA } from "@/app/actions/mfa";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hook/use-toast";
+import { disableMFA } from "@/lib/auth/client";
 import { useState, useTransition } from "react";
 
 interface MFADisableFormProps {

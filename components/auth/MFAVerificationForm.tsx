@@ -1,9 +1,5 @@
 "use client";
 
-import {
-  verifyBackupCode as verifyBackupCodeAction,
-  verifyMFA as verifyMFAAction,
-} from "@/app/actions/mfa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hook/use-toast";
+import {
+  verifyBackupCode as verifyBackupCodeAction,
+  verifyMFA as verifyMFAAction,
+} from "@/lib/auth/client";
 import { useAuth } from "@/lib/auth-context";
 import { AlertCircle, Key, Shield } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -54,11 +54,6 @@ export function MFAVerificationForm() {
           result.message || "Invalid verification code. Please try again.",
         );
         return;
-      }
-
-      // Store the access token placeholder
-      if (result.data?.accessToken) {
-        localStorage.setItem("accessToken", result.data.accessToken);
       }
 
       toast({
@@ -104,11 +99,6 @@ export function MFAVerificationForm() {
       if (!result.success) {
         setError(result.message || "Invalid backup code. Please try again.");
         return;
-      }
-
-      // Store the access token placeholder
-      if (result.data?.accessToken) {
-        localStorage.setItem("accessToken", result.data.accessToken);
       }
 
       const remaining = result.data?.remainingBackupCodes ?? 0;

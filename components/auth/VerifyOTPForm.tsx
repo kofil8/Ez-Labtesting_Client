@@ -1,12 +1,12 @@
 "use client";
 
 import { resendOtp } from "@/app/actions/resend-otp";
-import { verifyOtp } from "@/app/actions/verify-otp";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hook/use-toast";
+import { verifyOtp } from "@/lib/auth/client";
 import { useAuth } from "@/lib/auth-context";
 import { MFAFormData, mfaSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,24 +17,22 @@ import { toast } from "sonner";
 
 // Separate component for OTP Input to manage refs properly
 function OTPInputField({
-  inputRefs,
   index,
   isPending,
+  setInputRef,
   onChangeOtp,
   onBackspace,
 }: {
-  inputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
   index: number;
   isPending: boolean;
+  setInputRef: (index: number, element: HTMLInputElement | null) => void;
   onChangeOtp: (index: number, value: string) => void;
   onBackspace: (index: number, e: any) => void;
 }) {
   return (
     <Input
       key={index}
-      ref={(el) => {
-        if (inputRefs.current) inputRefs.current[index] = el;
-      }}
+      ref={(el) => setInputRef(index, el)}
       maxLength={1}
       disabled={isPending}
       className='w-12 h-12 text-center text-xl font-bold border rounded-lg 
@@ -62,6 +60,10 @@ export function VerifyOTPForm() {
 
   // OTP Input Refs - properly initialized
   const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
+
+  const setInputRef = (index: number, element: HTMLInputElement | null) => {
+    inputRefs.current[index] = element;
+  };
 
   // Delay UI mount for skeleton effect
   useEffect(() => {
@@ -234,9 +236,9 @@ export function VerifyOTPForm() {
               {Array.from({ length: 6 }).map((_, index) => (
                 <OTPInputField
                   key={index}
-                  inputRefs={inputRefs}
                   index={index}
                   isPending={isPending}
+                  setInputRef={setInputRef}
                   onChangeOtp={handleOtpChange}
                   onBackspace={handleBackspace}
                 />

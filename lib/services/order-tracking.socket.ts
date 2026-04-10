@@ -1,5 +1,5 @@
-import { getAccessTokenFromServer } from "@/app/actions/get-token";
-import { clientRefreshToken } from "@/lib/token-utils";
+import { handleAuthFailure, refreshSession } from "@/lib/auth/client";
+import { getApiOrigin } from "@/lib/api/config";
 import { io } from "socket.io-client";
 
 type TrackingUpdate = {
@@ -26,9 +26,9 @@ type TrackingUpdate = {
 };
 
 const getSocketBaseUrl = () => {
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:7001/api/v1";
-  return apiBaseUrl.replace(/\/api\/v1\/?$/, "");
+  return (
+    process.env.NEXT_PUBLIC_SOCKET_URL || getApiOrigin()
+  ).replace(/\/api\/v1\/?$/, "");
 };
 
 type SubscriptionHandlers = {
@@ -44,25 +44,11 @@ export async function subscribeToOrderTracking(
     throw new Error("orderId is required for tracking subscription");
   }
 
-  let token = (await getAccessTokenFromServer())?.token;
-
-  if (!token) {
-    try {
-      await clientRefreshToken();
-      token = (await getAccessTokenFromServer())?.token;
-    } catch {
-      token = null;
-    }
-  }
-
-  if (!token) {
-    throw new Error("Authentication token is required for realtime tracking");
-  }
+  let hasRetriedAfterRefresh = false;
 
   const socket = io(`${getSocketBaseUrl()}/orders`, {
     transports: ["websocket", "polling"],
     withCredentials: true,
-    auth: { token },
   });
 
   const handleConnect = () => {
@@ -82,7 +68,23 @@ export async function subscribeToOrderTracking(
     handlers.onError?.("Failed to receive order tracking update");
   };
 
-  const handleConnectError = (error: Error) => {
+  const handleConnectError = async (error: Error) => {
+    if (hasRetriedAfterRefresh) {
+      handlers.onError?.(error.message || "Realtime connection failed");
+      await handleAuthFailure();
+      return;
+    }
+
+    hasRetriedAfterRefresh = true;
+
+    try {
+      await refreshSession();
+      socket.connect();
+      return;
+    } catch {
+      await handleAuthFailure();
+    }
+
     handlers.onError?.(error.message || "Realtime connection failed");
   };
 
