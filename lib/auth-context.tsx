@@ -4,6 +4,7 @@ import {
   AUTH_SESSION_EXPIRED_EVENT,
   logoutSession,
 } from "@/lib/auth/client";
+import { normalizeUserRole } from "@/lib/auth/shared";
 import { clientFetch, getApiUrl } from "@/lib/api-client";
 import { AuthState, User } from "@/types/user";
 import {
@@ -24,7 +25,7 @@ interface UpdateProfileData {
 }
 
 interface AuthContextType extends AuthState {
-  refreshAuth: () => Promise<boolean>;
+  refreshAuth: () => Promise<User | null>;
   logout: () => Promise<void>;
   fetchProfile: () => Promise<void>;
   updateProfile: (
@@ -36,18 +37,7 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function normalizeRole(role: string | null | undefined): User["role"] {
-  switch (role?.toLowerCase()) {
-    case "superadmin":
-    case "super_admin":
-      return "super_admin";
-    case "admin":
-      return "admin";
-    case "lab_partner":
-      return "lab_partner";
-    case "customer":
-    default:
-      return "customer";
-  }
+  return (normalizeUserRole(role) || "customer") as User["role"];
 }
 
 function toAuthUser(profile: any): User {
@@ -153,14 +143,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthState(buildLoggedOutState());
   }, []);
 
-  const refreshAuth = useCallback(async (): Promise<boolean> => {
+  const refreshAuth = useCallback(async (): Promise<User | null> => {
     try {
       const user = await requestProfile(false);
       applyLoggedInState(user);
-      return true;
+      return user;
     } catch (error) {
       clearAuthState();
-      return false;
+      return null;
     }
   }, [applyLoggedInState, clearAuthState]);
 

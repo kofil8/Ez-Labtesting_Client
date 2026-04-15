@@ -1,6 +1,5 @@
 "use client";
 
-import { resetPassword } from "@/app/actions/reset-password";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hook/use-toast";
+import { resetPassword } from "@/lib/auth/client";
 import {
   ResetPasswordFormData,
   resetPasswordSchema,
@@ -20,48 +19,41 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export function ResetPasswordForm() {
   const router = useRouter();
-  const { toast: toastHook } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
-  // Get email from sessionStorage (set during forgot password flow)
-  const [email, setEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const resetEmail = sessionStorage.getItem("reset_email");
-      if (resetEmail) {
-        setEmail(resetEmail);
-      }
-    }
-  }, []);
+  const [email] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : sessionStorage.getItem("reset_email"),
+  );
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      email: email || "",
+    },
   });
-
-  useEffect(() => {
-    if (email) {
-      setValue("email", email);
-    }
-  }, [email, setValue]);
 
   const handleAction = (formData: FormData) => {
     setError("");
     startTransition(async () => {
       try {
-        const res = await resetPassword(formData);
+        const res = await resetPassword({
+          email: String(formData.get("email") || ""),
+          otp: String(formData.get("otp") || ""),
+          password: String(formData.get("newPassword") || ""),
+        });
         if (res?.success) {
           toast.success(
             "Your password has been successfully reset. You can now login with your new password."

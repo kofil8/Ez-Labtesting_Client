@@ -1,18 +1,16 @@
 "use client";
 
-import { resendOtp } from "@/app/actions/resend-otp";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hook/use-toast";
-import { verifyOtp } from "@/lib/auth/client";
+import { resendOtp, verifyOtp } from "@/lib/auth/client";
 import { useAuth } from "@/lib/auth-context";
 import { MFAFormData, mfaSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 // Separate component for OTP Input to manage refs properly
@@ -46,7 +44,6 @@ function OTPInputField({
 export function VerifyOTPForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast: toastHook } = useToast();
   const authContext = useAuth();
   const [isPending, startTransition] = useTransition();
   const [isResending, startResendTransition] = useTransition();
@@ -94,21 +91,21 @@ export function VerifyOTPForm() {
       searchParams.get("fromLogin") === "true");
 
   const {
-    register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<MFAFormData>({
     resolver: zodResolver(mfaSchema),
     defaultValues: { code: "" },
   });
+  const codeValue = useWatch({ control, name: "code" }) || "";
 
   // Handle OTP Input
   const handleOtpChange = (index: number, value: string) => {
     if (!/^[0-9]?$/.test(value)) return; // allow only digits
 
-    const newCode = (watch("code") || "").split("");
+    const newCode = codeValue.split("");
     newCode[index] = value;
     setValue("code", newCode.join(""));
 
@@ -127,19 +124,15 @@ export function VerifyOTPForm() {
   // Submit Form
   const onSubmit = async (data: MFAFormData) => {
     if (!email) {
-      toast.error("Email not found. Restart signup.");
+      toast.error("Email not found. Restart registration.");
       router.push("/register");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("otp", data.code);
-
     setError("");
     startTransition(async () => {
       try {
-        const res = await verifyOtp(formData);
+        const res = await verifyOtp({ email, otp: data.code });
         if (res?.success) {
           // Only refresh auth if coming from login flow (user is already authenticated)
           if (fromLogin) {
@@ -166,7 +159,11 @@ export function VerifyOTPForm() {
               router.push(from || "/results");
             } else {
               // New registration - redirect to login with verified flag
-              router.push("/login?verified=true");
+              const loginUrl =
+                from && from.startsWith("/") && !from.startsWith("//")
+                  ? `/login?verified=true&from=${encodeURIComponent(from)}`
+                  : "/login?verified=true";
+              router.push(loginUrl);
             }
           }, 1500);
         }
@@ -186,9 +183,7 @@ export function VerifyOTPForm() {
 
     startResendTransition(async () => {
       try {
-        const formData = new FormData();
-        formData.append("email", email);
-        const res = await resendOtp(formData);
+        const res = await resendOtp(email);
 
         if (res?.success) {
           toast.success("New OTP sent to your email.");

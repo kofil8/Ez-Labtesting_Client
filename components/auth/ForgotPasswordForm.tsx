@@ -1,6 +1,5 @@
 "use client";
 
-import { forgotPassword } from "@/app/actions/forgot-password";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hook/use-toast";
+import { forgotPassword } from "@/lib/auth/client";
 import {
   ForgotPasswordFormData,
   forgotPasswordSchema,
@@ -21,12 +20,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
-  const { toast: toastHook } = useToast();
   const [isPending, startTransition] = useTransition();
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -34,22 +32,22 @@ export function ForgotPasswordForm() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
-    watch,
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const emailValue = watch("email");
+  const emailValue = useWatch({ control, name: "email" });
 
   const handleAction = (formData: FormData) => {
     setError("");
     startTransition(async () => {
       try {
-        const res = await forgotPassword(formData);
+        const email = String(formData.get("email") || "");
+        const res = await forgotPassword(email);
         if (res?.success) {
           setSubmitted(true);
-          const email = formData.get("email") as string;
           // Store email in sessionStorage for reset password flow
           if (typeof window !== "undefined") {
             sessionStorage.setItem("reset_email", email);

@@ -1,6 +1,14 @@
 "use client";
 
 import { getApiUrl } from "@/lib/api/config";
+import {
+  ApiEnvelope,
+  buildRegisterRequest,
+  buildResetPasswordRequest,
+  extractApiMessage,
+  RegisterRequestInput,
+  ResetPasswordInput,
+} from "@/lib/auth/shared";
 import { cleanupPushOnLogout } from "@/lib/logoutPushCleanup";
 import {
   clearPushRegistrationAttempts,
@@ -11,17 +19,19 @@ import { useNotificationsStore } from "@/lib/store/notifications-store";
 export const AUTH_SESSION_EXPIRED_EVENT = "ezlab:auth-session-expired";
 const SESSION_EXPIRED_MESSAGE = "Session expired. Please log in again.";
 
-type ApiEnvelope<T = unknown> = {
-  data?: T;
-  message?: string;
-  error?: string;
-  errorMessages?: Array<{ message?: string }>;
-};
-
 type LoginResponseData = {
   mfaRequired?: boolean;
   tempToken?: string;
   isFirstLogin?: boolean;
+};
+
+type RegisterResponseData = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  createdAt: string;
 };
 
 type VerifyMfaResponseData = {
@@ -76,15 +86,6 @@ async function parseJson<T>(response: Response): Promise<ApiEnvelope<T>> {
   return response.json().catch(() => ({}));
 }
 
-function extractMessage(payload: ApiEnvelope, fallback: string): string {
-  const nestedMessage =
-    Array.isArray(payload.errorMessages) && payload.errorMessages.length > 0
-      ? payload.errorMessages[0]?.message
-      : undefined;
-
-  return payload.message || payload.error || nestedMessage || fallback;
-}
-
 function clearClientAuthState() {
   if (typeof window === "undefined") {
     return;
@@ -93,6 +94,7 @@ function clearClientAuthState() {
   localStorage.removeItem("auth_token");
   localStorage.removeItem("accessToken");
   sessionStorage.removeItem("otp_email");
+  sessionStorage.removeItem("reset_email");
   clearRegisteredPushTokenMarker();
   clearPushRegistrationAttempts();
   useNotificationsStore.getState().resetNotifications();
@@ -141,7 +143,7 @@ export async function refreshSession(): Promise<void> {
 
       if (!response.ok) {
         const payload = await parseJson(response);
-        throw new Error(extractMessage(payload, SESSION_EXPIRED_MESSAGE));
+        throw new Error(extractApiMessage(payload, SESSION_EXPIRED_MESSAGE));
       }
     })().finally(() => {
       refreshPromise = null;
@@ -171,7 +173,7 @@ async function requestAuthEndpoint<T>(
   const payload = await parseJson<T>(response);
 
   if (!response.ok) {
-    throw new Error(extractMessage(payload, fallbackMessage));
+    throw new Error(extractApiMessage(payload, fallbackMessage));
   }
 
   return payload;
@@ -193,11 +195,104 @@ function detectInputType(input: string): "email" | "phone" {
   return "email";
 }
 
-export async function loginUser(formData: FormData) {
-  const emailOrPhoneRaw = String(formData.get("email") || "").trim();
-  const password = String(formData.get("password") || "");
-  const pushToken = formData.get("pushToken");
-  const platform = String(formData.get("platform") || "web");
+export async function registerUser(input: RegisterRequestInput) {
+  const payload = buildRegisterRequest(input);
+
+  if (!payload.phoneNumber) {
+    throw new Error("Phone number is required");
+  }
+
+  const response = await requestAuthEndpoint<RegisterResponseData>(
+    "/auth/register",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+    "Registration failed",
+  );
+
+  return {
+    success: true,
+    email: response.data?.email || payload.email,
+    data: response.data,
+  };
+}
+
+export async function resendOtp(email: string) {
+  if (!email.trim()) {
+    throw new Error("Email is required");
+  }
+
+  await requestAuthEndpoint(
+    "/auth/resend-otp",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email: email.trim() }),
+    },
+    "Unable to resend verification code. Please try again in a moment.",
+  );
+
+  return { success: true };
+}
+
+export async function forgotPassword(email: string) {
+  if (!email.trim()) {
+    throw new Error("Email is required");
+  }
+
+  await requestAuthEndpoint(
+    "/auth/forgot-password",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email: email.trim() }),
+    },
+    "Unable to send password reset code. Please verify your email and try again.",
+  );
+
+  return { success: true };
+}
+
+export async function resetPassword(input: ResetPasswordInput) {
+  const payload = buildResetPasswordRequest(input);
+
+  if (!payload.email || !payload.otp || !payload.newPassword) {
+    throw new Error("Email, OTP, and new password are required");
+  }
+
+  await requestAuthEndpoint(
+    "/auth/reset-password",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+    "Password reset failed",
+  );
+
+  return { success: true };
+}
+
+export async function loginUser(input: {
+  email: string;
+  password: string;
+  pushToken?: string | null;
+  platform?: string;
+}) {
+  const emailOrPhoneRaw = input.email.trim();
+  const password = input.password;
+  const pushToken = input.pushToken;
+  const platform = input.platform || "web";
 
   if (!emailOrPhoneRaw || !password) {
     return {
@@ -253,7 +348,7 @@ export async function loginUser(formData: FormData) {
   } catch (error) {
     const message = normalizeNetworkError(error).message;
 
-    if (message.toLowerCase().includes("verify")) {
+    if (message.toLowerCase().includes("verify") && inputType === "email") {
       return {
         success: false,
         requiresVerification: true,
@@ -270,9 +365,9 @@ export async function loginUser(formData: FormData) {
   }
 }
 
-export async function verifyOtp(formData: FormData) {
-  const email = String(formData.get("email") || "");
-  const otp = String(formData.get("otp") || "");
+export async function verifyOtp(input: { email: string; otp: string }) {
+  const email = input.email.trim();
+  const otp = input.otp.trim();
 
   if (!email || !otp) {
     throw new Error("Email and OTP are required");

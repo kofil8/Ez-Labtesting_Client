@@ -133,8 +133,8 @@ export function MobileHeaderMenu({
                       asChild
                       className='rounded-xl bg-primary text-primary-foreground hover:bg-primary/90'
                     >
-                      <Link href='/signup' onClick={onClose}>
-                        Sign Up
+                      <Link href='/register' onClick={onClose}>
+                        Create Account
                       </Link>
                     </Button>
                   </div>

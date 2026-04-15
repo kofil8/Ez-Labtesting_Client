@@ -81,23 +81,13 @@ const signupBaseSchema = z.object({
     .or(z.literal("")),
 });
 
-export const signupSchema = signupBaseSchema.refine(
-  (data) => data.password === data.confirmPassword,
-  {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  },
-);
-
 export const signupAccountSchema = signupBaseSchema
   .pick({
     firstName: true,
     lastName: true,
     email: true,
-    phone: true,
     password: true,
     confirmPassword: true,
-    profileImage: true,
     dateOfBirth: true,
     gender: true,
     addressLine1: true,
@@ -105,6 +95,20 @@ export const signupAccountSchema = signupBaseSchema
     city: true,
     state: true,
     zipCode: true,
+  })
+  .extend({
+    phone: z
+      .string()
+      .min(10, "Phone number is required")
+      .max(15, "Phone number must be 10 to 15 digits")
+      .regex(/^\d+$/, "Phone number must contain only digits"),
+    gender: z.enum(
+      ["MALE", "FEMALE", "NON_BINARY", "PREFER_NOT_TO_SAY", "OTHER"],
+      {
+        message: "Please select a valid gender",
+      },
+    ),
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -185,7 +189,6 @@ export const changePasswordSchema = z
   });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
-export type SignupFormData = z.infer<typeof signupSchema>;
 export type SignupAccountFormData = z.infer<typeof signupAccountSchema>;
 export type MFAFormData = z.infer<typeof mfaSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;

@@ -7,7 +7,6 @@ export function KallesBackground() {
 
   if (
     pathname?.includes("/login") ||
-    pathname?.includes("/signup") ||
     pathname?.includes("/register") ||
     pathname?.includes("/forgot-password") ||
     pathname?.includes("/verify-otp") ||

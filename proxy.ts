@@ -1,35 +1,17 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-type UserRole =
-  | "customer"
-  | "admin"
-  | "lab_partner"
-  | "super_admin"
-  | "CUSTOMER"
-  | "ADMIN"
-  | "LAB_PARTNER"
-  | "SUPER_ADMIN";
-
-const DASHBOARD_ROUTE_BY_ROLE: Record<string, string> = {
-  // lowercase
-  customer: "/dashboard/customer",
-  admin: "/dashboard/admin",
-  lab_partner: "/dashboard/lab-partner",
-  super_admin: "/dashboard/superadmin",
-  // uppercase (prisma enum)
-  CUSTOMER: "/dashboard/customer",
-  ADMIN: "/dashboard/admin",
-  LAB_PARTNER: "/dashboard/lab-partner",
-  SUPER_ADMIN: "/dashboard/superadmin",
-};
+import {
+  decodeJwtPayload,
+  getDashboardRouteForRole,
+  normalizeUserRole,
+  NormalizedUserRole,
+} from "@/lib/auth/shared";
 
 // Public routes (no auth required)
 const PUBLIC_ROUTES = [
   "/",
   "/login",
   "/register",
-  "/signup",
   "/forgot-password",
   "/reset-password",
   "/mfa",
@@ -60,42 +42,45 @@ const PROTECTED_PREFIXES = ["/checkout", "/orders", "/payment"];
 const CUSTOMER_ONLY_PUBLIC_PREFIXES = ["/tests", "/panels", "/cart"];
 
 // Role-based route access control
-const ROLE_ROUTE_GUARDS: { matcher: RegExp; allowedRoles: UserRole[] }[] = [
+const ROLE_ROUTE_GUARDS: {
+  matcher: RegExp;
+  allowedRoles: NormalizedUserRole[];
+}[] = [
   {
     matcher: /^\/tests(\/.*)?$/,
-    allowedRoles: ["customer", "CUSTOMER"],
+    allowedRoles: ["customer"],
   },
   {
     matcher: /^\/panels(\/.*)?$/,
-    allowedRoles: ["customer", "CUSTOMER"],
+    allowedRoles: ["customer"],
   },
   {
     matcher: /^\/cart(\/.*)?$/,
-    allowedRoles: ["customer", "CUSTOMER"],
+    allowedRoles: ["customer"],
   },
   {
     matcher: /^\/checkout(\/.*)?$/,
-    allowedRoles: ["customer", "CUSTOMER"],
+    allowedRoles: ["customer"],
   },
   {
     matcher: /^\/dashboard\/superadmin(\/.*)?$/,
-    allowedRoles: ["super_admin", "SUPER_ADMIN"],
+    allowedRoles: ["super_admin"],
   },
   {
     matcher: /^\/dashboard\/admin(\/.*)?$/,
-    allowedRoles: ["admin", "ADMIN"],
+    allowedRoles: ["admin"],
   },
   {
     matcher: /^\/dashboard\/lab-partner(\/.*)?$/,
-    allowedRoles: ["lab_partner", "LAB_PARTNER"],
+    allowedRoles: ["lab_partner"],
   },
   {
     matcher: /^\/dashboard\/customer(\/.*)?$/,
-    allowedRoles: ["customer", "CUSTOMER"],
+    allowedRoles: ["customer"],
   },
   {
     matcher: /^\/find-lab-center(\/.*)?$/,
-    allowedRoles: ["customer", "CUSTOMER"],
+    allowedRoles: ["customer"],
   },
 ];
 
@@ -120,23 +105,7 @@ function isCustomerOnlyPublicPath(pathname: string) {
   );
 }
 
-function decodeJwtPayload(token: string) {
-  try {
-    const payloadSegment = token.split(".")[1];
-    if (!payloadSegment) return null;
-
-    const normalized = payloadSegment.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
-    const json = atob(padded);
-
-    return JSON.parse(json);
-  } catch (error) {
-    console.error("Failed to decode token payload", error);
-    return null;
-  }
-}
-
-function getRoleFromToken(token?: string): UserRole | null {
+function getRoleFromToken(token?: string): NormalizedUserRole | null {
   if (!token) return null;
 
   const payload = decodeJwtPayload(token);
@@ -147,32 +116,10 @@ function getRoleFromToken(token?: string): UserRole | null {
     payload?.userRole ||
     null;
 
-  return normalizeRole(maybeRole);
+  return normalizeUserRole(maybeRole);
 }
 
-function getDashboardPath(role: UserRole | null) {
-  if (!role) return DASHBOARD_ROUTE_BY_ROLE.customer;
-  return DASHBOARD_ROUTE_BY_ROLE[role] || DASHBOARD_ROUTE_BY_ROLE.customer;
-}
-
-function normalizeRole(role: unknown): UserRole | null {
-  if (!role) return null;
-  const raw = String(role).trim();
-  const normalized = raw.toLowerCase().replace(/[-\s]+/g, "_");
-
-  // Check exact, normalized, and uppercased-normalized
-  const candidates = [raw, normalized, normalized.toUpperCase()];
-
-  for (const candidate of candidates) {
-    if (DASHBOARD_ROUTE_BY_ROLE[candidate]) {
-      return candidate as UserRole;
-    }
-  }
-
-  return null;
-}
-
-function isRoleAllowed(pathname: string, role: UserRole | null) {
+function isRoleAllowed(pathname: string, role: NormalizedUserRole | null) {
   // If no matching guard, allow (non-dashboard routes will be handled by app auth)
   const guard = ROLE_ROUTE_GUARDS.find((g) => g.matcher.test(pathname));
   if (!guard) return true;
@@ -221,7 +168,7 @@ export function proxy(req: NextRequest) {
       }
 
       const redirectUrl = req.nextUrl.clone();
-      redirectUrl.pathname = getDashboardPath(userRole);
+      redirectUrl.pathname = getDashboardRouteForRole(userRole);
       redirectUrl.search = "";
       return NextResponse.redirect(redirectUrl);
     }
@@ -237,7 +184,7 @@ export function proxy(req: NextRequest) {
 
       if (!isRoleAllowed(pathname, userRole)) {
         const redirectUrl = req.nextUrl.clone();
-        redirectUrl.pathname = getDashboardPath(userRole);
+        redirectUrl.pathname = getDashboardRouteForRole(userRole);
         redirectUrl.search = "";
         return NextResponse.redirect(redirectUrl);
       }
@@ -275,7 +222,7 @@ export function proxy(req: NextRequest) {
   // Redirect authenticated users away from the public home/dashboard root to their role dashboard
   if (pathname === "/" || pathname === "/dashboard") {
     const dashboardUrl = req.nextUrl.clone();
-    dashboardUrl.pathname = getDashboardPath(userRole);
+    dashboardUrl.pathname = getDashboardRouteForRole(userRole);
     dashboardUrl.search = "";
     return NextResponse.redirect(dashboardUrl);
   }
@@ -296,7 +243,7 @@ export function proxy(req: NextRequest) {
     }
 
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = getDashboardPath(userRole);
+    redirectUrl.pathname = getDashboardRouteForRole(userRole);
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
@@ -310,11 +257,11 @@ export function proxy(req: NextRequest) {
   if (!isRoleAllowed(pathname, userRole)) {
     if (process.env.NODE_ENV === "development") {
       console.log(
-        `[PROXY] BLOCKING: ${pathname} for role ${userRole}, redirecting to ${getDashboardPath(userRole)}`,
+        `[PROXY] BLOCKING: ${pathname} for role ${userRole}, redirecting to ${getDashboardRouteForRole(userRole)}`,
       );
     }
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = getDashboardPath(userRole);
+    redirectUrl.pathname = getDashboardRouteForRole(userRole);
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
