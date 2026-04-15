@@ -98,7 +98,7 @@ export default function HelpCenterPage() {
       icon: BookOpen,
       links: [
         { label: "How to Book a Test", href: "/how-it-works" },
-        { label: "Creating an Account", href: "/signup" },
+        { label: "Creating an Account", href: "/register" },
       ],
     },
     {

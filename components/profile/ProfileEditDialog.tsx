@@ -270,7 +270,6 @@ export function ProfileEditDialog({
                         helperText='Include country code when needed'
                         defaultCountry='us'
                         variant='compact'
-                        showIcon={false}
                       />
                     </div>
 
@@ -487,7 +486,6 @@ export function ProfileEditDialog({
                         placeholder='Enter phone number'
                         defaultCountry='us'
                         variant='compact'
-                        showIcon={false}
                       />
                     </div>
                   </div>

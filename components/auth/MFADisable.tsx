@@ -1,12 +1,12 @@
 "use client";
 
-import { disableMFA } from "@/app/actions/mfa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hook/use-toast";
+import { disableMFA } from "@/lib/auth/client";
 import { AlertCircle } from "lucide-react";
 import { useState, useTransition } from "react";
 

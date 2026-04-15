@@ -1,10 +1,10 @@
 "use client";
 
-import { verifySetup } from "@/app/actions/mfa";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hook/use-toast";
+import { verifySetup } from "@/lib/auth/client";
 import { Copy } from "lucide-react";
 import { useState, useTransition } from "react";
 

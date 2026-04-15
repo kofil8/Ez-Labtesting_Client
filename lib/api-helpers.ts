@@ -5,76 +5,155 @@ import { cookies } from "next/headers";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "https://ezlabtesting-api.com/api/v1";
 
-/**
- * Helper function to refresh the access token using the refresh token cookie
- */
-async function refreshAccessToken(): Promise<string> {
-  const cookieStore = await cookies();
-  const refreshTokenValue = cookieStore.get("refreshToken")?.value;
+function isConnectionError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.message.includes("fetch failed") ||
+      error.message.includes("NetworkError"))
+  );
+}
 
-  if (!refreshTokenValue) {
-    throw new Error("No refresh token found");
+function normalizeNetworkError(error: unknown): Error {
+  if (isConnectionError(error)) {
+    return new Error(
+      "Unable to connect to server. Please check your connection and try again.",
+    );
   }
 
-  // Call refresh-token endpoint - backend reads refreshToken from cookies automatically
-  let res;
+  return error instanceof Error
+    ? error
+    : new Error("Network error occurred. Please try again.");
+}
+
+function getCookieHeader() {
+  return cookies().then((cookieStore) =>
+    cookieStore
+      .getAll()
+      .map(({ name, value }) => `${name}=${value}`)
+      .join("; "),
+  );
+}
+
+function getSetCookieHeaders(response: Response): string[] {
+  const headers = response.headers as Headers & {
+    getSetCookie?: () => string[];
+  };
+
+  if (typeof headers.getSetCookie === "function") {
+    return headers.getSetCookie();
+  }
+
+  const combined = response.headers.get("set-cookie");
+  if (!combined) {
+    return [];
+  }
+
+  const cookiesList: string[] = [];
+  let current = "";
+  let inExpires = false;
+
+  for (const char of combined) {
+    if (char === "," && !inExpires) {
+      cookiesList.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+
+    if (current.toLowerCase().endsWith("expires=")) {
+      inExpires = true;
+    } else if (inExpires && char === ";") {
+      inExpires = false;
+    }
+  }
+
+  if (current.trim()) {
+    cookiesList.push(current.trim());
+  }
+
+  return cookiesList;
+}
+
+async function applyResponseCookies(response: Response) {
+  const cookieStore = await cookies();
+
+  for (const header of getSetCookieHeaders(response)) {
+    const [cookiePair, ...attributes] = header.split(";").map((part) => part.trim());
+    const separatorIndex = cookiePair.indexOf("=");
+
+    if (separatorIndex === -1) {
+      continue;
+    }
+
+    const name = cookiePair.slice(0, separatorIndex);
+    const value = cookiePair.slice(separatorIndex + 1);
+    const options: Record<string, unknown> = {};
+
+    for (const attribute of attributes) {
+      const [rawKey, ...rawValueParts] = attribute.split("=");
+      const key = rawKey.toLowerCase();
+      const attributeValue = rawValueParts.join("=");
+
+      if (key === "httponly") {
+        options.httpOnly = true;
+      } else if (key === "secure") {
+        options.secure = true;
+      } else if (key === "path" && attributeValue) {
+        options.path = attributeValue;
+      } else if (key === "domain" && attributeValue) {
+        options.domain = attributeValue;
+      } else if (key === "max-age" && attributeValue) {
+        const maxAge = Number(attributeValue);
+        if (Number.isFinite(maxAge)) {
+          options.maxAge = maxAge;
+        }
+      } else if (key === "expires" && attributeValue) {
+        const expires = new Date(attributeValue);
+        if (!Number.isNaN(expires.getTime())) {
+          options.expires = expires;
+        }
+      } else if (key === "samesite" && attributeValue) {
+        const sameSite = attributeValue.toLowerCase();
+        if (sameSite === "lax" || sameSite === "strict" || sameSite === "none") {
+          options.sameSite = sameSite;
+        }
+      }
+    }
+
+    cookieStore.set(name, value, options as any);
+  }
+}
+
+async function refreshAccessToken(): Promise<void> {
+  const cookieHeader = await getCookieHeader();
+
+  if (!cookieHeader) {
+    throw new Error("No authenticated session found");
+  }
+
+  let response: Response;
+
   try {
-    res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+    response = await fetch(`${API_BASE_URL}/auth/refreshtoken`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        Cookie: cookieHeader,
       },
-      credentials: "include", // This sends cookies automatically
       cache: "no-store",
     });
-  } catch (error: any) {
-    // Handle connection errors (ECONNREFUSED, network failures, etc.)
-    if (
-      error.cause?.code === "ECONNREFUSED" ||
-      error.message?.includes("fetch failed")
-    ) {
-      throw new Error(
-        "Unable to connect to server. Please check your connection and try again.",
-      );
-    }
-    throw new Error("Network error occurred. Please try again.");
+  } catch (error) {
+    throw normalizeNetworkError(error);
   }
 
-  if (!res.ok) {
-    const error = await res
+  if (!response.ok) {
+    const payload = await response
       .json()
       .catch(() => ({ message: "Token refresh failed" }));
-    const cookieStore = await cookies();
-
-    // If refresh token is also expired, clear both cookies
-    if (res.status === 401) {
-      cookieStore.delete("accessToken");
-      cookieStore.delete("refreshToken");
-    }
-
-    throw new Error(error.message || "Token refresh failed");
+    throw new Error(payload.message || "Token refresh failed");
   }
 
-  const data = await res.json();
-  const newAccessToken = data?.data?.accessToken;
-
-  if (!newAccessToken) {
-    throw new Error("No access token received from refresh");
-  }
-
-  // Update the accessToken cookie
-  cookieStore.set("accessToken", newAccessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 15, // 15 minutes (matching JWT expiration)
-  });
-
-  // Backend automatically sets refreshToken via Set-Cookie header
-  // Browser will handle it automatically with credentials: 'include'
-
-  return newAccessToken;
+  await applyResponseCookies(response);
 }
 
 /**
@@ -85,97 +164,45 @@ export async function authenticatedFetch(
   url: string,
   options: RequestInit = {},
 ): Promise<Response> {
-  let cookieStore = await cookies();
-  let accessToken = cookieStore.get("accessToken")?.value;
+  let cookieHeader = await getCookieHeader();
+  let response: Response;
 
-  if (!accessToken) {
-    try {
-      accessToken = await refreshAccessToken();
-    } catch (error: any) {
-      // Clear any stale cookies if refresh fails
-      cookieStore.delete("accessToken");
-      cookieStore.delete("refreshToken");
-      throw new Error(
-        error?.message || "Not authenticated. Please log in again.",
-      );
-    }
-  }
-
-  // Make the initial request with access token
-  let response;
   try {
     response = await fetch(url, {
       ...options,
       headers: {
         ...options.headers,
-        Authorization: `Bearer ${accessToken}`,
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
       },
-      credentials: "include", // Include cookies for refresh token
       cache: "no-store",
     });
-  } catch (error: any) {
-    // Handle connection errors (ECONNREFUSED, network failures, etc.)
-    if (
-      error.cause?.code === "ECONNREFUSED" ||
-      error.message?.includes("fetch failed")
-    ) {
-      throw new Error(
-        "Unable to connect to server. The server may be down. Please try again later.",
-      );
-    }
-    throw new Error(
-      "Network error occurred. Please check your connection and try again.",
-    );
+  } catch (error) {
+    throw normalizeNetworkError(error);
   }
 
-  // If we get a 401 (Unauthorized), try to refresh the token and retry
+  if (response.status !== 401) {
+    return response;
+  }
+
+  await refreshAccessToken();
+
+  cookieHeader = await getCookieHeader();
+
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      },
+      cache: "no-store",
+    });
+  } catch (error) {
+    throw normalizeNetworkError(error);
+  }
+
   if (response.status === 401) {
-    try {
-      // Attempt to refresh the token
-      const newAccessToken = await refreshAccessToken();
-
-      // Retry the original request with the new token
-      try {
-        response = await fetch(url, {
-          ...options,
-          headers: {
-            ...options.headers,
-            Authorization: `Bearer ${newAccessToken}`,
-          },
-          credentials: "include",
-          cache: "no-store",
-        });
-      } catch (retryError: any) {
-        // Handle connection errors on retry
-        if (
-          retryError.cause?.code === "ECONNREFUSED" ||
-          retryError.message?.includes("fetch failed")
-        ) {
-          throw new Error(
-            "Unable to connect to server. The server may be down. Please try again later.",
-          );
-        }
-        throw new Error(
-          "Network error occurred. Please check your connection and try again.",
-        );
-      }
-
-      // If retry also fails with 401, the refresh token is also expired
-      if (response.status === 401) {
-        cookieStore = await cookies();
-        cookieStore.delete("accessToken");
-        cookieStore.delete("refreshToken");
-        throw new Error("Session expired. Please log in again.");
-      }
-    } catch (refreshError: any) {
-      // If refresh fails, clear cookies and throw error
-      cookieStore = await cookies();
-      cookieStore.delete("accessToken");
-      cookieStore.delete("refreshToken");
-      const errorMessage =
-        refreshError.message || "Session expired. Please log in again.";
-      throw new Error(errorMessage);
-    }
+    throw new Error("Session expired. Please log in again.");
   }
 
   return response;

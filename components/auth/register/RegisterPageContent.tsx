@@ -4,23 +4,29 @@ import { MedicalSpinner } from "@/components/auth/MedicalSpinner";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { RegisterAccountForm } from "./RegisterAccountForm";
-import { RegisterFlowShell } from "./RegisterFlowShell";
+import { RegisterForm } from "./RegisterForm";
+import { RegisterShell } from "./RegisterShell";
 
-export function RegisterAccountPageContent() {
+function getSafeRedirectTarget(from: string | null) {
+  if (!from || !from.startsWith("/") || from.startsWith("//")) {
+    return null;
+  }
+
+  return from;
+}
+
+export function RegisterPageContent() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      const fromParam = searchParams.get("from");
-      const safeFrom =
-        fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
-          ? fromParam
-          : null;
-      router.push(safeFrom || "/");
+    if (isLoading || !isAuthenticated) {
+      return;
     }
+
+    const from = getSafeRedirectTarget(searchParams.get("from"));
+    router.push(from || "/");
   }, [isAuthenticated, isLoading, router, searchParams]);
 
   if (isLoading) {
@@ -36,12 +42,11 @@ export function RegisterAccountPageContent() {
   }
 
   return (
-    <RegisterFlowShell
+    <RegisterShell
       title='Create your secure account'
-      subtitle='Set up secure access in minutes, add a profile photo if you want, and save optional details only when they improve future orders, delivery, and results access.'
-      badgeText='Medical checkout ready'
+      subtitle='Start with the required details for secure access. Add address details now only if you want a faster checkout later.'
     >
-      <RegisterAccountForm />
-    </RegisterFlowShell>
+      <RegisterForm />
+    </RegisterShell>
   );
 }

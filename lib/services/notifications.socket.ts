@@ -1,5 +1,5 @@
-import { getAccessTokenFromServer } from "@/app/actions/get-token";
-import { clientRefreshToken } from "@/lib/token-utils";
+import { handleAuthFailure, refreshSession } from "@/lib/auth/client";
+import { getApiOrigin } from "@/lib/api/config";
 import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
@@ -7,34 +7,10 @@ let socketToken: string | null = null;
 let connectPromise: Promise<Socket> | null = null;
 
 function getSocketBaseUrl() {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_SOCKET_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    (typeof window !== "undefined"
-      ? window.location.origin
-      : "http://localhost:7001");
-
-  return apiUrl.replace(/\/api\/v1\/?$/, "");
-}
-
-async function getNotificationAuthToken() {
-  let token = (await getAccessTokenFromServer())?.token;
-
-  if (!token) {
-    try {
-      await clientRefreshToken();
-      token = (await getAccessTokenFromServer())?.token;
-    } catch {
-      token = null;
-    }
-  }
-
-  if (!token) {
-    throw new Error("Authentication token is required for notifications");
-  }
-
-  return token;
+  return (process.env.NEXT_PUBLIC_SOCKET_URL || getApiOrigin()).replace(
+    /\/api\/v1\/?$/,
+    "",
+  );
 }
 
 export async function connectNotificationSocket() {
@@ -43,9 +19,9 @@ export async function connectNotificationSocket() {
   }
 
   connectPromise = (async () => {
-    const token = await getNotificationAuthToken();
+    let hasRetriedAfterRefresh = false;
 
-    if (socket && socketToken === token) {
+    if (socket && socketToken === "cookie-session") {
       return socket;
     }
 
@@ -56,9 +32,24 @@ export async function connectNotificationSocket() {
     socket = io(getSocketBaseUrl(), {
       transports: ["websocket", "polling"],
       withCredentials: true,
-      auth: { token },
     });
-    socketToken = token;
+    socketToken = "cookie-session";
+
+    socket.on("connect_error", async () => {
+      if (hasRetriedAfterRefresh) {
+        await handleAuthFailure();
+        return;
+      }
+
+      hasRetriedAfterRefresh = true;
+
+      try {
+        await refreshSession();
+        socket?.connect();
+      } catch {
+        await handleAuthFailure();
+      }
+    });
 
     return socket;
   })();

@@ -1,11 +1,11 @@
 "use client";
 
-import { cleanupPushOnLogout } from "@/lib/logoutPushCleanup";
 import {
-  clearPushRegistrationAttempts,
-  clearRegisteredPushTokenMarker,
-} from "@/lib/push";
-import { useNotificationsStore } from "@/lib/store/notifications-store";
+  AUTH_SESSION_EXPIRED_EVENT,
+  logoutSession,
+} from "@/lib/auth/client";
+import { normalizeUserRole } from "@/lib/auth/shared";
+import { clientFetch, getApiUrl } from "@/lib/api-client";
 import { AuthState, User } from "@/types/user";
 import {
   createContext,
@@ -16,9 +16,6 @@ import {
   useState,
 } from "react";
 
-/* ------------------------------------------------------
-   TYPES
------------------------------------------------------- */
 interface UpdateProfileData {
   firstName: string;
   lastName: string;
@@ -28,7 +25,7 @@ interface UpdateProfileData {
 }
 
 interface AuthContextType extends AuthState {
-  refreshAuth: () => Promise<boolean>;
+  refreshAuth: () => Promise<User | null>;
   logout: () => Promise<void>;
   fetchProfile: () => Promise<void>;
   updateProfile: (
@@ -39,87 +36,92 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/* ------------------------------------------------------
-   CONSTANTS
------------------------------------------------------- */
-const AUTH_TOKEN_KEY = "auth_token";
-const AUTH_COOKIE_NAME = "accessToken";
-
-/* ------------------------------------------------------
-   TOKEN HELPERS
------------------------------------------------------- */
-/**
- * Get or create a token placeholder for auth state
- * Note: Real authentication is handled via httpOnly cookies server-side
- * This token is just for client-side state management
- */
-function getOrCreateToken(): string {
-  if (typeof window === "undefined") return "authenticated";
-
-  const existingToken = localStorage.getItem(AUTH_TOKEN_KEY);
-  if (existingToken) {
-    return existingToken;
-  }
-
-  // Create a placeholder token to indicate authenticated state
-  // The actual auth is handled by httpOnly cookies
-  const placeholderToken = "authenticated";
-  localStorage.setItem(AUTH_TOKEN_KEY, placeholderToken);
-  return placeholderToken;
-}
-
 function normalizeRole(role: string | null | undefined): User["role"] {
-  switch (role?.toLowerCase()) {
-    case "superadmin":
-    case "super_admin":
-      return "super_admin";
-    case "admin":
-      return "admin";
-    case "lab_partner":
-      return "lab_partner";
-    case "customer":
-    default:
-      return "customer";
-  }
+  return (normalizeUserRole(role) || "customer") as User["role"];
 }
 
 function toAuthUser(profile: any): User {
   return {
     ...profile,
+    firstName: profile?.firstName || "",
+    lastName: profile?.lastName || "",
     role: normalizeRole(profile?.role),
   };
 }
 
-/* ------------------------------------------------------
-   PERSISTENCE HELPERS
------------------------------------------------------- */
-function setAuthPersistence(token: string, _user: User) {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(AUTH_TOKEN_KEY, token);
-
-  // Note: Server-side actions set httpOnly cookies, so we don't set them here
-  // This is just for client-side reference
+function buildLoggedOutState(): AuthState {
+  return {
+    user: null,
+    token: null,
+    isAuthenticated: false,
+    isLoading: false,
+  };
 }
 
-function clearAuthPersistence() {
-  if (typeof window === "undefined") return;
+async function parseProfileResponse(
+  response: Response,
+  fallbackMessage: string,
+): Promise<User> {
+  const payload = await response.json().catch(() => ({}));
 
-  localStorage.removeItem(AUTH_TOKEN_KEY);
-  clearRegisteredPushTokenMarker();
-  clearPushRegistrationAttempts();
-  sessionStorage.removeItem("otp_email");
-  useNotificationsStore.getState().resetNotifications();
+  if (!response.ok) {
+    throw new Error(payload.message || fallbackMessage);
+  }
 
-  const past = new Date(0).toUTCString();
-
-  document.cookie = `${AUTH_COOKIE_NAME}=; path=/; expires=${past}`;
-  document.cookie = `refreshToken=; path=/; expires=${past}`;
+  return toAuthUser(payload?.data || payload?.profile || payload);
 }
 
-/* ------------------------------------------------------
-   PROVIDER
------------------------------------------------------- */
+async function requestProfile(redirectOnAuthFailure = false): Promise<User> {
+  const response = await clientFetch(getApiUrl("/profile"), {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    redirectOnAuthFailure,
+  });
+
+  return parseProfileResponse(
+    response,
+    "Unable to load your profile information.",
+  );
+}
+
+async function requestProfileUpdate(
+  data: UpdateProfileData,
+  file?: File,
+): Promise<User> {
+  const formData = new FormData();
+
+  formData.append("firstName", data.firstName);
+  formData.append("lastName", data.lastName);
+
+  if (data.phone) {
+    formData.append("phoneNumber", data.phone);
+  }
+
+  if (data.gender) {
+    formData.append("gender", data.gender);
+  }
+
+  if (data.dateOfBirth) {
+    formData.append("dateOfBirth", data.dateOfBirth);
+  }
+
+  if (file) {
+    formData.append("file", file);
+  }
+
+  const response = await clientFetch(getApiUrl("/profile"), {
+    method: "PATCH",
+    body: formData,
+  });
+
+  return parseProfileResponse(
+    response,
+    "Unable to update your profile. Please try again.",
+  );
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -128,330 +130,97 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
 
-  /* ------------------------------------------------------
-     INITIALIZATION
-     - Decode JWT token from cookie (client-side)
-     - Verify token hasn't expired
-      - Extract user info without API call
-      - Never trust localStorage as an authentication source
-  ------------------------------------------------------ */
-  useEffect(() => {
-    const initializeAuth = async () => {
-      // Try to decode token from httpOnly cookie indirectly via a server action
-      try {
-        const { getAccessTokenFromServer } =
-          await import("@/app/actions/get-token");
-        const tokenResult = await getAccessTokenFromServer();
-
-        if (tokenResult?.token) {
-          const { isTokenValid, getUserFromToken } =
-            await import("@/lib/token-utils");
-
-          // Verify token is valid (not expired)
-          if (isTokenValid(tokenResult.token)) {
-            const userInfo = getUserFromToken(tokenResult.token);
-            if (userInfo) {
-              // Create a user object from token info
-              const user: User = {
-                id: userInfo.id,
-                email: userInfo.email,
-                firstName: "",
-                lastName: "",
-                role: userInfo.role as any,
-                isVerified: false,
-                createdAt: new Date().toISOString(),
-              };
-
-              const newToken = getOrCreateToken();
-              try {
-                const { getProfile } =
-                  await import("@/app/actions/get-profile");
-                const profileResult = await getProfile();
-
-                if (profileResult?.success && profileResult.profile) {
-                  const user = toAuthUser(profileResult.profile);
-                  setAuthPersistence(newToken, user);
-                  setAuthState({
-                    user,
-                    token: newToken,
-                    isAuthenticated: true,
-                    isLoading: false,
-                  });
-                  return;
-                }
-              } catch (profileError: any) {
-                console.debug(
-                  "Profile fetch during auth init failed, using token payload user:",
-                  profileError?.message,
-                );
-              }
-
-              setAuthPersistence(newToken, user);
-              setAuthState({
-                user,
-                token: newToken,
-                isAuthenticated: true,
-                isLoading: false,
-              });
-              return;
-            }
-          }
-        }
-      } catch (error: any) {
-        console.debug("Token verification failed:", error?.message);
-      }
-
-      // No valid auth found
-      clearAuthPersistence();
-      setAuthState({
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
-    };
-
-    initializeAuth();
+  const applyLoggedInState = useCallback((user: User) => {
+    setAuthState({
+      user,
+      token: null,
+      isAuthenticated: true,
+      isLoading: false,
+    });
   }, []);
 
-  /* ------------------------------------------------------
-     AUTOMATIC TOKEN REFRESH
-     - Proactively refreshes access token every 12 minutes (before 15min expiry)
-     - Prevents token expiration during critical operations like checkout
-     - Only runs when user is authenticated
-  ------------------------------------------------------ */
+  const clearAuthState = useCallback(() => {
+    setAuthState(buildLoggedOutState());
+  }, []);
+
+  const refreshAuth = useCallback(async (): Promise<User | null> => {
+    try {
+      const user = await requestProfile(false);
+      applyLoggedInState(user);
+      return user;
+    } catch (error) {
+      clearAuthState();
+      return null;
+    }
+  }, [applyLoggedInState, clearAuthState]);
+
   useEffect(() => {
-    if (!authState.isAuthenticated || authState.isLoading) {
+    let isActive = true;
+
+    const bootstrapAuth = async () => {
+      try {
+        const user = await requestProfile(false);
+
+        if (isActive) {
+          applyLoggedInState(user);
+        }
+      } catch (error) {
+        if (isActive) {
+          clearAuthState();
+        }
+      }
+    };
+
+    void bootstrapAuth();
+
+    return () => {
+      isActive = false;
+    };
+  }, [applyLoggedInState, clearAuthState]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
       return;
     }
 
-    // Refresh token every 12 minutes (720000ms)
-    // This is before the 15-minute expiry to ensure seamless auth
-    const REFRESH_INTERVAL = 12 * 60 * 1000; // 12 minutes
-
-    const refreshTokenPeriodically = async () => {
-      try {
-        const { clientRefreshToken } = await import("@/lib/token-utils");
-        await clientRefreshToken();
-        console.debug("Token automatically refreshed");
-      } catch (error) {
-        console.error("Failed to auto-refresh token:", error);
-        // If refresh fails, user will be logged out on next API call
-      }
+    const handleSessionExpired = () => {
+      clearAuthState();
     };
 
-    // Set up interval for periodic refresh
-    const intervalId = setInterval(refreshTokenPeriodically, REFRESH_INTERVAL);
+    window.addEventListener(
+      AUTH_SESSION_EXPIRED_EVENT,
+      handleSessionExpired as EventListener,
+    );
 
-    // Also refresh immediately after 12 minutes from component mount
-    const timeoutId = setTimeout(refreshTokenPeriodically, REFRESH_INTERVAL);
-
-    // Cleanup on unmount or auth state change
     return () => {
-      clearInterval(intervalId);
-      clearTimeout(timeoutId);
+      window.removeEventListener(
+        AUTH_SESSION_EXPIRED_EVENT,
+        handleSessionExpired as EventListener,
+      );
     };
-  }, [authState.isAuthenticated, authState.isLoading]);
+  }, [clearAuthState]);
 
-  /* ------------------------------------------------------
-     FETCH PROFILE
-     - Fetches user profile from server and updates auth state
-     - Uses httpOnly cookie for authentication (server-side)
-  ------------------------------------------------------ */
   const fetchProfile = useCallback(async (): Promise<void> => {
-    try {
-      const { getProfile } = await import("@/app/actions/get-profile");
-      const result = await getProfile();
+    const user = await requestProfile();
+    applyLoggedInState(user);
+  }, [applyLoggedInState]);
 
-      if (result?.success && result.profile) {
-        // Get or create token placeholder (real auth is via httpOnly cookie)
-        const token = getOrCreateToken();
-        const user = toAuthUser(result.profile);
-
-        setAuthPersistence(token, user);
-
-        setAuthState({
-          user,
-          token,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      } else {
-        throw new Error("Failed to fetch profile");
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch profile:", error);
-
-      // If session expired or not authenticated, clear auth state
-      if (
-        error?.message?.includes("Session expired") ||
-        error?.message?.includes("Not authenticated")
-      ) {
-        clearAuthPersistence();
-        setAuthState({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          isLoading: false,
-        });
-      }
-      throw error;
-    }
-  }, []);
-
-  /* ------------------------------------------------------
-     REFRESH AUTH
-     - Refreshes user profile from server
-     - Uses httpOnly cookie for authentication (server-side)
-     - Called after login/verify-otp to initialize auth state
-  ------------------------------------------------------ */
-  const refreshAuth = useCallback(async (): Promise<boolean> => {
-    try {
-      const { getProfile } = await import("@/app/actions/get-profile");
-      const result = await getProfile();
-
-      if (result?.success && result.profile) {
-        // Get or create token placeholder (real auth is via httpOnly cookie)
-        const token = getOrCreateToken();
-        const user = toAuthUser(result.profile);
-
-        setAuthPersistence(token, user);
-
-        setAuthState({
-          user,
-          token,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-
-        return true;
-      }
-    } catch (error: any) {
-      console.error("Failed to refresh auth:", error);
-
-      // Clear auth state on authentication errors
-      if (
-        error?.message?.includes("Session expired") ||
-        error?.message?.includes("Not authenticated")
-      ) {
-        clearAuthPersistence();
-        setAuthState({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          isLoading: false,
-        });
-      }
-      return false;
-    }
-
-    return false;
-  }, []);
-
-  /* ------------------------------------------------------
-     UPDATE PROFILE
-     - Updates user profile via server action
-     - Automatically refreshes profile after successful update
-  ------------------------------------------------------ */
   const updateProfile = useCallback(
     async (
       data: UpdateProfileData,
       file?: File,
     ): Promise<{ success: boolean; profile?: User }> => {
-      try {
-        const { updateProfile: updateProfileAction } =
-          await import("@/app/actions/update-profile");
-
-        // Create FormData for the server action
-        const formData = new FormData();
-        formData.append("firstName", data.firstName);
-        formData.append("lastName", data.lastName);
-        if (data.phone) {
-          formData.append("phone", data.phone);
-        }
-        if (data.gender) {
-          formData.append("gender", data.gender);
-        }
-        if (data.dateOfBirth) {
-          formData.append("dateOfBirth", data.dateOfBirth);
-        }
-        if (file) {
-          formData.append("file", file);
-        }
-
-        const result = await updateProfileAction(formData);
-
-        if (result?.success && result.profile) {
-          // Update auth state with new profile data
-          const token = getOrCreateToken();
-          const user = toAuthUser(result.profile);
-
-          setAuthPersistence(token, user);
-          setAuthState((prev) => ({
-            ...prev,
-            user,
-            token,
-            isAuthenticated: true,
-          }));
-
-          return { success: true, profile: user };
-        }
-
-        throw new Error("Failed to update profile");
-      } catch (error: any) {
-        console.error("Failed to update profile:", error);
-
-        // If session expired, clear auth state
-        if (
-          error?.message?.includes("Session expired") ||
-          error?.message?.includes("Not authenticated")
-        ) {
-          clearAuthPersistence();
-          setAuthState({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
-        }
-        throw error;
-      }
+      const user = await requestProfileUpdate(data, file);
+      applyLoggedInState(user);
+      return { success: true, profile: user };
     },
-    [],
+    [applyLoggedInState],
   );
 
-  /* ------------------------------------------------------
-     LOGOUT
-     - Clears auth persistence and calls server logout
-     - Unregisters FCM push token before ending the session
-  ------------------------------------------------------ */
-  const logout = useCallback(
-    async (): Promise<void> => {
-      try {
-        await cleanupPushOnLogout();
-      } catch (error) {
-        console.error("Push cleanup failed during logout:", error);
-      }
-
-      clearAuthPersistence();
-
-      setAuthState({
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
-
-      try {
-        const { logoutUser } = await import("@/app/actions/logout-user");
-        await logoutUser();
-      } catch (err) {
-        console.error("Logout failed:", err);
-        // Don't throw - auth state is already cleared
-      }
-    },
-    [],
-  );
+  const logout = useCallback(async (): Promise<void> => {
+    clearAuthState();
+    await logoutSession({ shouldRedirect: false });
+  }, [clearAuthState]);
 
   return (
     <AuthContext.Provider
@@ -468,11 +237,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/* ------------------------------------------------------
-   HOOK
------------------------------------------------------- */
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
   return context;
 }

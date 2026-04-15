@@ -1,6 +1,4 @@
-import { TokenRefreshManager } from "@/components/auth/TokenRefreshManager";
 import { CartSidebarWrapper } from "@/components/cart/CartSidebarWrapper";
-import { ClientInit } from "@/components/ClientInit";
 import NotificationsProvider from "@/components/notifications/NotificationsProvider";
 import { KallesBackground } from "@/components/shared/KallesBackground";
 import { LocationInitializer } from "@/components/shared/LocationInitializer";
@@ -87,10 +85,8 @@ export default function RootLayout({
 })();`}
         </Script>
         <KallesBackground />
-        <ClientInit />
 
         <AuthProvider>
-          <TokenRefreshManager />
           <NotificationsProvider />
           <CheckoutProvider>
             <CartSidebarProvider>

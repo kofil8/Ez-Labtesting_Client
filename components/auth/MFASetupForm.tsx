@@ -1,6 +1,5 @@
 "use client";
 
-import { getMFAStatus, setupMFA } from "@/app/actions/mfa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "@/hook/use-toast";
+import { getMFAStatus, setupMFA } from "@/lib/auth/client";
 import { useAuth } from "@/lib/auth-context";
 import { AlertCircle, CheckCircle2, Shield, Smartphone } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 
 const MFAQRDisplay = dynamic(
   () =>
@@ -63,18 +63,24 @@ export function MFASetupForm() {
   const [secret, setSecret] = useState("");
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchMFAStatus();
-  }, []);
-
-  const fetchMFAStatus = async () => {
+  const fetchMFAStatus = useCallback(async () => {
     const result = await getMFAStatus();
     if (result.success && result.data) {
       setMfaStatus(result.data);
     } else {
       console.error("Failed to fetch MFA status:", result.message);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchMFAStatus();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [fetchMFAStatus]);
 
   const handleSetupMFA = () => {
     startTransition(async () => {

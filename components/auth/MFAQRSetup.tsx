@@ -1,11 +1,11 @@
 "use client";
 
-import { setupMFA, verifySetup } from "@/app/actions/mfa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hook/use-toast";
+import { setupMFA, verifySetup } from "@/lib/auth/client";
 import { Copy, Smartphone } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState, useTransition } from "react";

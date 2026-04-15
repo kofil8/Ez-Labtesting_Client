@@ -1,9 +1,5 @@
 "use client";
 
-import {
-  verifyBackupCode as verifyBackupCodeAction,
-  verifyMFA as verifyMFAAction,
-} from "@/app/actions/mfa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hook/use-toast";
+import {
+  verifyBackupCode as verifyBackupCodeAction,
+  verifyMFA as verifyMFAAction,
+} from "@/lib/auth/client";
+import { getDashboardRouteForRole } from "@/lib/auth/shared";
 import { useAuth } from "@/lib/auth-context";
 import { AlertCircle, Key, Shield } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -27,6 +28,11 @@ export function MFAVerificationForm() {
   const { refreshAuth } = useAuth();
 
   const tempToken = searchParams.get("tempToken");
+  const fromParam = searchParams.get("from");
+  const safeFrom =
+    fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
+      ? fromParam
+      : null;
   const [verificationCode, setVerificationCode] = useState("");
   const [backupCode, setBackupCode] = useState("");
   const [useBackup, setUseBackup] = useState(false);
@@ -56,27 +62,14 @@ export function MFAVerificationForm() {
         return;
       }
 
-      // Store the access token placeholder
-      if (result.data?.accessToken) {
-        localStorage.setItem("accessToken", result.data.accessToken);
-      }
-
       toast({
         title: "Success",
         description: "Logged in successfully!",
       });
 
       // Refresh auth context
-      await refreshAuth();
-
-      // Redirect based on role
-      const role = result.data?.user?.role;
-      const redirect =
-        role === "ADMIN"
-          ? "/admin"
-          : role === "LAB_PARTNER"
-            ? "/dashboard/lab-partner"
-            : "/dashboard/customer";
+      const user = await refreshAuth();
+      const redirect = safeFrom || getDashboardRouteForRole(user?.role);
 
       setTimeout(() => router.push(redirect), 500);
     });
@@ -106,11 +99,6 @@ export function MFAVerificationForm() {
         return;
       }
 
-      // Store the access token placeholder
-      if (result.data?.accessToken) {
-        localStorage.setItem("accessToken", result.data.accessToken);
-      }
-
       const remaining = result.data?.remainingBackupCodes ?? 0;
       toast({
         title: "Success",
@@ -118,16 +106,8 @@ export function MFAVerificationForm() {
       });
 
       // Refresh auth context
-      await refreshAuth();
-
-      // Redirect based on role
-      const role = result.data?.user?.role;
-      const redirect =
-        role === "ADMIN"
-          ? "/admin"
-          : role === "LAB_PARTNER"
-            ? "/dashboard/lab-partner"
-            : "/dashboard/customer";
+      const user = await refreshAuth();
+      const redirect = safeFrom || getDashboardRouteForRole(user?.role);
 
       setTimeout(() => router.push(redirect), 500);
     });

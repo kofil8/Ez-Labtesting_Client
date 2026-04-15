@@ -1,8 +1,8 @@
-import { RegisterAccountPageContent } from "@/components/auth/register/RegisterAccountPageContent";
+import { RegisterPageContent } from "@/components/auth/register/RegisterPageContent";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { Suspense } from "react";
 
-export default function RegisterRootPage() {
+export default function RegisterPage() {
   return (
     <Suspense
       fallback={
@@ -11,7 +11,7 @@ export default function RegisterRootPage() {
         </div>
       }
     >
-      <RegisterAccountPageContent />
+      <RegisterPageContent />
     </Suspense>
   );
 }

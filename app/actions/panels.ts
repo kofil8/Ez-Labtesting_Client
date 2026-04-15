@@ -7,9 +7,18 @@ import {
   UpdatePanelInput,
 } from "@/types/panel";
 import { cookies } from "next/headers";
+import { authenticatedFetch } from "@/lib/api-helpers";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
+
+async function getCookieHeader() {
+  const cookieStore = await cookies();
+  return cookieStore
+    .getAll()
+    .map(({ name, value }) => `${name}=${value}`)
+    .join("; ");
+}
 
 /**
  * Get all panels with filtering, pagination, and sorting
@@ -25,10 +34,6 @@ export async function getPanels(options?: {
   maxPrice?: number;
 }): Promise<PanelsListResponse> {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-    // Public endpoint: proceed without token if not present
-
     // Build query string
     const params = new URLSearchParams();
     if (options?.page) params.append("page", options.page.toString());
@@ -46,17 +51,16 @@ export async function getPanels(options?: {
     const queryString = params.toString();
     const url = `${API_BASE_URL}/panels${queryString ? "?" + queryString : ""}`;
 
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+    const cookieHeader = await getCookieHeader();
 
     let res;
     try {
       res = await fetch(url, {
         method: "GET",
-        headers,
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        },
         cache: "no-store",
       });
     } catch (error: any) {
@@ -79,13 +83,6 @@ export async function getPanels(options?: {
         message: "Failed to fetch panels",
       }));
 
-      if (res.status === 401) {
-        const store = await cookies();
-        store.delete("accessToken");
-        store.delete("refreshToken");
-        throw new Error("Session expired. Please log in again.");
-      }
-
       throw new Error(error.message || "Failed to fetch panels");
     }
 
@@ -105,21 +102,16 @@ export async function getPanels(options?: {
  */
 export async function getPanelById(panelId: string): Promise<Panel> {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-    // Public endpoint: proceed without token if not present
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+    const cookieHeader = await getCookieHeader();
 
     let res;
     try {
       res = await fetch(`${API_BASE_URL}/panels/${panelId}`, {
         method: "GET",
-        headers,
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        },
         cache: "no-store",
       });
     } catch (error: any) {
@@ -141,13 +133,6 @@ export async function getPanelById(panelId: string): Promise<Panel> {
       const error = await res.json().catch(() => ({
         message: "Panel not found",
       }));
-
-      if (res.status === 401) {
-        const store = await cookies();
-        store.delete("accessToken");
-        store.delete("refreshToken");
-        throw new Error("Session expired. Please log in again.");
-      }
 
       if (res.status === 404) {
         throw new Error("Panel not found");
@@ -172,13 +157,6 @@ export async function createPanel(
   imageFile?: File,
 ): Promise<Panel> {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-
-    if (!accessToken) {
-      throw new Error("Not authenticated. Please log in again.");
-    }
-
     // Build multipart FormData
     const formData = new FormData();
     const PANEL_FIELDS: Array<keyof CreatePanelInput> = [
@@ -204,12 +182,9 @@ export async function createPanel(
 
     let res;
     try {
-      res = await fetch(`${API_BASE_URL}/panels`, {
+      res = await authenticatedFetch(`${API_BASE_URL}/panels`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
         body: formData,
-        credentials: "include",
-        cache: "no-store",
       });
     } catch (error: any) {
       if (
@@ -229,13 +204,6 @@ export async function createPanel(
       const error = await res.json().catch(() => ({
         message: "Failed to create panel",
       }));
-
-      if (res.status === 401) {
-        const store = await cookies();
-        store.delete("accessToken");
-        store.delete("refreshToken");
-        throw new Error("Session expired. Please log in again.");
-      }
 
       if (res.status === 403) {
         throw new Error("You do not have permission to create panels");
@@ -261,13 +229,6 @@ export async function updatePanel(
   imageFile?: File,
 ): Promise<Panel> {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-
-    if (!accessToken) {
-      throw new Error("Not authenticated. Please log in again.");
-    }
-
     // Build multipart FormData
     const formData = new FormData();
     const PANEL_FIELDS: Array<keyof UpdatePanelInput> = [
@@ -293,12 +254,9 @@ export async function updatePanel(
 
     let res;
     try {
-      res = await fetch(`${API_BASE_URL}/panels/${panelId}`, {
+      res = await authenticatedFetch(`${API_BASE_URL}/panels/${panelId}`, {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${accessToken}` },
         body: formData,
-        credentials: "include",
-        cache: "no-store",
       });
     } catch (error: any) {
       if (
@@ -318,13 +276,6 @@ export async function updatePanel(
       const error = await res.json().catch(() => ({
         message: "Failed to update panel",
       }));
-
-      if (res.status === 401) {
-        const store = await cookies();
-        store.delete("accessToken");
-        store.delete("refreshToken");
-        throw new Error("Session expired. Please log in again.");
-      }
 
       if (res.status === 403) {
         throw new Error("You do not have permission to update panels");
@@ -350,23 +301,13 @@ export async function updatePanel(
  */
 export async function deletePanel(panelId: string): Promise<void> {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-
-    if (!accessToken) {
-      throw new Error("Not authenticated. Please log in again.");
-    }
-
     let res;
     try {
-      res = await fetch(`${API_BASE_URL}/panels/${panelId}`, {
+      res = await authenticatedFetch(`${API_BASE_URL}/panels/${panelId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
-        credentials: "include",
-        cache: "no-store",
       });
     } catch (error: any) {
       // Handle connection errors
@@ -387,13 +328,6 @@ export async function deletePanel(panelId: string): Promise<void> {
       const error = await res.json().catch(() => ({
         message: "Failed to delete panel",
       }));
-
-      if (res.status === 401) {
-        const store = await cookies();
-        store.delete("accessToken");
-        store.delete("refreshToken");
-        throw new Error("Session expired. Please log in again.");
-      }
 
       if (res.status === 403) {
         throw new Error("You do not have permission to delete panels");

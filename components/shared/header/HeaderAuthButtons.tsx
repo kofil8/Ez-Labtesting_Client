@@ -58,7 +58,7 @@ export function HeaderAuthButtons({
             asChild
             className='rounded-full bg-[#2b63df] px-5 text-white shadow-[0_10px_20px_-13px_rgba(37,99,235,0.95)] hover:bg-[#1f55cf]'
           >
-            <Link href='/signup' onClick={onLinkClick}>
+            <Link href='/register' onClick={onLinkClick}>
               Create Account
             </Link>
           </Button>
