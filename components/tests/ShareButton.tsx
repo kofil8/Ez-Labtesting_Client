@@ -21,13 +21,13 @@ import { useState } from "react";
 
 interface ShareButtonProps {
   testName: string;
-  testId: string;
+  testSlug: string;
   description?: string;
 }
 
 export function ShareButton({
   testName,
-  testId,
+  testSlug,
   description,
 }: ShareButtonProps) {
   const { toast } = useToast();
@@ -35,7 +35,7 @@ export function ShareButton({
 
   const shareUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/tests/${testId}`
+      ? `${window.location.origin}/tests/${testSlug}`
       : "";
   const shareText = `Check out this lab test: ${testName}`;
 

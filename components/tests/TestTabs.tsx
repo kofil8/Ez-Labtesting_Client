@@ -1,8 +1,9 @@
 "use client";
 
-import { Test } from "@/types/test";
-import { FileText, Info, MessageSquare, Star, Zap } from "lucide-react";
+import type { PublicCatalogTest } from "@/types/public-test";
+import { FileText, Info, Layers3, MessageSquare, Star, Zap } from "lucide-react";
 import { useState } from "react";
+import { TestComponentsList } from "./tabs/TestComponentsList";
 import { TestDetailsGrid } from "./tabs/TestDetailsGrid";
 import { TestFAQ } from "./tabs/TestFAQ";
 import { TestOverview } from "./tabs/TestOverview";
@@ -10,24 +11,24 @@ import { TestPreparation } from "./tabs/TestPreparation";
 import { TestReviewsSection } from "./tabs/TestReviewsSection";
 
 interface TestTabsProps {
-  test: Test;
+  test: PublicCatalogTest;
   currentUserId?: string;
 }
 
-const tabs = [
-  { id: "overview", label: "Overview", icon: Info },
-  { id: "details", label: "Test Details", icon: FileText },
-  { id: "preparation", label: "Preparation", icon: Zap },
-  { id: "reviews", label: "Reviews", icon: Star },
-  { id: "faq", label: "FAQ", icon: MessageSquare },
-];
-
 export function TestTabs({ test, currentUserId }: TestTabsProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const tabs = [
+    { id: "overview", label: "Overview", icon: Info },
+    { id: "details", label: "Test Details", icon: FileText },
+    ...(test.isPanel
+      ? [{ id: "components", label: "Included Tests", icon: Layers3 }]
+      : [{ id: "preparation", label: "Preparation", icon: Zap }]),
+    { id: "reviews", label: "Reviews", icon: Star },
+    { id: "faq", label: "FAQ", icon: MessageSquare },
+  ];
 
   return (
     <div className='border border-border rounded-xl bg-card shadow-sm overflow-hidden'>
-      {/* Tab strip */}
       <div className='border-b border-border overflow-x-auto scrollbar-hide'>
         <div className='flex min-w-max px-4 sm:px-6'>
           {tabs.map((tab) => {
@@ -51,11 +52,11 @@ export function TestTabs({ test, currentUserId }: TestTabsProps) {
         </div>
       </div>
 
-      {/* Tab content */}
       <div className='p-4 sm:p-6'>
         {activeTab === "overview" && <TestOverview test={test} />}
         {activeTab === "details" && <TestDetailsGrid test={test} />}
         {activeTab === "preparation" && <TestPreparation test={test} />}
+        {activeTab === "components" && <TestComponentsList test={test} />}
         {activeTab === "reviews" && (
           <TestReviewsSection test={test} currentUserId={currentUserId} />
         )}

@@ -45,12 +45,16 @@ export function HeaderActions({
       <Button
         variant='ghost'
         size='icon'
-        className='text-muted-foreground hover:bg-muted hover:text-foreground min-[600px]:hidden'
+        className='text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden'
         onClick={onMenuToggle}
         aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         aria-expanded={isMobileMenuOpen}
       >
-        {isMobileMenuOpen ? <X className='h-6 w-6' /> : <Menu className='h-6 w-6' />}
+        {isMobileMenuOpen ? (
+          <X className='h-6 w-6' />
+        ) : (
+          <Menu className='h-6 w-6' />
+        )}
       </Button>
     </div>
   );

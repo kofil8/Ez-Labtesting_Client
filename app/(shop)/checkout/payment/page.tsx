@@ -2,6 +2,11 @@
 
 import { StripePayment } from "@/components/checkout/StripePayment";
 import { StripeProvider } from "@/components/providers/StripeProvider";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,8 +19,14 @@ import { useCheckout } from "@/lib/context/CheckoutContext";
 import { trackLocatorEvent } from "@/lib/locator/analytics";
 import { createOrder, getResumableOrder } from "@/lib/services";
 import { confirmOrderPayment } from "@/lib/services/order.service";
+import { getRestrictionMessage } from "@/lib/restrictions/presentation";
+import {
+  getRestrictionStatus,
+  type RestrictionStatusParams,
+} from "@/lib/services/state-restriction.service";
 import { useCartStore } from "@/lib/store/cart-store";
-import { CreditCard, Loader2, Shield } from "lucide-react";
+import { RestrictionStatus } from "@/types/restriction";
+import { AlertTriangle, CreditCard, Loader2, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CheckoutShell from "../CheckoutShell";
@@ -40,7 +51,11 @@ export default function CheckoutPaymentPage() {
   const [isRecovering, setIsRecovering] = useState(true);
   const [isPreparingOrder, setIsPreparingOrder] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [restrictionStatus, setRestrictionStatus] =
+    useState<RestrictionStatus | null>(null);
+  const [isRestrictionLoading, setIsRestrictionLoading] = useState(false);
   const hasHydratedResume = useRef(false);
+  const hasShownRestrictionToast = useRef(false);
 
   const processingFee = 2.5;
   const paymentAmount = (order?.total ?? getTotal() + processingFee) || 0;
@@ -49,6 +64,22 @@ export default function CheckoutPaymentPage() {
     () => user?.role?.toLowerCase() === "customer",
     [user?.role],
   );
+  const primaryLabTestId = useMemo(() => {
+    const primaryCartItem = items[0] as
+      | {
+          itemType?: "TEST" | "PANEL";
+          testId?: string;
+          testIds?: string[];
+        }
+      | undefined;
+
+    return primaryCartItem?.itemType === "TEST"
+      ? primaryCartItem.testId
+      : primaryCartItem?.itemType === "PANEL"
+        ? primaryCartItem.testIds?.[0]
+        : primaryCartItem?.testId;
+  }, [items]);
+  const restrictionMessage = getRestrictionMessage(restrictionStatus);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -142,7 +173,67 @@ export default function CheckoutPaymentPage() {
   }, [isRecovering, router, validateAccessFields, validatePatientInfo]);
 
   useEffect(() => {
-    if (isRecovering || isPreparingOrder || order?.orderId) {
+    if (isRecovering || !patientInfo.state || !primaryLabTestId) {
+      setRestrictionStatus(null);
+      setIsRestrictionLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const params: RestrictionStatusParams = {
+      checkoutState: patientInfo.state,
+      testId: primaryLabTestId,
+    };
+
+    const loadRestrictionStatus = async () => {
+      setIsRestrictionLoading(true);
+
+      try {
+        const nextStatus = await getRestrictionStatus(params);
+        if (cancelled) {
+          return;
+        }
+
+        setRestrictionStatus(nextStatus);
+
+        if (
+          nextStatus.canOrder === false &&
+          !hasShownRestrictionToast.current &&
+          nextStatus.reason
+        ) {
+          hasShownRestrictionToast.current = true;
+          toast({
+            title: "Checkout restricted",
+            description: nextStatus.reason,
+            variant: "destructive",
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          setRestrictionStatus(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRestrictionLoading(false);
+        }
+      }
+    };
+
+    void loadRestrictionStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isRecovering, patientInfo.state, primaryLabTestId]);
+
+  useEffect(() => {
+    if (
+      isRecovering ||
+      isPreparingOrder ||
+      order?.orderId ||
+      isRestrictionLoading ||
+      restrictionStatus?.canOrder === false
+    ) {
       return;
     }
 
@@ -156,21 +247,7 @@ export default function CheckoutPaymentPage() {
       try {
         setIsPreparingOrder(true);
 
-        const primaryCartItem = items[0] as
-          | {
-              itemType?: "TEST" | "PANEL";
-              testId?: string;
-              testIds?: string[];
-            }
-          | undefined;
-        const labTestId =
-          primaryCartItem?.itemType === "TEST"
-            ? primaryCartItem.testId
-            : primaryCartItem?.itemType === "PANEL"
-              ? primaryCartItem.testIds?.[0]
-              : primaryCartItem?.testId;
-
-        if (!labTestId) {
+        if (!primaryLabTestId) {
           throw new Error("No lab test selected for checkout.");
         }
 
@@ -179,7 +256,7 @@ export default function CheckoutPaymentPage() {
             accessOrderPayload,
             getSubtotal: getSubtotal(),
             getTotal: getTotal(),
-            labTestId,
+            labTestId: primaryLabTestId,
             patientInfo,
             processingFee,
             selectedLab: selectedLab || null,
@@ -201,6 +278,39 @@ export default function CheckoutPaymentPage() {
         });
       } catch (error: any) {
         if (cancelled) return;
+
+        if (error?.code === "REGION_RESTRICTED") {
+          setRestrictionStatus((current) => ({
+            ip: current?.ip ?? null,
+            maskedIp: current?.maskedIp ?? null,
+            detectedStateCode:
+              current?.detectedStateCode ?? patientInfo.state ?? null,
+            effectiveStateCode:
+              (error?.details?.stateCode as string | undefined) ??
+              current?.effectiveStateCode ??
+              patientInfo.state ??
+              null,
+            laboratoryRoute:
+              (error?.details?.laboratoryRoute as string | undefined) ??
+              current?.laboratoryRoute ??
+              "ACCESS",
+            restrictionType:
+              (error?.details?.restrictionType as
+                | "BLOCKED"
+                | "REQUIRES_PHYSICIAN"
+                | null
+                | undefined) ??
+              current?.restrictionType ??
+              null,
+            canOrder: false,
+            reason:
+              error?.message ||
+              current?.reason ||
+              "Ordering is unavailable in your region.",
+            source: current?.source ?? "checkout_state",
+          }));
+        }
+
         toast({
           title: "Unable to prepare order",
           description:
@@ -226,10 +336,13 @@ export default function CheckoutPaymentPage() {
     getTotal,
     isPreparingOrder,
     isRecovering,
+    isRestrictionLoading,
     items,
     order?.orderId,
     patientInfo,
+    primaryLabTestId,
     processingFee,
+    restrictionStatus?.canOrder,
     selectedLab,
     setOrder,
     validatePatientInfo,
@@ -324,6 +437,14 @@ export default function CheckoutPaymentPage() {
             </div>
           )}
 
+          {restrictionMessage ? (
+            <Alert className='border-amber-200 bg-amber-50 text-amber-950 [&>svg]:text-amber-700'>
+              <AlertTriangle className='h-4 w-4' />
+              <AlertTitle>Online ordering restricted</AlertTitle>
+              <AlertDescription>{restrictionMessage}</AlertDescription>
+            </Alert>
+          ) : null}
+
           <StripeProvider
             key={`automatic-${Math.round(paymentAmount * 100)}`}
             amount={Math.round(paymentAmount * 100)}
@@ -336,7 +457,13 @@ export default function CheckoutPaymentPage() {
               paymentMethodType='automatic'
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
-              disabled={isPreparingOrder || isFinalizing || !order?.orderId}
+              disabled={
+                isPreparingOrder ||
+                isFinalizing ||
+                !order?.orderId ||
+                isRestrictionLoading ||
+                restrictionStatus?.canOrder === false
+              }
             />
           </StripeProvider>
 

@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 const REALTIME_MODEL = "gpt-realtime";
 const REALTIME_VOICE = "cedar";
 
-const REALTIME_INSTRUCTIONS = [
-  "You are Ez LabTesting's homepage lab assistant.",
-  "Help with test selection, pricing, result turnaround, scheduling basics, privacy, and navigating the website.",
+const BASE_REALTIME_INSTRUCTIONS = [
+  "You are Ez LabTesting's public website assistant for guest users.",
+  "Help with test selection, panels, pricing, result turnaround, scheduling basics, privacy, account access basics, support routing, and navigating the website.",
   "Keep answers short, clear, and friendly.",
   "Never provide diagnoses, treatment advice, or definitive medical guidance.",
   "If the user asks for medical advice, say you are not medical advice and recommend speaking with a licensed clinician.",
@@ -14,7 +14,26 @@ const REALTIME_INSTRUCTIONS = [
   "If you do not know something about Ez LabTesting, say so plainly instead of inventing details.",
 ].join(" ");
 
-export async function POST() {
+const CONTEXT_INSTRUCTIONS: Record<string, string> = {
+  home:
+    "The user is on the homepage. Prioritize guiding them through browsing tests, how ordering works, pricing expectations, and general pre-purchase questions.",
+  tests:
+    "The user is browsing tests. Focus on comparing tests, preparation basics, turnaround times, and how to evaluate options without making medical claims.",
+  panels:
+    "The user is browsing panels. Focus on comparing panel contents, explaining bundled testing, and helping them understand what information product pages typically provide.",
+  support:
+    "The user is on the support page. Focus on contact options, common policies, results help, and when to reach the support team directly.",
+  labs:
+    "The user is on the lab-center page. Focus on finding a lab, scheduling basics, what to bring, and what to expect during sample collection.",
+  auth:
+    "The user is on a public authentication page. Focus on signing in, creating an account, and password-reset basics without asking for private credentials.",
+};
+
+type RealtimeSessionRequest = {
+  contextKey?: string;
+};
+
+export async function POST(request: Request) {
   const apiKey =
     process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 
@@ -26,6 +45,17 @@ export async function POST() {
   }
 
   try {
+    const requestBody = (await request.json().catch(() => ({}))) as RealtimeSessionRequest;
+    const contextKey =
+      typeof requestBody.contextKey === "string" &&
+      requestBody.contextKey in CONTEXT_INSTRUCTIONS
+        ? requestBody.contextKey
+        : "home";
+    const realtimeInstructions = [
+      BASE_REALTIME_INSTRUCTIONS,
+      CONTEXT_INSTRUCTIONS[contextKey],
+    ].join(" ");
+
     const response = await fetch(
       "https://api.openai.com/v1/realtime/client_secrets",
       {
@@ -42,7 +72,7 @@ export async function POST() {
           session: {
             type: "realtime",
             model: REALTIME_MODEL,
-            instructions: REALTIME_INSTRUCTIONS,
+            instructions: realtimeInstructions,
             max_output_tokens: 900,
             audio: {
               input: {

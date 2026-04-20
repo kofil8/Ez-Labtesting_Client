@@ -26,10 +26,10 @@ export function HeaderLogo({ onClick }: HeaderLogoProps) {
       </div>
       <div className='leading-tight'>
         <span className='block text-sm font-bold tracking-tight text-slate-900 min-[600px]:text-base'>
-          EzLabTesting
+          Ez LabTesting
         </span>
         <span className='hidden text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2b63df] min-[600px]:block'>
-          Clinical Diagnostics
+          Empowering Your Health Journey
         </span>
       </div>
     </Link>

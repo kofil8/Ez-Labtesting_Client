@@ -1,8 +1,8 @@
 export const LOGIN_COPY = {
   badge: "Secure patient access",
-  title: "Sign in",
+  title: "Welcome back",
   description:
-    "Access orders, results, and account details from your secure EzLabTesting portal.",
+    "Sign in to manage orders, review results, and continue your secure lab testing journey.",
   emailLabel: "Email address or mobile number",
   emailPlaceholder: "you@example.com or 555-000-1234",
   passwordLabel: "Password",
@@ -15,7 +15,7 @@ export const LOGIN_COPY = {
   helpPrompt: "New to EzLabTesting?",
   createAccount: "Create an account",
   helpCenter: "Help Center",
-  legalNote: "Protected access for patient and provider accounts.",
+  legalNote: "HIPAA-aware protection for patient and provider accounts.",
 } as const;
 
 export const LOGIN_LEGAL_LINKS = [

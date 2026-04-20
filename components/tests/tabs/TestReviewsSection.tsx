@@ -1,10 +1,10 @@
 "use client";
 
 import { TestReviews } from "@/components/reviews/TestReviews";
-import { Test } from "@/types/test";
+import type { PublicCatalogTest } from "@/types/public-test";
 
 interface TestReviewsSectionProps {
-  test: Test;
+  test: PublicCatalogTest;
   currentUserId?: string;
 }
 

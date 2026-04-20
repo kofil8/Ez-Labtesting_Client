@@ -2,8 +2,8 @@
 
 import { TestCard } from "@/components/tests/TestCard";
 import { publicFetch } from "@/lib/api-client";
-import type { Test } from "@/types/test";
-import { motion } from "framer-motion";
+import { normalizePublicTestsResponse } from "@/lib/tests/public-tests";
+import type { PublicCatalogTest } from "@/types/public-test";
 import { ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 const PAGE_SIZE = 6;
 
 export function PopularTestsSection() {
-  const [tests, setTests] = useState<Test[]>([]);
+  const [tests, setTests] = useState<PublicCatalogTest[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -20,16 +20,22 @@ export function PopularTestsSection() {
   const fetchTests = async (pageNum: number, append = false) => {
     try {
       const res = await publicFetch(
-        `/api/v1/tests/all?isActive=true&limit=${PAGE_SIZE}&page=${pageNum}&sortBy=createdAt&sortOrder=desc`,
+        `/tests/all?limit=${PAGE_SIZE}&page=${pageNum}&sortBy=isPopular&sortOrder=desc&isPanel=false&isPopular=true`,
       );
       if (!res.ok) return;
       const json = await res.json();
-      const newTests: Test[] = json.data || [];
-      const newTotal: number = json.meta?.total ?? 0;
-      setTests((prev) => (append ? [...prev, ...newTests] : newTests));
-      setTotal(newTotal);
+      const normalized = normalizePublicTestsResponse(json, {
+        page: pageNum,
+        limit: PAGE_SIZE,
+        total: 0,
+      });
+      const popularOnly = normalized.data.filter((test) => test.isPopular);
+      setTests((prev) =>
+        append ? [...prev, ...popularOnly] : popularOnly,
+      );
+      setTotal(normalized.meta.total ?? 0);
     } catch {
-      // silently fail — tests section just stays empty
+      // Leave the section empty if the public tests route is unavailable.
     }
   };
 
@@ -48,16 +54,12 @@ export function PopularTestsSection() {
   const hasMore = tests.length < total;
 
   return (
-    <section id='popular-tests' className='py-16 sm:py-20 lg:py-24 bg-slate-50'>
+    <section
+      id='popular-tests'
+      className='scroll-mt-24 py-16 sm:py-20 lg:py-24 bg-slate-50'
+    >
       <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.5 }}
-          className='mx-auto max-w-3xl text-center mb-12 lg:mb-16'
-        >
+        <div className='mx-auto mb-12 max-w-3xl text-center lg:mb-16'>
           <p className='mb-3 text-xs font-bold uppercase tracking-wider text-blue-600'>
             Most Ordered
           </p>
@@ -65,12 +67,11 @@ export function PopularTestsSection() {
             Popular Lab Tests
           </h2>
           <p className='text-base sm:text-lg text-slate-600 leading-relaxed'>
-            Our most-ordered tests at prices well below typical retail and
-            insurance costs.
+            Explore commonly searched tests with clearer specimen,
+            preparation, and turnaround details.
           </p>
-        </motion.div>
+        </div>
 
-        {/* Tests Grid */}
         {loading ? (
           <div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-3'>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -83,28 +84,15 @@ export function PopularTestsSection() {
         ) : tests.length === 0 ? null : (
           <div className='grid gap-5 sm:grid-cols-2 lg:grid-cols-3'>
             {tests.map((test, i) => (
-              <motion.div
-                key={test.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.35, delay: (i % 3) * 0.08 }}
-              >
+              <div key={test.id}>
                 <TestCard test={test} variant='compact' index={i} />
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
 
-        {/* Pagination & Actions */}
         {!loading && tests.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className='mt-10 flex flex-col items-center gap-4'
-          >
+          <div className='mt-10 flex flex-col items-center gap-4'>
             {hasMore && (
               <button
                 onClick={handleLoadMore}
@@ -114,10 +102,10 @@ export function PopularTestsSection() {
                 {loadingMore ? (
                   <>
                     <Loader2 className='h-4 w-4 animate-spin' />
-                    Loading…
+                    Loading...
                   </>
                 ) : (
-                  "Load More Tests →"
+                  "Load More Tests"
                 )}
               </button>
             )}
@@ -131,7 +119,7 @@ export function PopularTestsSection() {
               View All Tests
               <ArrowRight className='h-4 w-4' />
             </Link>
-          </motion.div>
+          </div>
         )}
       </div>
     </section>

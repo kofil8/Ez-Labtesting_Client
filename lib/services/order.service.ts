@@ -4,6 +4,8 @@ import {
   CreateOrderRequest,
   CreateOrderResponse,
 } from "@/lib/api-contracts/order.contract";
+import { extractApiMessage } from "@/lib/auth/shared";
+import { isRegionRestrictedError } from "@/lib/services/state-restriction.service";
 
 export interface OrderDetailsResponse {
   id: string;
@@ -173,8 +175,20 @@ export async function createOrder(
   });
 
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || "Failed to create order");
+    const error = await res.json().catch(() => ({}));
+    const nextError = new Error(
+      extractApiMessage(error, "Failed to create order"),
+    ) as Error & {
+      code?: string;
+      details?: Record<string, unknown>;
+    };
+
+    if (isRegionRestrictedError(error)) {
+      nextError.code = error.code;
+      nextError.details = error.details;
+    }
+
+    throw nextError;
   }
 
   const data = await res.json();

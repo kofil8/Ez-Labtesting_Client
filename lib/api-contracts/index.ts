@@ -49,3 +49,9 @@ export type {
   AccessOrderPayload,
   AccessPatientInfo,
 } from "./access-order.contract";
+export type {
+  RestrictionSource,
+  RestrictionStatus,
+  RestrictionStatusResponse,
+  RestrictionType,
+} from "@/types/restriction";

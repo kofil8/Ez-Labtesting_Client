@@ -59,15 +59,15 @@ export function WhyChooseUsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
-          className='mx-auto max-w-3xl text-center mb-12 lg:mb-16'
+          className='mx-auto max-w-2xl text-center mb-12 lg:mb-16'
         >
-          <p className='mb-3 text-xs font-bold uppercase tracking-wider text-blue-600'>
+          <p className='mb-3 text-xs font-semibold uppercase tracking-wider text-blue-600'>
             Why Ez LabTesting
           </p>
-          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-4'>
+          <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 mb-4'>
             Why Thousands Choose Us
           </h2>
-          <p className='text-base sm:text-lg text-slate-600 leading-relaxed'>
+          <p className='text-sm sm:text-base text-slate-500 leading-relaxed'>
             We make lab testing accessible, affordable, and private.
           </p>
         </motion.div>
@@ -83,16 +83,16 @@ export function WhyChooseUsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.4, delay: (i % 3) * 0.1 }}
-                className='flex gap-4 p-6 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-200'
+                className='flex gap-4 p-6 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300'
               >
-                <div className='shrink-0 w-11 h-11 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center'>
-                  <Icon className='h-5 w-5 text-cyan-600' />
+                <div className='shrink-0 w-10 h-10 rounded-xl bg-blue-50 border border-blue-100/50 flex items-center justify-center'>
+                  <Icon className='h-4 w-4 text-blue-600' />
                 </div>
                 <div>
-                  <h3 className='text-base font-bold text-slate-900 mb-1.5'>
+                  <h3 className='text-sm font-semibold text-slate-900 mb-1.5'>
                     {feature.title}
                   </h3>
-                  <p className='text-sm text-slate-600 leading-relaxed'>
+                  <p className='text-sm text-slate-500 leading-relaxed'>
                     {feature.description}
                   </p>
                 </div>

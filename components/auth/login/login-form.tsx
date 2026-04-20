@@ -6,9 +6,9 @@ import { PasswordInput } from "@/components/shared/PasswordInput";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hook/use-toast";
+import { useAuth } from "@/lib/auth-context";
 import { loginUser, resendOtp } from "@/lib/auth/client";
 import { getDashboardRouteForRole } from "@/lib/auth/shared";
-import { useAuth } from "@/lib/auth-context";
 import { LoginFormData, loginSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
@@ -34,11 +34,7 @@ interface StatusMessageProps {
   description: string;
 }
 
-function StatusMessage({
-  variant,
-  title,
-  description,
-}: StatusMessageProps) {
+function StatusMessage({ variant, title, description }: StatusMessageProps) {
   const isError = variant === "error";
   const Icon = isError ? AlertCircle : CheckCircle2;
 
@@ -214,7 +210,7 @@ export function LoginForm() {
   const isVerified = searchParams.get("verified") === "true";
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
       {isVerified ? (
         <StatusMessage
           variant='success'
@@ -231,11 +227,8 @@ export function LoginForm() {
         />
       ) : null}
 
-      <div className='space-y-2'>
-        <Label
-          htmlFor='email'
-          className='text-sm font-medium text-slate-700'
-        >
+      <div className='space-y-2.5'>
+        <Label htmlFor='email' className='text-sm font-medium text-slate-700'>
           {LOGIN_COPY.emailLabel}
         </Label>
         <Input
@@ -244,7 +237,7 @@ export function LoginForm() {
           autoComplete='email'
           inputMode='email'
           placeholder={LOGIN_COPY.emailPlaceholder}
-          className='h-12 rounded-xl border-slate-200 bg-white text-sm text-slate-900 shadow-none placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
+          className='h-11 rounded-xl border-slate-200 bg-white text-sm text-slate-900 shadow-sm shadow-slate-950/[0.03] placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 sm:h-12'
           aria-required='true'
           aria-invalid={errors.email ? "true" : "false"}
           aria-describedby={emailDescriptionId}
@@ -257,7 +250,7 @@ export function LoginForm() {
         <FieldError error={errors.email?.message} id='login-email-error' />
       </div>
 
-      <div className='space-y-2'>
+      <div className='space-y-2.5'>
         <div className='flex items-center justify-between gap-3'>
           <Label
             htmlFor='password'
@@ -280,7 +273,7 @@ export function LoginForm() {
           disabled={isPending}
           showIcon={false}
           error={errors.password?.message}
-          className='h-12 rounded-xl border-slate-200 bg-white text-sm text-slate-900 shadow-none placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
+          className='h-11 rounded-xl border-slate-200 bg-white text-sm text-slate-900 shadow-sm shadow-slate-950/[0.03] placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 sm:h-12'
           {...register("password")}
         />
       </div>
@@ -290,7 +283,7 @@ export function LoginForm() {
         disabled={isPending}
         loading={isPending}
         loadingText={LOGIN_COPY.submitPending}
-        className='h-12 w-full rounded-xl bg-[#123c66] text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#103556]'
+        className='h-11 w-full rounded-xl bg-primary-700 text-sm font-semibold text-white shadow-md shadow-primary-900/20 transition-all hover:bg-primary-800 hover:shadow-lg hover:shadow-primary-900/25 sm:h-12'
       >
         {LOGIN_COPY.submit}
       </LoadingButton>
