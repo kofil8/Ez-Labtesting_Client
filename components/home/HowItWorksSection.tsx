@@ -15,7 +15,7 @@ const steps = [
     title: "Choose Tests",
     description:
       "Browse our comprehensive catalog of individual tests and health panels. Filter by health goals or medical needs.",
-    color: "from-blue-500 to-blue-600",
+    iconClass: "text-blue-600",
     bgColor: "bg-blue-50",
   },
   {
@@ -23,7 +23,7 @@ const steps = [
     title: "Schedule Visit",
     description:
       "Select a convenient lab location and time slot. Same-day appointments often available.",
-    color: "from-purple-500 to-purple-600",
+    iconClass: "text-violet-600",
     bgColor: "bg-purple-50",
   },
   {
@@ -31,7 +31,7 @@ const steps = [
     title: "Quick Collection",
     description:
       "Visit your chosen lab for a fast, professional sample collection. Takes just 10-15 minutes.",
-    color: "from-cyan-500 to-cyan-600",
+    iconClass: "text-cyan-600",
     bgColor: "bg-cyan-50",
   },
   {
@@ -39,7 +39,7 @@ const steps = [
     title: "Get Results",
     description:
       "Receive secure, physician-reviewed reports in your patient portal within 24-72 hours.",
-    color: "from-emerald-500 to-emerald-600",
+    iconClass: "text-emerald-600",
     bgColor: "bg-emerald-50",
   },
 ];
@@ -53,7 +53,10 @@ const featurePoints = [
 
 export function HowItWorksSection() {
   return (
-    <section className='py-16 sm:py-20 lg:py-24 bg-white'>
+    <section
+      id='how-it-works'
+      className='scroll-mt-24 py-16 sm:py-20 lg:py-24 bg-white'
+    >
       <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
         {/* Header */}
         <motion.div
@@ -111,14 +114,7 @@ export function HowItWorksSection() {
                     <div
                       className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg ${step.bgColor}`}
                     >
-                      <IconComponent
-                        className='h-6 w-6'
-                        style={{
-                          background: `linear-gradient(135deg, ${step.color.split(" ")[0]} 0%, ${step.color.split(" ")[1]} 100%)`,
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
-                        }}
-                      />
+                      <IconComponent className={`h-6 w-6 ${step.iconClass}`} />
                     </div>
 
                     {/* Content */}

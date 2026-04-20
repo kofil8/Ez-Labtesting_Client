@@ -8,6 +8,39 @@
 
 import { getApiUrl as toApiUrl } from "@/lib/api/config";
 
+function buildLocationStatusQuery(params?: {
+  checkoutState?: string;
+  testId?: string;
+  laboratoryId?: string;
+  publicIp?: string;
+  laboratoryCode?: string;
+}) {
+  const searchParams = new URLSearchParams();
+
+  if (params?.checkoutState) {
+    searchParams.set("checkoutState", params.checkoutState);
+  }
+
+  if (params?.testId) {
+    searchParams.set("testId", params.testId);
+  }
+
+  if (params?.laboratoryId) {
+    searchParams.set("laboratoryId", params.laboratoryId);
+  }
+
+  if (params?.publicIp) {
+    searchParams.set("publicIp", params.publicIp);
+  }
+
+  if (params?.laboratoryCode) {
+    searchParams.set("laboratoryCode", params.laboratoryCode);
+  }
+
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
 export const API_ENDPOINTS = {
   // Order endpoints
   ORDERS: {
@@ -55,6 +88,16 @@ export const API_ENDPOINTS = {
       toApiUrl(`/support/tickets/${ticketId}/messages`),
     STATUS: (ticketId: string) =>
       toApiUrl(`/support/tickets/${ticketId}/status`),
+  },
+
+  STATE_RESTRICTIONS: {
+    LOCATION_STATUS: (params?: {
+      checkoutState?: string;
+      testId?: string;
+      laboratoryId?: string;
+      publicIp?: string;
+      laboratoryCode?: string;
+    }) => toApiUrl(`/state-restrictions/location-status${buildLocationStatusQuery(params)}`),
   },
 };
 

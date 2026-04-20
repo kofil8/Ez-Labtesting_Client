@@ -4,6 +4,11 @@ import {
   PatientFormData,
   PatientInfoForm,
 } from "@/components/checkout/PatientInfoForm";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/hook/use-toast";
@@ -16,9 +21,15 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { shouldRouteToVisitLab } from "@/lib/checkout/flow-guards";
 import { useCheckout } from "@/lib/context/CheckoutContext";
+import {
+  getRestrictionStatus,
+  type RestrictionStatusParams,
+} from "@/lib/services/state-restriction.service";
+import { getRestrictionMessage } from "@/lib/restrictions/presentation";
 import { getResumableOrder } from "@/lib/services";
 import { useCartStore } from "@/lib/store/cart-store";
-import { Loader2, Shield } from "lucide-react";
+import { RestrictionStatus } from "@/types/restriction";
+import { AlertTriangle, Loader2, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CheckoutShell from "../CheckoutShell";
@@ -57,6 +68,9 @@ export default function CheckoutPatientInfoPage() {
     );
   const [isPatientValid, setIsPatientValid] = useState(false);
   const [isRecovering, setIsRecovering] = useState(true);
+  const [restrictionStatus, setRestrictionStatus] =
+    useState<RestrictionStatus | null>(null);
+  const [isRestrictionLoading, setIsRestrictionLoading] = useState(false);
   const hasHydratedResume = useRef(false);
 
   const processingFee = 2.5;
@@ -65,6 +79,22 @@ export default function CheckoutPatientInfoPage() {
     () => user?.role?.toLowerCase() === "customer",
     [user?.role],
   );
+  const primaryLabTestId = useMemo(() => {
+    const primaryCartItem = items[0] as
+      | {
+          itemType?: "TEST" | "PANEL";
+          testId?: string;
+          testIds?: string[];
+        }
+      | undefined;
+
+    return primaryCartItem?.itemType === "TEST"
+      ? primaryCartItem.testId
+      : primaryCartItem?.itemType === "PANEL"
+        ? primaryCartItem.testIds?.[0]
+        : primaryCartItem?.testId;
+  }, [items]);
+  const restrictionMessage = getRestrictionMessage(restrictionStatus);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -143,6 +173,49 @@ export default function CheckoutPatientInfoPage() {
     setOrder,
   ]);
 
+  useEffect(() => {
+    if (
+      !localPatientData?.state ||
+      !/^[A-Za-z]{2}$/.test(localPatientData.state.trim()) ||
+      !primaryLabTestId
+    ) {
+      setRestrictionStatus(null);
+      setIsRestrictionLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const params: RestrictionStatusParams = {
+      checkoutState: localPatientData.state.trim().toUpperCase(),
+      testId: primaryLabTestId,
+    };
+
+    const loadRestrictionStatus = async () => {
+      setIsRestrictionLoading(true);
+
+      try {
+        const nextStatus = await getRestrictionStatus(params);
+        if (!cancelled) {
+          setRestrictionStatus(nextStatus);
+        }
+      } catch {
+        if (!cancelled) {
+          setRestrictionStatus(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRestrictionLoading(false);
+        }
+      }
+    };
+
+    void loadRestrictionStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [localPatientData?.state, primaryLabTestId]);
+
   if (isLoading || !isAuthenticated || !isCustomer || items.length === 0) {
     return null;
   }
@@ -203,21 +276,7 @@ export default function CheckoutPatientInfoPage() {
     }
 
     try {
-      const primaryCartItem = items[0] as
-        | {
-            itemType?: "TEST" | "PANEL";
-            testId?: string;
-            testIds?: string[];
-          }
-        | undefined;
-      const labTestId =
-        primaryCartItem?.itemType === "TEST"
-          ? primaryCartItem.testId
-          : primaryCartItem?.itemType === "PANEL"
-            ? primaryCartItem.testIds?.[0]
-            : primaryCartItem?.testId;
-
-      if (!labTestId) {
+      if (!primaryLabTestId) {
         toast({
           title: "Unsupported cart item",
           description: "Please select a lab test to continue checkout.",
@@ -235,7 +294,7 @@ export default function CheckoutPatientInfoPage() {
         genderMap[localPatientData.gender.toLowerCase()] || "O";
 
       const accessPayload: AccessOrderPayload = {
-        testCode: labTestId,
+        testCode: primaryLabTestId,
         collectionType: "PSC",
         patient: {
           firstName: localPatientData.firstName,
@@ -297,10 +356,22 @@ export default function CheckoutPatientInfoPage() {
               }}
             />
 
+            {restrictionMessage ? (
+              <Alert className='border-amber-200 bg-amber-50 text-amber-950 [&>svg]:text-amber-700'>
+                <AlertTriangle className='h-4 w-4' />
+                <AlertTitle>Online ordering restricted</AlertTitle>
+                <AlertDescription>{restrictionMessage}</AlertDescription>
+              </Alert>
+            ) : null}
+
             <div className='flex justify-end'>
               <Button
                 onClick={handleContinueToPayment}
-                disabled={!isPatientValid}
+                disabled={
+                  !isPatientValid ||
+                  isRestrictionLoading ||
+                  restrictionStatus?.canOrder === false
+                }
                 className='h-12 px-8'
               >
                 Continue to Payment

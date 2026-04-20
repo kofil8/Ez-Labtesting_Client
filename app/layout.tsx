@@ -1,4 +1,5 @@
 import { CartSidebarWrapper } from "@/components/cart/CartSidebarWrapper";
+import { PublicRouteAssistant } from "@/components/chat/PublicRouteAssistant";
 import NotificationsProvider from "@/components/notifications/NotificationsProvider";
 import { KallesBackground } from "@/components/shared/KallesBackground";
 import { LocationInitializer } from "@/components/shared/LocationInitializer";
@@ -7,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartSidebarProvider } from "@/lib/cart-sidebar-context";
 import { CheckoutProvider } from "@/lib/context/CheckoutContext";
+import { RestrictionStatusProvider } from "@/lib/context/RestrictionStatusContext";
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
@@ -88,17 +90,20 @@ export default function RootLayout({
 
         <AuthProvider>
           <NotificationsProvider />
-          <CheckoutProvider>
-            <CartSidebarProvider>
-              <LocationInitializer />
-              <SiteHeader />
-              <div id='page-content' className='min-h-screen flex flex-col'>
-                {children}
-              </div>
-              <CartSidebarWrapper />
-              <Toaster />
-            </CartSidebarProvider>
-          </CheckoutProvider>
+          <RestrictionStatusProvider>
+            <CheckoutProvider>
+              <CartSidebarProvider>
+                <LocationInitializer />
+                <SiteHeader />
+                <div id='page-content' className='min-h-screen flex flex-col'>
+                  {children}
+                </div>
+                <PublicRouteAssistant />
+                <CartSidebarWrapper />
+                <Toaster />
+              </CartSidebarProvider>
+            </CheckoutProvider>
+          </RestrictionStatusProvider>
         </AuthProvider>
       </body>
     </html>

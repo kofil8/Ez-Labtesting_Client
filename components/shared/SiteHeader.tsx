@@ -3,8 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useCartSidebar } from "@/lib/cart-sidebar-context";
+import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
+import {
+  getRestrictionMessage,
+  getRestrictionStateLabel,
+  isRestrictionBlocked,
+} from "@/lib/restrictions/presentation";
 import { useCartStore } from "@/lib/store/cart-store";
-import { LifeBuoy, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
@@ -21,7 +27,7 @@ interface NavLink {
 
 const PUBLIC_NAV_LINKS: NavLink[] = [
   { href: "/tests", label: "Browse Tests" },
-  { href: "/panels", label: "Health Panels" },
+  { href: "/panels", label: "Test Panels" },
   { href: "/find-lab-center", label: "Find Lab Center" },
   { href: "/help-center", label: "Support" },
 ];
@@ -39,6 +45,7 @@ const ADMIN_NAV_LINKS: NavLink[] = [
 
 export function SiteHeader() {
   const { isAuthenticated, user, logout } = useAuth();
+  const { status: restrictionStatus } = useRestrictionStatus();
   const pathname = usePathname();
   const router = useRouter();
   const itemCount = useCartStore((state) => state.getItemCount());
@@ -81,24 +88,21 @@ export function SiteHeader() {
   const isAdmin = normalizedRole === "admin";
   const isLoginPage = pathname === "/login";
 
-  const filteredLinks = useMemo(
-    () => {
-      if (!isAuthenticated) {
-        return PUBLIC_NAV_LINKS;
-      }
-
-      if (isCustomer) {
-        return [...PUBLIC_NAV_LINKS, ...CUSTOMER_NAV_LINKS];
-      }
-
-      if (isAdmin || isSuperAdmin) {
-        return ADMIN_NAV_LINKS;
-      }
-
+  const filteredLinks = useMemo(() => {
+    if (!isAuthenticated) {
       return PUBLIC_NAV_LINKS;
-    },
-    [isAuthenticated, isCustomer, isAdmin, isSuperAdmin],
-  );
+    }
+
+    if (isCustomer) {
+      return [...PUBLIC_NAV_LINKS, ...CUSTOMER_NAV_LINKS];
+    }
+
+    if (isAdmin || isSuperAdmin) {
+      return ADMIN_NAV_LINKS;
+    }
+
+    return PUBLIC_NAV_LINKS;
+  }, [isAuthenticated, isCustomer, isAdmin, isSuperAdmin]);
 
   const handleLogout = async () => {
     await logout();
@@ -110,6 +114,22 @@ export function SiteHeader() {
     setIsMobileMenuOpen(false);
   };
 
+  const restrictionMessage = getRestrictionMessage(restrictionStatus);
+  const restrictionState = getRestrictionStateLabel(restrictionStatus);
+  const showRestrictionBanner =
+    isRestrictionBlocked(restrictionStatus) && Boolean(restrictionMessage);
+  const restrictionBanner = showRestrictionBanner ? (
+    <div className='border-b border-amber-200 bg-amber-50/95 text-amber-950 backdrop-blur'>
+      <div className='container mx-auto flex items-center gap-3 px-4 py-2 text-sm min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
+        <AlertTriangle className='h-4 w-4 shrink-0 text-amber-700' />
+        <p className='font-medium'>
+          {restrictionMessage}
+          {restrictionState ? ` State: ${restrictionState}.` : ""}
+        </p>
+      </div>
+    </div>
+  ) : null;
+
   if (isLoginPage) {
     return (
       <>
@@ -120,10 +140,16 @@ export function SiteHeader() {
           Skip to main content
         </a>
 
-        <header className='sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl'>
+        <header className='sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-xl'>
+          {restrictionBanner}
           <div className='container mx-auto px-4 min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
-            <div className='flex h-16 items-center justify-between gap-2 min-[600px]:h-[4.25rem]'>
+            <div className='flex h-16 items-center justify-between gap-2 min-[600px]:h-[4.5rem] min-[600px]:gap-3'>
               <HeaderLogo onClick={handleLinkClick} />
+
+              <HeaderNav
+                links={PUBLIC_NAV_LINKS}
+                onLinkClick={handleLinkClick}
+              />
 
               <div className='flex shrink-0 items-center gap-2 sm:gap-3'>
                 <span className='hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-800 sm:inline-flex'>
@@ -132,19 +158,33 @@ export function SiteHeader() {
                 </span>
 
                 <Button
-                  variant='ghost'
+                  className='hidden rounded-full bg-[#2b63df] px-5 text-white shadow-[0_10px_20px_-13px_rgba(37,99,235,0.95)] hover:bg-[#1f55cf] lg:inline-flex'
                   asChild
-                  className='h-10 min-w-10 rounded-full px-0 text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 xs:px-3.5'
                 >
-                  <Link href='/help-center' onClick={handleLinkClick}>
-                    <LifeBuoy className='h-4 w-4' />
-                    <span className='sr-only xs:not-sr-only'>Support</span>
+                  <Link href='/register' onClick={handleLinkClick}>
+                    Create Account
                   </Link>
                 </Button>
+
+                <HeaderActions
+                  cartCount={0}
+                  onCartClick={() => {}}
+                  onMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  isMobileMenuOpen={isMobileMenuOpen}
+                  isAuthenticated={false}
+                  showCart={false}
+                />
               </div>
             </div>
           </div>
         </header>
+
+        <MobileHeaderMenu
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+          links={PUBLIC_NAV_LINKS}
+          isAuthenticated={false}
+        />
       </>
     );
   }
@@ -165,6 +205,7 @@ export function SiteHeader() {
             : "border-transparent bg-background/85 backdrop-blur-lg"
         }`}
       >
+        {restrictionBanner}
         <div className='container mx-auto px-4 min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
           <div className='flex h-16 items-center justify-between gap-2 min-[600px]:h-[4.25rem] min-[600px]:gap-3 min-[1536px]:h-[4.5rem]'>
             <HeaderLogo onClick={handleLinkClick} />

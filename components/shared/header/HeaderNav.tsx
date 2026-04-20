@@ -21,7 +21,7 @@ export function HeaderNav({ links, onLinkClick }: HeaderNavProps) {
     pathname === href || (href !== "/" && pathname?.startsWith(`${href}/`));
 
   return (
-    <nav className='hidden min-[600px]:mx-2 min-[600px]:flex min-[600px]:flex-1 min-[600px]:items-center min-[600px]:justify-center'>
+    <nav className='hidden lg:mx-2 lg:flex lg:flex-1 lg:items-center lg:justify-center'>
       <div className='flex items-center gap-0.5 rounded-full border border-slate-200 bg-slate-100/80 p-1 shadow-sm min-[1536px]:gap-1 min-[1536px]:p-1.5'>
         {links.map((link) => (
           <Link

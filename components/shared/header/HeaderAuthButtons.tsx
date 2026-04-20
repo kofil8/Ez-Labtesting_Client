@@ -18,7 +18,7 @@ export function HeaderAuthButtons({
   onLogout,
 }: HeaderAuthButtonsProps) {
   return (
-    <div className='ml-1 hidden items-center gap-2 min-[600px]:flex'>
+    <div className='ml-1 hidden items-center gap-2 lg:flex'>
       {isAuthenticated ? (
         <>
           <Link

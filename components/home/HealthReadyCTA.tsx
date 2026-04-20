@@ -37,9 +37,22 @@ export function HealthReadyCTA() {
                   Take Control of Your Health Today
                 </h2>
                 <p className='text-lg sm:text-xl text-slate-600 leading-relaxed'>
-                  Order affordable lab tests from the comfort of your home. No
-                  insurance required.
+                  Shop medical lab tests online with clear pricing, secure
+                  checkout, and nationwide draw center access. No insurance
+                  required.
                 </p>
+              </div>
+
+              <div className='flex flex-wrap items-center gap-2'>
+                <span className='rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700'>
+                  HIPAA-secure checkout
+                </span>
+                <span className='rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700'>
+                  CLIA-certified labs
+                </span>
+                <span className='rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700'>
+                  Transparent pricing
+                </span>
               </div>
 
               {/* CTA Buttons */}
@@ -53,7 +66,7 @@ export function HealthReadyCTA() {
                 <Button
                   asChild
                   size='lg'
-                  className='rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all'
+                  className='rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all w-full sm:w-auto'
                 >
                   <Link
                     href='/tests'
@@ -62,6 +75,33 @@ export function HealthReadyCTA() {
                     Browse All Tests
                     <ArrowRight className='h-4 w-4' />
                   </Link>
+                </Button>
+
+                <Button
+                  asChild
+                  size='lg'
+                  variant='outline'
+                  className='rounded-lg border-slate-300 bg-white text-slate-800 hover:bg-slate-100 w-full sm:w-auto'
+                >
+                  <Link href='/panels'>Compare Test Panels</Link>
+                </Button>
+
+                <Button
+                  asChild
+                  size='lg'
+                  variant='outline'
+                  className='rounded-lg border-slate-300 bg-white text-slate-800 hover:bg-slate-100 w-full sm:w-auto'
+                >
+                  <Link href='/find-lab-center'>Find Lab Center</Link>
+                </Button>
+
+                <Button
+                  asChild
+                  size='lg'
+                  variant='outline'
+                  className='rounded-lg border-slate-300 bg-white text-slate-800 hover:bg-slate-100 w-full sm:w-auto'
+                >
+                  <Link href='/faqs'>Read FAQs</Link>
                 </Button>
               </motion.div>
             </motion.div>

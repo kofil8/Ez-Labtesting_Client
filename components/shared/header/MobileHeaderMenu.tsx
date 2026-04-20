@@ -42,7 +42,7 @@ export function MobileHeaderMenu({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className='fixed inset-0 z-[60] bg-slate-900/45 backdrop-blur-sm min-[600px]:hidden'
+            className='fixed inset-0 z-[60] bg-slate-900/45 backdrop-blur-sm lg:hidden'
           />
 
           <motion.div
@@ -50,7 +50,7 @@ export function MobileHeaderMenu({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 340 }}
-            className='fixed right-0 top-0 z-[70] h-screen w-[86%] max-w-sm overflow-y-auto border-l border-border bg-background min-[600px]:hidden'
+            className='fixed right-0 top-0 z-[70] h-screen w-[86%] max-w-sm overflow-y-auto border-l border-border bg-background lg:hidden'
           >
             <div className='sticky top-0 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur-md'>
               <span className='text-sm font-bold uppercase tracking-[0.16em] text-muted-foreground'>

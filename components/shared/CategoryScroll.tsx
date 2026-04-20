@@ -105,58 +105,52 @@ export function CategoryScroll({
   };
 
   return (
-    <div className='border border-border rounded-xl bg-card shadow-sm relative overflow-hidden'>
-      {/* Top accent line */}
-      <div className='h-0.5 bg-primary/30' />
-
-      <div className='relative flex items-center gap-2 sm:gap-4 px-2 sm:px-4'>
-        {/* Left Scroll Button */}
+    <div className='relative overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm'>
+      <div className='relative flex items-center gap-2 px-2 sm:px-4'>
         <button
           onClick={() => scrollCategories("left")}
           disabled={!canScrollLeft || isLoading}
-          className='absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-20 h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md transition-opacity disabled:opacity-20 disabled:cursor-not-allowed'
+          className='absolute left-1 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm transition-opacity disabled:opacity-20 disabled:cursor-not-allowed sm:left-2'
           aria-label='Scroll categories left'
         >
           <ChevronLeft className='h-4 w-4' />
         </button>
 
-        {/* Categories Scroll Container */}
         <div
           ref={categoryScrollRef}
-          className='flex items-center gap-3 sm:gap-5 overflow-x-scroll scrollbar-hide py-3 sm:py-4 px-12 sm:px-16 w-full'
+          className='scrollbar-hide flex w-full items-center gap-3 overflow-x-scroll px-12 py-4 sm:gap-4 sm:px-16'
         >
           {isLoading ? (
-            <div className='text-sm text-muted-foreground flex items-center gap-2 py-3'>
-              <div className='animate-spin rounded-full h-4 w-4 border-2 border-primary border-r-transparent' />
+            <div className='flex items-center gap-2 py-3 text-sm text-muted-foreground'>
+              <div className='h-4 w-4 animate-spin rounded-full border-2 border-sky-500 border-r-transparent' />
               Loading categories...
             </div>
           ) : (
             categories.map((categoryItem) => {
-              const isEmpty = categoryItem.testCount === 0;
               const isSelected = selectedCategory === categoryItem.id;
 
               return (
                 <button
                   key={categoryItem.id}
-                  onClick={() => !isEmpty && onCategorySelect(categoryItem.id)}
-                  disabled={isLoading || isEmpty}
-                  title={
-                    isEmpty
-                      ? `No available tests in ${categoryItem.name}`
-                      : categoryItem.name
-                  }
-                  className={`flex-shrink-0 flex items-center gap-1.5 text-sm font-medium whitespace-nowrap px-4 py-2 rounded-lg transition-colors ${
+                  onClick={() => onCategorySelect(categoryItem.id)}
+                  disabled={isLoading}
+                  title={categoryItem.name}
+                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     isSelected
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : isEmpty
-                        ? "text-muted-foreground/40 cursor-not-allowed"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      ? "bg-sky-600 text-white shadow-sm"
+                      : "border border-slate-200 bg-slate-50 text-slate-600 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
                   }`}
                 >
                   {categoryItem.name}
-                  {isEmpty && (
-                    <span className='text-[10px] text-muted-foreground/40 font-normal'>
-                      (0)
+                  {typeof categoryItem.testCount === "number" && (
+                    <span
+                      className={`text-[10px] font-normal ${
+                        isSelected
+                          ? "text-primary-foreground/80"
+                          : "text-muted-foreground/70"
+                      }`}
+                    >
+                      ({categoryItem.testCount})
                     </span>
                   )}
                 </button>
@@ -165,11 +159,10 @@ export function CategoryScroll({
           )}
         </div>
 
-        {/* Right Scroll Button */}
         <button
           onClick={() => scrollCategories("right")}
           disabled={!canScrollRight || isLoading}
-          className='absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-20 h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md transition-opacity disabled:opacity-20 disabled:cursor-not-allowed'
+          className='absolute right-1 top-1/2 z-20 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-slate-100 text-slate-700 shadow-sm transition-opacity disabled:opacity-20 disabled:cursor-not-allowed sm:right-2'
           aria-label='Scroll categories right'
         >
           <ChevronRight className='h-4 w-4' />

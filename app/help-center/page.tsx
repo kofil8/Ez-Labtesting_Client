@@ -33,6 +33,14 @@ export default function HelpCenterPage() {
   const [ticket, setTicket] = useState<any>(null);
   const [ticketList, setTicketList] = useState<any[]>([]);
 
+  const openSupportAssistant = () => {
+    window.dispatchEvent(
+      new CustomEvent("ezlab:open-assistant", {
+        detail: { contextKey: "support" },
+      }),
+    );
+  };
+
   const activeTicket = useMemo(() => {
     if (!ticket) return undefined;
 
@@ -146,12 +154,18 @@ export default function HelpCenterPage() {
                 Get help via email within 24 hours
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className='space-y-2'>
               <a
                 href='mailto:support@ezlabtesting.com'
-                className='text-blue-600 hover:underline'
+                className='block text-blue-600 hover:underline'
               >
                 support@ezlabtesting.com
+              </a>
+              <a
+                href='mailto:drramseymail@gmail.com'
+                className='block text-blue-600 hover:underline'
+              >
+                drramseymail@gmail.com
               </a>
             </CardContent>
           </Card>
@@ -166,10 +180,10 @@ export default function HelpCenterPage() {
             </CardHeader>
             <CardContent>
               <a
-                href='tel:1-800-EZLABS'
+                href='tel:+17024837477'
                 className='text-blue-600 hover:underline'
               >
-                1-800-EZLABS (395-2277)
+                +1(702) 483-7477
               </a>
               <p className='text-sm text-gray-500 mt-2'>Mon-Fri: 8am-8pm EST</p>
             </CardContent>
@@ -184,7 +198,11 @@ export default function HelpCenterPage() {
               <CardDescription>Chat with us in real-time</CardDescription>
             </CardHeader>
             <CardContent>
-              <button className='text-blue-600 hover:underline'>
+              <button
+                type='button'
+                className='text-blue-600 hover:underline'
+                onClick={openSupportAssistant}
+              >
                 Start Chat
               </button>
               <p className='text-sm text-gray-500 mt-2'>

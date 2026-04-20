@@ -182,6 +182,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         testName?: string;
                         testId?: string;
                         panelId?: string;
+                        isPanel?: boolean;
                       };
                       const itemKey =
                         legacyItem.id ||
@@ -196,7 +197,11 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       const itemName =
                         legacyItem.name || legacyItem.testName || "Lab Item";
                       const itemTypeLabel =
-                        legacyItem.itemType === "PANEL" ? "Panel" : "Lab Test";
+                        legacyItem.itemType === "PANEL"
+                          ? "Panel"
+                          : legacyItem.isPanel
+                            ? "Panel Test"
+                            : "Lab Test";
 
                       return (
                       <div

@@ -17,6 +17,7 @@ export interface Review {
   createdAt: string;
   updatedAt: string;
   user: {
+    id?: string;
     name: string;
     profileImage?: string;
   };
@@ -157,7 +158,7 @@ export async function deleteReview(reviewId: string): Promise<void> {
  */
 export async function markReviewHelpful(
   reviewId: string,
-): Promise<{ helpful: boolean }> {
+): Promise<{ helpful: boolean; review: Review }> {
   const response = await authenticatedFetch(`${API_BASE_URL}/reviews/${reviewId}/helpful`, {
     method: "POST",
     headers: {
@@ -171,7 +172,33 @@ export async function markReviewHelpful(
   }
 
   const result = await response.json();
-  return { helpful: result.data.helpful };
+  return result.data;
+}
+
+/**
+ * Get the current authenticated user's review for a test.
+ */
+export async function getCurrentUserReviewForTest(
+  testId: string,
+): Promise<Review | null> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/reviews/test/${testId}/me`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null;
+    }
+
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to fetch your review");
+  }
+
+  const result = await response.json();
+  return result.data;
 }
 
 /**

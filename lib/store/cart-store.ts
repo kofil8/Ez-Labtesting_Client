@@ -6,6 +6,8 @@ export type CartItem = {
   itemType: "TEST" | "PANEL";
   name: string;
   price: number;
+  slug?: string;
+  isPanel?: boolean;
 } & (
   | { itemType: "TEST"; testId: string }
   | { itemType: "PANEL"; panelId: string; testIds: string[] }

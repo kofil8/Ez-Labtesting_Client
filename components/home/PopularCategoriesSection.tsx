@@ -127,7 +127,10 @@ export function PopularCategoriesSection() {
   if (!loading && categories.length === 0) return null;
 
   return (
-    <section className='py-16 sm:py-20 lg:py-24 bg-white'>
+    <section
+      id='popular-categories'
+      className='scroll-mt-24 py-16 sm:py-20 lg:py-24 bg-white'
+    >
       <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
         {/* Header */}
         <motion.div

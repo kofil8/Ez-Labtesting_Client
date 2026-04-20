@@ -15,6 +15,18 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type ChatRole = "user" | "assistant";
+export type AssistantContextKey =
+  | "home"
+  | "tests"
+  | "panels"
+  | "support"
+  | "labs"
+  | "auth";
+
+export type AssistantQuickAction = {
+  label: string;
+  prompt: string;
+};
 
 type ChatMessage = {
   id: string;
@@ -44,6 +56,20 @@ type SessionTokenResponse = {
   error?: string;
 };
 
+type HomepageLabAssistantProps = {
+  contextKey?: AssistantContextKey;
+  launcherTitle?: string;
+  launcherDescription?: string;
+  assistantTitle?: string;
+  welcomeMessage?: string;
+  quickActions?: readonly AssistantQuickAction[];
+  disclaimer?: string;
+};
+
+type AssistantOpenEventDetail = {
+  contextKey?: AssistantContextKey;
+};
+
 const QUICK_ACTIONS = [
   {
     label: "Browse test categories",
@@ -57,7 +83,7 @@ const QUICK_ACTIONS = [
     label: "STD testing options",
     prompt: "What STD testing options do you offer and how fast are results?",
   },
-] as const;
+] satisfies readonly AssistantQuickAction[];
 
 const WELCOME_MESSAGE =
   "Hi there! I'm your lab test assistant. Ask me about tests, pricing, turnaround times, or how the process works.";
@@ -131,7 +157,15 @@ function getMicErrorMessage(error: unknown, secureContext: boolean): string {
   return "Voice mode is unavailable in this browser session.";
 }
 
-export function HomepageLabAssistant() {
+export function HomepageLabAssistant({
+  contextKey = "home",
+  launcherTitle = "Talk to our assistant",
+  launcherDescription = "Ask about tests, pricing, and results with voice or chat.",
+  assistantTitle = "Ez Lab Assistant",
+  welcomeMessage = WELCOME_MESSAGE,
+  quickActions = QUICK_ACTIONS,
+  disclaimer = DISCLAIMER,
+}: HomepageLabAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showLauncherPopup, setShowLauncherPopup] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -142,18 +176,21 @@ export function HomepageLabAssistant() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [micAvailable, setMicAvailable] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
+  const [isRequestingMic, setIsRequestingMic] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isAssistantSpeaking, setIsAssistantSpeaking] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const audioSenderRef = useRef<RTCRtpSender | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const mutedRef = useRef(isMuted);
 
   const canSend = connectionState === "connected" && input.trim().length > 0;
-  const voiceButtonDisabled = connectionState !== "connected" || !micAvailable;
+  const voiceButtonDisabled =
+    connectionState !== "connected" || isRequestingMic;
 
   const statusLabel = useMemo(() => {
     if (connectionState === "connecting") return "Connecting";
@@ -185,12 +222,33 @@ export function HomepageLabAssistant() {
     audioRef.current.muted = isMuted;
   }, [isMuted]);
 
+  useEffect(() => {
+    const handleOpenAssistant = (event: Event) => {
+      const customEvent = event as CustomEvent<AssistantOpenEventDetail>;
+      const targetContext = customEvent.detail?.contextKey;
+
+      if (targetContext && targetContext !== contextKey) {
+        return;
+      }
+
+      setShowLauncherPopup(false);
+      setIsOpen(true);
+    };
+
+    window.addEventListener("ezlab:open-assistant", handleOpenAssistant);
+
+    return () => {
+      window.removeEventListener("ezlab:open-assistant", handleOpenAssistant);
+    };
+  }, [contextKey]);
+
   function teardownSession() {
     dataChannelRef.current?.close();
     dataChannelRef.current = null;
 
     peerConnectionRef.current?.close();
     peerConnectionRef.current = null;
+    audioSenderRef.current = null;
 
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
     localStreamRef.current = null;
@@ -232,6 +290,10 @@ export function HomepageLabAssistant() {
       const tokenResponse = await fetch("/api/openai/realtime-session", {
         method: "POST",
         cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ contextKey }),
       });
 
       const tokenData = (await tokenResponse.json()) as SessionTokenResponse;
@@ -245,36 +307,15 @@ export function HomepageLabAssistant() {
 
       const peerConnection = new RTCPeerConnection();
       peerConnectionRef.current = peerConnection;
+      audioSenderRef.current = peerConnection.addTransceiver("audio", {
+        direction: "sendrecv",
+      }).sender;
 
       peerConnection.ontrack = (event) => {
         if (!audioRef.current) return;
         audioRef.current.srcObject = event.streams[0];
         void audioRef.current.play().catch(() => undefined);
       };
-
-      let stream: MediaStream | null = null;
-      const secureContext = window.isSecureContext;
-
-      if (
-        secureContext &&
-        typeof navigator !== "undefined" &&
-        navigator.mediaDevices?.getUserMedia
-      ) {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const audioTrack = stream.getAudioTracks()[0];
-          if (audioTrack) {
-            audioTrack.enabled = false;
-            peerConnection.addTrack(audioTrack, stream);
-            localStreamRef.current = stream;
-            setMicAvailable(true);
-          }
-        } catch (error) {
-          setMicError(getMicErrorMessage(error, secureContext));
-        }
-      } else {
-        setMicError(getMicErrorMessage(null, secureContext));
-      }
 
       const dataChannel = peerConnection.createDataChannel("oai-events");
       dataChannelRef.current = dataChannel;
@@ -445,10 +486,11 @@ export function HomepageLabAssistant() {
       setMicError(null);
       setMicAvailable(false);
       setVoiceEnabled(false);
+      setIsRequestingMic(false);
       setIsListening(false);
       setIsAssistantSpeaking(false);
     };
-  }, [isOpen]);
+  }, [contextKey, isOpen]);
 
   const sendRealtimeEvent = (payload: Record<string, unknown>) => {
     if (dataChannelRef.current?.readyState !== "open") {
@@ -494,10 +536,70 @@ export function HomepageLabAssistant() {
     sendRealtimeEvent({ type: "response.create" });
   };
 
-  const toggleVoiceMode = () => {
+  const ensureMicrophoneAccess = async () => {
+    const existingTrack = localStreamRef.current?.getAudioTracks()[0];
+    if (existingTrack) {
+      setMicAvailable(true);
+      setMicError(null);
+      return true;
+    }
+
+    const secureContext = window.isSecureContext;
+
+    if (
+      !secureContext ||
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia
+    ) {
+      setMicAvailable(false);
+      setMicError(getMicErrorMessage(null, secureContext));
+      return false;
+    }
+
+    setIsRequestingMic(true);
+    setMicError(null);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioTrack = stream.getAudioTracks()[0];
+
+      if (!audioTrack) {
+        stream.getTracks().forEach((track) => track.stop());
+        setMicAvailable(false);
+        setMicError("No microphone was found on this device.");
+        return false;
+      }
+
+      await audioSenderRef.current?.replaceTrack(audioTrack);
+      localStreamRef.current = stream;
+      setMicAvailable(true);
+      return true;
+    } catch (error) {
+      setMicAvailable(false);
+      setMicError(getMicErrorMessage(error, secureContext));
+      return false;
+    } finally {
+      setIsRequestingMic(false);
+    }
+  };
+
+  const toggleVoiceMode = async () => {
     if (voiceButtonDisabled) return;
 
-    setVoiceEnabled((current) => !current);
+    if (voiceEnabled) {
+      await audioSenderRef.current?.replaceTrack(null);
+      localStreamRef.current?.getTracks().forEach((track) => track.stop());
+      localStreamRef.current = null;
+      setMicAvailable(false);
+      setVoiceEnabled(false);
+      setIsListening(false);
+      return;
+    }
+
+    const hasMicrophone = await ensureMicrophoneAccess();
+    if (!hasMicrophone) return;
+
+    setVoiceEnabled(true);
     setIsListening(false);
   };
 
@@ -534,10 +636,10 @@ export function HomepageLabAssistant() {
                     </div>
                     <div className='min-w-0'>
                       <p className='text-sm font-semibold text-slate-800'>
-                        Talk to our assistant
+                        {launcherTitle}
                       </p>
                       <p className='mt-1 text-xs leading-5 text-slate-500'>
-                        Ask about tests, pricing, and results with voice or chat.
+                        {launcherDescription}
                       </p>
                     </div>
                   </div>
@@ -577,7 +679,7 @@ export function HomepageLabAssistant() {
                 <span className='h-2.5 w-2.5 rounded-full bg-[#5CE17C]' />
                 <div>
                   <p className='text-[1.05rem] font-semibold leading-none'>
-                    Lab Test Assistant
+                    {assistantTitle}
                   </p>
                   <p className='mt-1 text-xs text-white/80'>{statusLabel}</p>
                 </div>
@@ -622,7 +724,7 @@ export function HomepageLabAssistant() {
 
             <div className='bg-[#fcfefe] px-4 pb-4 pt-5'>
               <div className='mb-4 flex flex-wrap gap-2.5'>
-                {QUICK_ACTIONS.map((action) => (
+                {quickActions.map((action) => (
                   <button
                     key={action.label}
                     type='button'
@@ -641,7 +743,7 @@ export function HomepageLabAssistant() {
               >
                 {messages.length === 0 && (
                   <div className='rounded-[18px] border border-blue-100 bg-blue-50/70 px-4 py-5 text-[1.01rem] leading-8 text-slate-600'>
-                    {WELCOME_MESSAGE}
+                    {welcomeMessage}
                   </div>
                 )}
 
@@ -728,7 +830,7 @@ export function HomepageLabAssistant() {
             </div>
 
             <div className='bg-[#fbfbfb] px-4 py-3 text-center text-xs text-slate-400'>
-              {DISCLAIMER}
+              {disclaimer}
             </div>
           </motion.section>
         )}

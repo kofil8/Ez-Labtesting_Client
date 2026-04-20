@@ -121,11 +121,17 @@ export function CartView() {
                     variant='secondary'
                     className='text-[10px] px-2 py-0.5 rounded-md font-medium'
                   >
-                    {item.itemType === "TEST" ? "Lab Test" : "Panel"}
+                    {item.itemType === "PANEL"
+                      ? "Panel"
+                      : item.isPanel
+                        ? "Panel Test"
+                        : "Lab Test"}
                   </Badge>
-                  {item.itemType === "PANEL" && (
+                  {(item.itemType === "PANEL" || item.isPanel) && (
                     <span className='text-[10px] text-muted-foreground'>
-                      {item.testIds.length} tests included
+                      {item.itemType === "PANEL"
+                        ? `${item.testIds.length} tests included`
+                        : "Sellable panel product"}
                     </span>
                   )}
                 </div>
