@@ -21,7 +21,6 @@ const PUBLIC_ROUTES = [
   "/find-lab-center",
   "/verify-otp",
   "/cart",
-  "/results",
   "/how-it-works",
   "/faqs",
   "/privacy-policy",
@@ -29,8 +28,8 @@ const PUBLIC_ROUTES = [
   "/hipaa-notice",
   "/accessibility",
   "/help-center",
+  "/lab-partners",
   "/test-preparation",
-  "/lab-partner",
   // Allow service worker and messaging scope without auth so push can register
   "/firebase-messaging-sw.js",
   "/firebase-cloud-messaging-push-scope",

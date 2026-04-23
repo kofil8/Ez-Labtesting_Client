@@ -1,4 +1,5 @@
 import { handleAuthFailure, refreshSession } from "@/lib/auth/client";
+import { isAuthSessionErrorMessage } from "@/lib/auth/session-errors";
 import { getApiOrigin } from "@/lib/api/config";
 import { io } from "socket.io-client";
 
@@ -36,6 +37,17 @@ type SubscriptionHandlers = {
   onError?: (message: string) => void;
 };
 
+function isSocketAuthError(error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "";
+
+  return isAuthSessionErrorMessage(message);
+}
+
 export async function subscribeToOrderTracking(
   orderId: string,
   handlers: SubscriptionHandlers,
@@ -69,6 +81,11 @@ export async function subscribeToOrderTracking(
   };
 
   const handleConnectError = async (error: Error) => {
+    if (!isSocketAuthError(error)) {
+      handlers.onError?.(error.message || "Realtime connection failed");
+      return;
+    }
+
     if (hasRetriedAfterRefresh) {
       handlers.onError?.(error.message || "Realtime connection failed");
       await handleAuthFailure();

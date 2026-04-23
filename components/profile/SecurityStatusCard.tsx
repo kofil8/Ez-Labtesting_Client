@@ -20,7 +20,7 @@ export function SecurityStatusCard({
   mfaEnabled = false,
 }: SecurityStatusCardProps) {
   return (
-    <Card className='hover:shadow-md transition-shadow'>
+    <Card className='rounded-[26px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_24px_60px_-40px_rgba(15,23,42,0.42)]'>
       <CardHeader className='pb-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
@@ -31,7 +31,7 @@ export function SecurityStatusCard({
       </CardHeader>
 
       <CardContent className='space-y-4'>
-        <div className='p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-3'>
+        <div className='space-y-3 rounded-[22px] border border-slate-200/80 bg-slate-50/80 p-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
               <Lock className='w-4 h-4 text-amber-600' />
@@ -41,20 +41,20 @@ export function SecurityStatusCard({
             </div>
             <Badge
               variant={mfaEnabled ? "default" : "secondary"}
-              className='ml-2'
+              className='ml-2 rounded-full'
             >
               {mfaEnabled ? "Enabled" : "Disabled"}
             </Badge>
           </div>
-          <p className='text-xs text-muted-foreground ml-6'>
+          <p className='ml-6 text-xs text-muted-foreground'>
             {mfaEnabled
-              ? "Your account is protected with 2FA"
-              : "Add an extra layer of security to your account"}
+              ? "Extra sign-in protection is active."
+              : "Add a second step to protect lab results and profile access."}
           </p>
         </div>
 
         <p className='text-xs text-muted-foreground text-center'>
-          Review and manage all security settings
+          Review authentication settings and backup access options.
         </p>
       </CardContent>
 

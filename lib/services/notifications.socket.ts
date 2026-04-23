@@ -1,10 +1,22 @@
 import { handleAuthFailure, refreshSession } from "@/lib/auth/client";
+import { isAuthSessionErrorMessage } from "@/lib/auth/session-errors";
 import { getApiOrigin } from "@/lib/api/config";
 import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
 let socketToken: string | null = null;
 let connectPromise: Promise<Socket> | null = null;
+
+function isSocketAuthError(error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "";
+
+  return isAuthSessionErrorMessage(message);
+}
 
 function getSocketBaseUrl() {
   return (process.env.NEXT_PUBLIC_SOCKET_URL || getApiOrigin()).replace(
@@ -35,7 +47,12 @@ export async function connectNotificationSocket() {
     });
     socketToken = "cookie-session";
 
-    socket.on("connect_error", async () => {
+    socket.on("connect_error", async (error) => {
+      if (!isSocketAuthError(error)) {
+        console.error("Notification socket connection failed", error);
+        return;
+      }
+
       if (hasRetriedAfterRefresh) {
         await handleAuthFailure();
         return;

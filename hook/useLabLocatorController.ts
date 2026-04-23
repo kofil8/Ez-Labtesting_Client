@@ -7,6 +7,7 @@ import { trackLocatorEvent } from "@/lib/locator/analytics";
 import {
   DEFAULT_LOCATOR_FILTERS,
   getAppliedFilterChips,
+  isNationwideSearchQuery,
   mapGeolocationErrorMessage,
   sortLabs,
 } from "@/lib/locator/controller";
@@ -16,8 +17,10 @@ import {
   AppliedFilterChip,
   LabCenter,
   LabLocatorFilters,
+  LabLocatorPageMode,
   LabLocatorSearchMethod,
   LabLocatorViewMode,
+  NationwideLabResponse,
   SelectedLabCenter,
 } from "@/types/lab-center";
 import {
@@ -58,8 +61,24 @@ function getGeolocationResult(error: unknown) {
   }
 }
 
+function canUseAsAnchor(coords?: {
+  latitude?: number;
+  longitude?: number;
+} | null) {
+  return (
+    coords?.latitude !== undefined &&
+    coords?.longitude !== undefined &&
+    Number.isFinite(coords.latitude) &&
+    Number.isFinite(coords.longitude)
+  );
+}
+
 export function useLabLocatorController() {
-  const { clientLocation } = useClientLocationFromOrder();
+  const {
+    clientLocation,
+    isLoading: isOrderContextLoading,
+    orderContext,
+  } = useClientLocationFromOrder();
   const { selectedLab, setSelectedLab } = useCheckout();
   const { labs, isLoading, error, searchByLocation } = usePlacesSearch();
 
@@ -68,6 +87,10 @@ export function useLabLocatorController() {
   const [searchRequest, setSearchRequest] = useState<SearchRequest | null>(null);
   const [uiError, setUiError] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [isNationwideLoading, setIsNationwideLoading] = useState(false);
+  const [isNationwideMode, setIsNationwideMode] = useState(false);
+  const [nationwideResults, setNationwideResults] =
+    useState<NationwideLabResponse | null>(null);
   const [filters, setFilters] = useState<LabLocatorFilters>(
     DEFAULT_LOCATOR_FILTERS,
   );
@@ -80,56 +103,143 @@ export function useLabLocatorController() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const resultsLoadStartedAtRef = useRef<number | null>(null);
-  const hydratedFromOrderRef = useRef(false);
+  const hydratedInitialContextRef = useRef(false);
 
   useEffect(() => {
     trackLocatorEvent("locator_view");
   }, []);
 
   useEffect(() => {
-    if (!clientLocation || hydratedFromOrderRef.current) {
+    if (!selectedLab?.id) {
       return;
     }
 
-    hydratedFromOrderRef.current = true;
-    const label =
-      clientLocation.address || clientLocation.label || "Current location";
+    setSelectedLabId((current) => current ?? selectedLab.id);
+  }, [selectedLab]);
 
-    const frameId = window.requestAnimationFrame(() => {
-      startTransition(() => {
-        setSearchInput(label);
-        setSearchRequest({
+  useEffect(() => {
+    if (isOrderContextLoading || hydratedInitialContextRef.current) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const bootstrap = async () => {
+      const applySearchRequest = (request: SearchRequest) => {
+        startTransition(() => {
+          setSearchInput(request.label);
+          setSearchRequest(request);
+        });
+      };
+
+      if (clientLocation) {
+        hydratedInitialContextRef.current = true;
+        const label =
+          clientLocation.address || clientLocation.label || "Current location";
+
+        applySearchRequest({
           anchor: { lat: clientLocation.lat, lng: clientLocation.lng },
           label,
           query: label,
           method: "order",
         });
-      });
-    });
+        return;
+      }
+
+      const assignedLab = orderContext.assignedLab;
+      if (assignedLab) {
+        hydratedInitialContextRef.current = true;
+        const label =
+          assignedLab.formattedAddress ||
+          assignedLab.address ||
+          assignedLab.name ||
+          "Assigned draw center";
+
+        if (
+          canUseAsAnchor({
+            latitude: assignedLab.latitude,
+            longitude: assignedLab.longitude,
+          })
+        ) {
+          applySearchRequest({
+            anchor: {
+              lat: assignedLab.latitude as number,
+              lng: assignedLab.longitude as number,
+            },
+            label,
+            query: label,
+            method: "assigned",
+          });
+          return;
+        }
+
+        if (!label.trim()) {
+          return;
+        }
+
+        try {
+          const geocoded = await LabCenterService.geocodeAddress(label);
+          if (isCancelled) {
+            return;
+          }
+
+          applySearchRequest({
+            anchor: { lat: geocoded.latitude, lng: geocoded.longitude },
+            label: geocoded.formattedAddress || label,
+            query: label,
+            method: "assigned",
+          });
+        } catch {
+          // ACCESS-assigned context remains usable even if nearby search bootstrap fails.
+        }
+        return;
+      }
+
+      if (selectedLab) {
+        hydratedInitialContextRef.current = true;
+        applySearchRequest({
+          anchor: { lat: selectedLab.latitude, lng: selectedLab.longitude },
+          label: selectedLab.address || selectedLab.name,
+          query: selectedLab.address || selectedLab.name,
+          method: "selected",
+        });
+      }
+    };
+
+    void bootstrap();
 
     return () => {
-      window.cancelAnimationFrame(frameId);
+      isCancelled = true;
     };
-  }, [clientLocation]);
+  }, [
+    clientLocation,
+    isOrderContextLoading,
+    orderContext.assignedLab,
+    selectedLab,
+  ]);
 
   useEffect(() => {
-    if (!searchRequest) {
+    if (!searchRequest || isNationwideMode) {
       return;
     }
 
     resultsLoadStartedAtRef.current = Date.now();
+    const searchTerm = searchRequest.method === "typed" ? searchRequest.query : "";
     void searchByLocation(
       searchRequest.anchor.lat,
       searchRequest.anchor.lng,
       filters.radius,
       filters.type,
       filters.status,
-      searchRequest.query,
+      searchTerm,
+      filters.provider === "all" ? undefined : filters.provider,
     );
   }, [
+    filters.provider,
     filters.radius,
     filters.status,
     filters.type,
+    isNationwideMode,
     searchByLocation,
     searchRequest,
   ]);
@@ -153,27 +263,31 @@ export function useLabLocatorController() {
     return sortLabs(filteredLabs, filters.sort);
   }, [detailsById, filters.rating, filters.sort, filters.status, labs]);
 
+  const effectiveIsLoading = isLoading || isNationwideLoading;
+
   useEffect(() => {
-    if (!searchRequest || isLoading) {
+    if ((!searchRequest && !isNationwideMode) || effectiveIsLoading) {
       return;
     }
 
     if (resultsLoadStartedAtRef.current !== null) {
       trackLocatorEvent("locator_results_loaded", {
-        count: displayedLabs.length,
+        count: isNationwideMode
+          ? nationwideResults?.groups.length || 0
+          : displayedLabs.length,
         radius: filters.radius,
-        method: searchRequest.method,
+        method: isNationwideMode ? "typed" : searchRequest?.method,
         latency_ms: Date.now() - resultsLoadStartedAtRef.current,
       });
       resultsLoadStartedAtRef.current = null;
     }
   }, [
     displayedLabs.length,
-    error,
+    effectiveIsLoading,
     filters.radius,
-    isLoading,
+    isNationwideMode,
+    nationwideResults?.groups.length,
     searchRequest,
-    uiError,
   ]);
 
   const appliedFilterChips = useMemo<AppliedFilterChip[]>(
@@ -181,23 +295,59 @@ export function useLabLocatorController() {
     [filters],
   );
 
-  const activeError = uiError || error;
-  const locationLabel = searchRequest?.label || clientLocation?.label || null;
-  const confirmedLocation = clientLocation
-    ? {
-        lat: clientLocation.lat,
-        lng: clientLocation.lng,
-        label: clientLocation.label || clientLocation.address,
-      }
-    : null;
-  const locationAnchor = searchRequest?.anchor ||
-    (clientLocation
-      ? { lat: clientLocation.lat, lng: clientLocation.lng }
-      : null);
-  const directionsOrigin = clientLocation
-    ? { lat: clientLocation.lat, lng: clientLocation.lng }
-    : searchRequest?.anchor || null;
-  const activeLabId = selectedLabId || selectedLab?.id;
+  const pageMode = useMemo<LabLocatorPageMode>(() => {
+    if (orderContext.assignedLab) {
+      return "access_assigned";
+    }
+
+    if (isNationwideMode) {
+      return "nationwide";
+    }
+
+    if (selectedLab) {
+      return "selected_lab";
+    }
+
+    return "browse";
+  }, [isNationwideMode, orderContext.assignedLab, selectedLab]);
+
+  const canSelectLab =
+    pageMode !== "access_assigned" && pageMode !== "nationwide";
+  const activeError = uiError || (pageMode === "nationwide" ? null : error);
+  const locationLabel =
+    pageMode === "nationwide"
+      ? "United States"
+      : searchRequest?.label ||
+        clientLocation?.label ||
+        orderContext.assignedLab?.formattedAddress ||
+        orderContext.assignedLab?.address ||
+        null;
+  const confirmedLocation =
+    pageMode === "nationwide"
+      ? null
+      : clientLocation
+        ? {
+            lat: clientLocation.lat,
+            lng: clientLocation.lng,
+            label: clientLocation.label || clientLocation.address,
+          }
+        : null;
+  const locationAnchor =
+    pageMode === "nationwide"
+      ? null
+      : searchRequest?.anchor ||
+        (clientLocation
+          ? { lat: clientLocation.lat, lng: clientLocation.lng }
+          : null);
+  const directionsOrigin =
+    pageMode === "nationwide"
+      ? null
+      : clientLocation
+        ? { lat: clientLocation.lat, lng: clientLocation.lng }
+        : searchRequest &&
+            ["typed", "geolocate", "order"].includes(searchRequest.method)
+          ? searchRequest.anchor
+          : null;
 
   const hydratePlaceDetails = useCallback(
     async (lab: LabCenter) => {
@@ -237,6 +387,36 @@ export function useLabLocatorController() {
     [hydratePlaceDetails],
   );
 
+  const applyLocalSearch = useCallback(
+    async (
+      query: string,
+      nextProvider: LabLocatorFilters["provider"] = filters.provider,
+    ) => {
+      const result = await LabCenterService.geocodeAddress(query);
+      const label = result.formattedAddress || query;
+
+      setUiError(null);
+      setIsNationwideMode(false);
+      setNationwideResults(null);
+      setSearchInput(query);
+      setFilters((current) => ({
+        ...current,
+        provider: nextProvider,
+      }));
+      setSearchRequest({
+        anchor: { lat: result.latitude, lng: result.longitude },
+        label,
+        query,
+        method: "typed",
+      });
+      trackLocatorEvent("locator_location_submit", {
+        method: "typed",
+        query,
+      });
+    },
+    [filters.provider],
+  );
+
   const handleSearchSubmit = useCallback(
     async (query: string) => {
       const trimmedQuery = query.trim();
@@ -245,23 +425,44 @@ export function useLabLocatorController() {
         return;
       }
 
-      try {
-        const result = await LabCenterService.geocodeAddress(trimmedQuery);
-        const label = result.formattedAddress || trimmedQuery;
+      const canSwitchNationwide = !orderContext.assignedLab;
+      if (canSwitchNationwide && isNationwideSearchQuery(trimmedQuery)) {
+        try {
+          setUiError(null);
+          setIsNationwideLoading(true);
+          setIsNationwideMode(true);
+          setSearchRequest(null);
+          setSearchInput(trimmedQuery);
+          resultsLoadStartedAtRef.current = Date.now();
 
-        setUiError(null);
-        setSearchInput(trimmedQuery);
-        setSearchRequest({
-          anchor: { lat: result.latitude, lng: result.longitude },
-          label,
-          query: trimmedQuery,
-          method: "typed",
-        });
-        setSelectedLabId(selectedLab?.id);
-        trackLocatorEvent("locator_location_submit", {
-          method: "typed",
-          query: trimmedQuery,
-        });
+          const results = await LabCenterService.getNationwideLabCenters({
+            country: "US",
+            providers: ["ACCESS", "CPL", "QUEST", "LABCORP"],
+            page: 1,
+            pageSize: 12,
+          });
+
+          setNationwideResults(results);
+          trackLocatorEvent("locator_location_submit", {
+            method: "typed",
+            query: trimmedQuery,
+          });
+        } catch (searchError) {
+          setUiError(
+            searchError instanceof Error
+              ? searchError.message
+              : "We could not load nationwide availability right now.",
+          );
+          setIsNationwideMode(false);
+          setNationwideResults(null);
+        } finally {
+          setIsNationwideLoading(false);
+        }
+        return;
+      }
+
+      try {
+        await applyLocalSearch(trimmedQuery);
       } catch (searchError) {
         setUiError(
           searchError instanceof Error
@@ -270,7 +471,22 @@ export function useLabLocatorController() {
         );
       }
     },
-    [selectedLab],
+    [applyLocalSearch, orderContext.assignedLab],
+  );
+
+  const handleSearchState = useCallback(
+    async (stateName: string, providerCode: LabLocatorFilters["provider"]) => {
+      try {
+        await applyLocalSearch(stateName, providerCode);
+      } catch (searchError) {
+        setUiError(
+          searchError instanceof Error
+            ? searchError.message
+            : "We could not switch to that state right now.",
+        );
+      }
+    },
+    [applyLocalSearch],
   );
 
   const handleUseMyLocation = useCallback(async () => {
@@ -282,6 +498,8 @@ export function useLabLocatorController() {
       const label = "Current location";
 
       setUiError(null);
+      setIsNationwideMode(false);
+      setNationwideResults(null);
       setSearchInput(label);
       setSearchRequest({
         anchor: { lat: location.latitude, lng: location.longitude },
@@ -341,6 +559,15 @@ export function useLabLocatorController() {
 
   const handleSelectLab = useCallback(
     async (lab: LabCenter) => {
+      if (!canSelectLab) {
+        toast.info(
+          pageMode === "nationwide"
+            ? "Nationwide reference locations cannot be selected for checkout."
+            : "This draw center was assigned by ACCESS and cannot be changed here.",
+        );
+        return;
+      }
+
       await previewLab(lab, "list");
       setSelectedLab(toSelectedLabCenter(lab));
       toast.success(`${lab.name} selected for checkout.`);
@@ -348,7 +575,7 @@ export function useLabLocatorController() {
         lab_id: lab.id,
       });
     },
-    [previewLab, setSelectedLab],
+    [canSelectLab, pageMode, previewLab, setSelectedLab],
   );
 
   const handleDirections = useCallback((lab: LabCenter) => {
@@ -360,6 +587,20 @@ export function useLabLocatorController() {
   const status = useMemo(() => {
     if (isLocating) {
       return "locating" as const;
+    }
+
+    if (pageMode === "nationwide") {
+      if (isNationwideLoading) {
+        return "searching" as const;
+      }
+
+      if (activeError) {
+        return "error" as const;
+      }
+
+      return nationwideResults?.groups.length
+        ? ("results" as const)
+        : ("empty" as const);
     }
 
     if (!searchRequest) {
@@ -375,39 +616,73 @@ export function useLabLocatorController() {
     }
 
     return displayedLabs.length > 0 ? ("results" as const) : ("empty" as const);
-  }, [activeError, displayedLabs.length, isLoading, isLocating, searchRequest]);
+  }, [
+    activeError,
+    displayedLabs.length,
+    isLoading,
+    isLocating,
+    isNationwideLoading,
+    nationwideResults?.groups.length,
+    pageMode,
+    searchRequest,
+  ]);
 
   const selectedLabCenter = useMemo<SelectedLabCenter | null>(() => {
-    if (selectedLab && selectedLab.id === activeLabId) {
+    if (selectedLab) {
       return selectedLab;
     }
 
-    const found = displayedLabs.find((lab) => lab.id === activeLabId);
-    return found ? toSelectedLabCenter(found) : selectedLab || null;
-  }, [activeLabId, displayedLabs, selectedLab]);
+    const found = displayedLabs.find((lab) => lab.id === selectedLabId);
+    return found ? toSelectedLabCenter(found) : null;
+  }, [displayedLabs, selectedLab, selectedLabId]);
+
+  const contextMessage = useMemo(() => {
+    if (pageMode === "access_assigned") {
+      return "ACCESS assigned this draw center for sample collection. Nearby labs are shown for reference only.";
+    }
+
+    if (pageMode === "nationwide") {
+      return "Nationwide results show reference-only provider coverage and sample locations outside restricted states.";
+    }
+
+    if (pageMode === "selected_lab") {
+      return "Review your saved collection location or compare nearby partner labs before checkout.";
+    }
+
+    return "Search nearby partner draw centers before you book.";
+  }, [pageMode]);
 
   return {
     activeError,
     appliedFilterChips,
+    assignedLab: orderContext.assignedLab,
+    canSelectLab,
     clearAllFilters,
     clearFilterChip,
+    contextMessage,
     displayedLabs,
     filters,
     handleDirections,
     handleFilterChange,
+    handleSearchState,
     handleSearchSubmit,
     handleSelectLab,
     handleUseMyLocation,
     increaseRadius,
-    isLoading,
+    isLoading: effectiveIsLoading,
+    isOrderContextLoading,
     confirmedLocation,
     directionsOrigin,
     locationAnchor,
     locationLabel,
+    nationwideResults,
+    orderId: orderContext.orderId,
+    pageMode,
     previewLab,
+    requisitionPdfUrl: orderContext.requisitionPdfUrl,
     searchInput,
     selectedLabCenter,
-    selectedLabId: activeLabId,
+    selectedLabId,
     setSearchInput,
     setShowMobileFilters,
     setViewMode,

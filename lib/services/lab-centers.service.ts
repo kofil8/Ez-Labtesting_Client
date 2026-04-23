@@ -3,6 +3,8 @@ import {
   GeocodeResponse,
   LabCenter,
   LabCenterQuery,
+  NationwideLabQuery,
+  NationwideLabResponse,
   SearchSuggestion,
   UpdateLabCenterRequest,
 } from "@/types/lab-center";
@@ -23,6 +25,9 @@ export class LabCenterService {
       params.append("search", query.search.trim());
     // Only add type/status if they are not "all"
     if (query?.type && query.type !== "all") params.append("type", query.type);
+    if (query?.providerCode) params.append("providerCode", query.providerCode);
+    if (query?.providerCodes?.length)
+      params.append("providerCodes", query.providerCodes.join(","));
     if (query?.status && query.status !== "all")
       params.append("status", query.status);
     if (query?.isActive !== undefined)
@@ -52,6 +57,49 @@ export class LabCenterService {
       console.log("[LabCenterService] Got labs:", data.data?.length, "results");
     }
     return data.data || [];
+  }
+
+  static async getNationwideLabCenters(
+    query?: NationwideLabQuery,
+  ): Promise<NationwideLabResponse> {
+    const params = new URLSearchParams();
+
+    params.append("country", query?.country || "US");
+    if (query?.providers?.length) {
+      params.append("providers", query.providers.join(","));
+    }
+    if (query?.page !== undefined) params.append("page", query.page.toString());
+    if (query?.pageSize !== undefined)
+      params.append("pageSize", query.pageSize.toString());
+
+    const response = await publicFetch(
+      getApiUrl(`/lab-centers/nationwide?${params.toString()}`),
+      {
+        method: "GET",
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response
+        .json()
+        .catch(() => ({ message: "Failed to fetch nationwide lab availability" }));
+      throw new Error(
+        error.message || "Failed to fetch nationwide lab availability",
+      );
+    }
+
+    const data = await response.json();
+    return (
+      data.data || {
+        groups: [],
+        meta: {
+          page: query?.page || 1,
+          pageSize: query?.pageSize || 12,
+          totalGroups: 0,
+          excludedStates: [],
+        },
+      }
+    );
   }
 
   /**

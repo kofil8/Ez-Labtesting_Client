@@ -25,7 +25,13 @@ describe("auth shared helpers", () => {
     expect(getDashboardRouteForRole("lab-partner")).toBe(
       "/dashboard/lab-partner",
     );
+    expect(getDashboardRouteForRole("labpartner")).toBe(
+      "/dashboard/lab-partner",
+    );
     expect(getDashboardRouteForRole("SUPER_ADMIN")).toBe(
+      "/dashboard/superadmin",
+    );
+    expect(getDashboardRouteForRole("superadmin")).toBe(
       "/dashboard/superadmin",
     );
     expect(getDashboardRouteForRole("unknown")).toBe("/dashboard/customer");

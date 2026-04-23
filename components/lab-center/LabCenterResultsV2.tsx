@@ -5,17 +5,20 @@ import { Button } from "@/components/ui/button";
 import {
   AppliedFilterChip,
   LabCenter,
+  LabLocatorPageMode,
   SelectedLabCenter,
 } from "@/types/lab-center";
-import { ChevronDown, MapPin, Phone, Star } from "lucide-react";
+import { ChevronDown, Compass, MapPin, Phone, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 
 interface LabCenterResultsV2Props {
   activeError?: string | null;
   appliedFilterChips: AppliedFilterChip[];
+  canSelectLab: boolean;
   isLoading?: boolean;
   labs: LabCenter[];
   locationLabel?: string | null;
+  mode: LabLocatorPageMode;
   onClearFilterChip: (key: AppliedFilterChip["key"]) => void;
   onIncreaseRadius: () => void;
   onPreviewLab: (lab: LabCenter) => void;
@@ -43,7 +46,7 @@ function StatePanel({
   children?: React.ReactNode;
 }) {
   return (
-    <div className='rounded-[24px] border border-slate-200/80 bg-white/78 p-5 text-center shadow-sm backdrop-blur'>
+    <div className='rounded-[24px] border border-slate-200/80 bg-white/88 p-5 text-center shadow-sm backdrop-blur'>
       <div className='mx-auto flex max-w-sm flex-col items-center gap-3'>
         <div className='rounded-full bg-sky-50 p-3 text-primary'>
           <MapPin className='h-5 w-5' />
@@ -59,28 +62,38 @@ function StatePanel({
 }
 
 function ResultCard({
-  lab,
+  canSelectLab,
   isActive,
   isSelected,
+  lab,
+  mode,
+  onDirections,
   onPreviewLab,
   onSelectLab,
-  onDirections,
 }: {
-  lab: LabCenter;
+  canSelectLab: boolean;
   isActive: boolean;
   isSelected: boolean;
+  lab: LabCenter;
+  mode: LabLocatorPageMode;
+  onDirections: (lab: LabCenter) => void;
   onPreviewLab: (lab: LabCenter) => void;
   onSelectLab: (lab: LabCenter) => void;
-  onDirections: (lab: LabCenter) => void;
 }) {
   const [showHours, setShowHours] = useState(false);
+  const primaryActionLabel =
+    mode === "selected_lab" ? "Update selection" : "Select this lab";
+  const supportLabel =
+    lab.matchType === "reference"
+      ? "Reference result"
+      : lab.providerLabel || lab.providerCode;
 
   return (
     <article
       className={`rounded-[24px] border px-4 py-4 transition ${
         isActive
           ? "border-sky-200 bg-sky-50/80 shadow-[0_16px_35px_rgba(14,116,144,0.12)]"
-          : "border-slate-200/80 bg-white/88 shadow-sm hover:border-slate-300 hover:shadow-md"
+          : "border-slate-200/80 bg-white/92 shadow-sm hover:border-slate-300 hover:shadow-md"
       }`}
     >
       <button
@@ -94,9 +107,25 @@ function ResultCard({
               <h3 className='truncate text-[15px] font-semibold text-slate-900'>
                 {lab.name}
               </h3>
+              {supportLabel ? (
+                <Badge
+                  variant='outline'
+                  className='rounded-full border-slate-200 bg-white text-slate-600'
+                >
+                  {supportLabel}
+                </Badge>
+              ) : null}
               {isSelected ? (
                 <Badge className='rounded-full bg-sky-600 text-white hover:bg-sky-600'>
-                  Selected
+                  Saved
+                </Badge>
+              ) : null}
+              {mode === "access_assigned" ? (
+                <Badge
+                  variant='outline'
+                  className='rounded-full border-slate-200 bg-white text-slate-600'
+                >
+                  Nearby lab
                 </Badge>
               ) : null}
             </div>
@@ -129,29 +158,49 @@ function ResultCard({
       </button>
 
       <div className='mt-4 flex flex-wrap gap-2'>
-        <Button
-          type='button'
-          className='h-10 rounded-full bg-gradient-to-r from-sky-700 to-cyan-700 px-4 text-white'
-          onClick={() => onSelectLab(lab)}
-        >
-          Select this lab
-        </Button>
+        {canSelectLab ? (
+          <Button
+            type='button'
+            className='h-10 w-full rounded-full bg-gradient-to-r from-sky-700 to-cyan-700 px-4 text-white sm:w-auto'
+            onClick={() => onSelectLab(lab)}
+          >
+            {primaryActionLabel}
+          </Button>
+        ) : (
+          <Button
+            type='button'
+            variant='outline'
+            className='h-10 w-full rounded-full px-4 sm:w-auto'
+            onClick={() => onPreviewLab(lab)}
+          >
+            <Compass className='h-4 w-4' />
+            Preview on map
+          </Button>
+        )}
+
         <Button
           type='button'
           variant='outline'
-          className='h-10 rounded-full px-4'
+          className='h-10 w-full rounded-full px-4 sm:w-auto'
           onClick={() => onDirections(lab)}
         >
           Directions
         </Button>
+
         {lab.phone ? (
-          <Button asChild type='button' variant='ghost' className='h-10 rounded-full px-3 text-slate-600'>
+          <Button
+            asChild
+            type='button'
+            variant='ghost'
+            className='h-10 rounded-full px-3 text-slate-600'
+          >
             <a href={`tel:${lab.phone}`}>
               <Phone className='h-4 w-4' />
               Call
             </a>
           </Button>
         ) : null}
+
         {lab.hours ? (
           <Button
             type='button'
@@ -181,9 +230,11 @@ function ResultCard({
 export function LabCenterResultsV2({
   activeError,
   appliedFilterChips,
+  canSelectLab,
   isLoading = false,
   labs,
   locationLabel,
+  mode,
   onClearFilterChip,
   onIncreaseRadius,
   onPreviewLab,
@@ -195,12 +246,30 @@ export function LabCenterResultsV2({
   status,
 }: LabCenterResultsV2Props) {
   const summary = useMemo(() => {
+    if (mode === "access_assigned") {
+      return locationLabel
+        ? `${labs.length} nearby labs around the assigned draw center`
+        : `${labs.length} nearby labs`;
+    }
+
     if (!locationLabel) {
       return `${labs.length} labs found`;
     }
 
     return `${labs.length} labs near ${locationLabel}`;
-  }, [labs.length, locationLabel]);
+  }, [labs.length, locationLabel, mode]);
+
+  const heading = useMemo(() => {
+    if (mode === "access_assigned") {
+      return "Nearby labs";
+    }
+
+    if (mode === "selected_lab") {
+      return locationLabel || "Review nearby labs";
+    }
+
+    return locationLabel || "Search to see results";
+  }, [locationLabel, mode]);
 
   return (
     <div className='space-y-4'>
@@ -208,10 +277,10 @@ export function LabCenterResultsV2({
         <div className='flex items-start justify-between gap-3'>
           <div className='min-w-0'>
             <p className='text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400'>
-              Nearby labs
+              {mode === "access_assigned" ? "Nearby reference labs" : "Nearby labs"}
             </p>
             <h2 className='truncate text-lg font-semibold text-slate-900'>
-              {locationLabel || "Search to see results"}
+              {heading}
             </h2>
             <p className='text-sm text-slate-500'>
               {status === "searching" ? "Refreshing results..." : summary}
@@ -242,8 +311,20 @@ export function LabCenterResultsV2({
 
       {status === "idle" ? (
         <StatePanel
-          title='Search to see nearby labs'
-          description='Enter a city, state, or ZIP code, or use your current location to load the map and results.'
+          title={
+            mode === "access_assigned"
+              ? "Assigned draw center ready"
+              : mode === "selected_lab"
+                ? "Review your collection location"
+                : "Search to see nearby labs"
+          }
+          description={
+            mode === "access_assigned"
+              ? "Your ACCESS-assigned draw center is shown above. Search another area only if you need nearby reference locations."
+              : mode === "selected_lab"
+                ? "Your saved lab is shown above. Search another area if you want to compare nearby partner locations."
+                : "Enter a city, state, or ZIP code, or use your current location to load the map and results."
+          }
         />
       ) : null}
 
@@ -259,8 +340,16 @@ export function LabCenterResultsV2({
 
       {status === "empty" ? (
         <StatePanel
-          title='No labs matched this search'
-          description='Try broadening the radius, clearing filters, or searching another area.'
+          title={
+            mode === "access_assigned"
+              ? "No nearby labs found"
+              : "No labs matched this search"
+          }
+          description={
+            mode === "access_assigned"
+              ? "Your assigned draw center is still the primary location. Try broadening the radius only if you want more nearby reference labs."
+              : "Try broadening the radius, clearing filters, or searching another area."
+          }
         >
           <div className='mt-2 flex flex-wrap justify-center gap-2'>
             <Button type='button' className='rounded-full' onClick={onIncreaseRadius}>
@@ -283,12 +372,14 @@ export function LabCenterResultsV2({
           {labs.map((lab) => (
             <ResultCard
               key={lab.id}
-              lab={lab}
+              canSelectLab={canSelectLab}
               isActive={selectedLabId === lab.id}
               isSelected={selectedLab?.id === lab.id}
+              lab={lab}
+              mode={mode}
+              onDirections={onDirections}
               onPreviewLab={onPreviewLab}
               onSelectLab={onSelectLab}
-              onDirections={onDirections}
             />
           ))}
         </div>

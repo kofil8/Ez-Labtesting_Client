@@ -114,9 +114,10 @@ export default function CheckoutPaymentPage() {
         if (resumableOrder?.id) {
           setOrder({
             orderId: resumableOrder.id,
-            subtotal: getSubtotal(),
-            processingFee,
-            total: getTotal() + processingFee,
+            subtotal: resumableOrder.subtotal ?? getSubtotal(),
+            processingFee: resumableOrder.processingFee ?? processingFee,
+            total:
+              resumableOrder.total ?? getTotal() + processingFee,
           });
           setLastRecoveredAt(Date.now());
 
@@ -451,10 +452,7 @@ export default function CheckoutPaymentPage() {
           >
             <StripePayment
               amount={paymentAmount}
-              customerEmail={patientInfo.email || "customer@example.com"}
-              customerName={`${patientInfo.firstName} ${patientInfo.lastName}`}
               orderId={order?.orderId}
-              paymentMethodType='automatic'
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
               disabled={

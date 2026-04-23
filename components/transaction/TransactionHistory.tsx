@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { motion } from "framer-motion";
 import { Download, Filter, Search } from "lucide-react";
 import { useState } from "react";
 import { TransactionCard } from "./TransactionCard";
@@ -50,92 +49,75 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
     const matchesStatus =
       filterStatus === "all" || transaction.status === filterStatus;
     const matchesType = filterType === "all" || transaction.type === filterType;
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const totalAmount = filteredTransactions.reduce((sum, t) => {
-    return t.type === "payment" ? sum - t.amount : sum + t.amount;
-  }, 0);
+  const summary = {
+    total: filteredTransactions.length,
+    completed: filteredTransactions.filter((t) => t.status === "completed").length,
+    netAmount: filteredTransactions.reduce((sum, transaction) => {
+      return transaction.type === "payment"
+        ? sum + transaction.amount
+        : sum - transaction.amount;
+    }, 0),
+  };
 
   return (
-    <div className='space-y-6'>
-      {/* Summary Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className='bg-gradient-to-br from-blue-500 to-blue-600 text-white'>
-            <CardContent className='p-6'>
-              <p className='text-sm opacity-90'>Total Transactions</p>
-              <p className='text-3xl font-bold mt-2'>
-                {filteredTransactions.length}
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+    <div className='space-y-5'>
+      <Card className='rounded-[28px] border-slate-200/80 bg-[linear-gradient(135deg,rgba(14,165,233,0.1)_0%,rgba(255,255,255,0.95)_52%,rgba(16,185,129,0.08)_100%)] shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'>
+        <CardContent className='grid gap-3 p-5 sm:grid-cols-3'>
+          <div className='rounded-[22px] border border-white/70 bg-white/80 p-4'>
+            <p className='text-xs font-semibold uppercase tracking-[0.18em] text-slate-500'>
+              Transactions
+            </p>
+            <p className='mt-2 text-2xl font-semibold text-slate-950'>
+              {summary.total}
+            </p>
+          </div>
+          <div className='rounded-[22px] border border-white/70 bg-white/80 p-4'>
+            <p className='text-xs font-semibold uppercase tracking-[0.18em] text-slate-500'>
+              Completed
+            </p>
+            <p className='mt-2 text-2xl font-semibold text-slate-950'>
+              {summary.completed}
+            </p>
+          </div>
+          <div className='rounded-[22px] border border-white/70 bg-white/80 p-4'>
+            <p className='text-xs font-semibold uppercase tracking-[0.18em] text-slate-500'>
+              Gross Payments
+            </p>
+            <p className='mt-2 text-2xl font-semibold text-slate-950'>
+              ${summary.netAmount.toFixed(2)}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className='bg-gradient-to-br from-green-500 to-green-600 text-white'>
-            <CardContent className='p-6'>
-              <p className='text-sm opacity-90'>Completed</p>
-              <p className='text-3xl font-bold mt-2'>
-                {
-                  filteredTransactions.filter((t) => t.status === "completed")
-                    .length
-                }
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
+      <Card className='rounded-[28px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'>
+        <CardContent className='space-y-4 p-5'>
+          <div className='flex items-center gap-2 text-sm font-semibold text-slate-900'>
+            <Filter className='h-4 w-4 text-sky-700' />
+            Filter activity
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className='bg-gradient-to-br from-purple-500 to-purple-600 text-white'>
-            <CardContent className='p-6'>
-              <p className='text-sm opacity-90'>Net Amount</p>
-              <p className='text-3xl font-bold mt-2'>
-                ${Math.abs(totalAmount).toFixed(2)}
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className='flex items-center gap-2'>
-            <Filter className='h-5 w-5' />
-            Filter Transactions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-            <div className='md:col-span-2 relative'>
-              <Search className='absolute left-3 top-2.5 h-4 w-4 text-muted-foreground' />
+          <div className='grid gap-3 md:grid-cols-4'>
+            <div className='relative md:col-span-2'>
+              <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400' />
               <Input
-                placeholder='Search transactions...'
+                placeholder='Search description or transaction ID'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10'
+                className='rounded-2xl border-slate-200 pl-10'
               />
             </div>
 
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger>
+              <SelectTrigger className='rounded-2xl border-slate-200'>
                 <SelectValue placeholder='All Statuses' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>All Statuses</SelectItem>
+                <SelectItem value='all'>All statuses</SelectItem>
                 <SelectItem value='completed'>Completed</SelectItem>
                 <SelectItem value='pending'>Pending</SelectItem>
                 <SelectItem value='failed'>Failed</SelectItem>
@@ -143,33 +125,31 @@ export function TransactionHistory({ transactions }: TransactionHistoryProps) {
             </Select>
 
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger>
+              <SelectTrigger className='rounded-2xl border-slate-200'>
                 <SelectValue placeholder='All Types' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>All Types</SelectItem>
+                <SelectItem value='all'>All types</SelectItem>
                 <SelectItem value='payment'>Payments</SelectItem>
                 <SelectItem value='refund'>Refunds</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          <div className='flex justify-end'>
+            <Button variant='outline' className='rounded-full'>
+              <Download className='h-4 w-4' />
+              Export CSV
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Export Button */}
-      <div className='flex justify-end'>
-        <Button variant='outline' className='gap-2'>
-          <Download className='h-4 w-4' />
-          Export to CSV
-        </Button>
-      </div>
-
-      {/* Transaction List */}
       <div className='space-y-4'>
         {filteredTransactions.length === 0 ? (
-          <Card>
-            <CardContent className='p-12 text-center'>
-              <p className='text-muted-foreground'>No transactions found</p>
+          <Card className='rounded-[28px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'>
+            <CardContent className='p-10 text-center text-sm text-slate-600'>
+              No transactions match the current filters.
             </CardContent>
           </Card>
         ) : (

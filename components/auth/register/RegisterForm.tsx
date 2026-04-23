@@ -29,7 +29,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 const inputClassName =
-  "h-12 rounded-xl border-slate-300 bg-slate-50/70 focus-visible:ring-blue-200";
+  "block w-full h-12 rounded-xl border-slate-300 bg-slate-50/70 focus-visible:ring-blue-200";
 
 function getPasswordStrength(password: string) {
   if (!password) {
@@ -117,11 +117,7 @@ export function RegisterForm() {
 
   const clearAddressFields = () => {
     const fields: Array<
-      | "addressLine1"
-      | "addressLine2"
-      | "city"
-      | "state"
-      | "zipCode"
+      "addressLine1" | "addressLine2" | "city" | "state" | "zipCode"
     > = ["addressLine1", "addressLine2", "city", "state", "zipCode"];
 
     fields.forEach((field) => {
@@ -225,7 +221,10 @@ export function RegisterForm() {
                 {...register("firstName")}
               />
             </div>
-            <FieldError error={errors.firstName?.message} id='firstName-error' />
+            <FieldError
+              error={errors.firstName?.message}
+              id='firstName-error'
+            />
           </div>
 
           <div className='space-y-1.5'>
@@ -486,7 +485,10 @@ export function RegisterForm() {
                     {...register("zipCode")}
                   />
                 </div>
-                <FieldError error={errors.zipCode?.message} id='zipCode-error' />
+                <FieldError
+                  error={errors.zipCode?.message}
+                  id='zipCode-error'
+                />
               </div>
             </div>
           ) : null}

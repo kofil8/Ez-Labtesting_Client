@@ -5,10 +5,12 @@ import {
   LabCenterSortOption,
   LabLocatorFilters,
 } from "@/types/lab-center";
+import { getProviderLabel, isNationwideSearchQuery } from "@/lib/locator/providers";
 
 export const DEFAULT_LOCATOR_FILTERS: LabLocatorFilters = {
   radius: 25,
   type: "all",
+  provider: "all",
   status: "all",
   rating: "all",
   sort: "distance",
@@ -30,6 +32,13 @@ export function getAppliedFilterChips(
     chips.push({
       key: "type",
       label: `Lab type: ${filters.type}`,
+    });
+  }
+
+  if (filters.provider !== "all") {
+    chips.push({
+      key: "provider",
+      label: `Provider: ${getProviderLabel(filters.provider)}`,
     });
   }
 
@@ -129,3 +138,5 @@ export function getDirectionsUrl(lab: Pick<LabCenter, "address" | "name">) {
   const query = encodeURIComponent(`${lab.name} ${lab.address}`);
   return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }
+
+export { isNationwideSearchQuery };

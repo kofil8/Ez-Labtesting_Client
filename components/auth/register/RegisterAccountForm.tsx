@@ -211,7 +211,7 @@ export function RegisterAccountForm() {
                 <Input
                   id='firstName'
                   autoComplete='given-name'
-                  className='h-12 rounded-xl border-slate-300 bg-slate-50/70 pl-10 focus-visible:ring-blue-200'
+                  className='block w-full h-12 rounded-xl border-slate-300 bg-slate-50/70 pl-10 focus-visible:ring-blue-200'
                   placeholder='John'
                   {...register("firstName")}
                 />
@@ -229,7 +229,7 @@ export function RegisterAccountForm() {
                 <Input
                   id='lastName'
                   autoComplete='family-name'
-                  className='h-12 rounded-xl border-slate-300 bg-slate-50/70 pl-10 focus-visible:ring-blue-200'
+                  className='block w-full h-12 rounded-xl border-slate-300 bg-slate-50/70 pl-10 focus-visible:ring-blue-200'
                   placeholder='Doe'
                   {...register("lastName")}
                 />
@@ -248,7 +248,7 @@ export function RegisterAccountForm() {
                   id='email'
                   type='email'
                   autoComplete='email'
-                  className='h-12 rounded-xl border-slate-300 bg-slate-50/70 pl-10 focus-visible:ring-blue-200'
+                  className='block w-full h-12 rounded-xl border-slate-300 bg-slate-50/70 pl-10 focus-visible:ring-blue-200'
                   placeholder='you@example.com'
                   {...register("email")}
                 />
@@ -282,7 +282,7 @@ export function RegisterAccountForm() {
                 required
                 autoComplete='new-password'
                 placeholder='Create a strong password'
-                className='h-12 rounded-xl border-slate-300 bg-slate-50/70 focus-visible:ring-blue-200'
+                className='block w-full h-12 rounded-xl border-slate-300 bg-slate-50/70 focus-visible:ring-blue-200'
                 {...register("password")}
                 error={errors.password?.message}
               />
@@ -319,7 +319,7 @@ export function RegisterAccountForm() {
                 required
                 autoComplete='new-password'
                 placeholder='Re-enter your password'
-                className='h-12 rounded-xl border-slate-300 bg-slate-50/70 focus-visible:ring-blue-200'
+                className='block w-full h-12 rounded-xl border-slate-300 bg-slate-50/70 focus-visible:ring-blue-200'
                 {...register("confirmPassword")}
                 error={errors.confirmPassword?.message}
               />
@@ -361,7 +361,7 @@ export function RegisterAccountForm() {
                 <Input
                   id='dateOfBirth'
                   type='date'
-                  className='h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
+                  className='block w-full h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
                   {...register("dateOfBirth")}
                 />
               </div>
@@ -409,7 +409,7 @@ export function RegisterAccountForm() {
                     <Input
                       id='addressLine1'
                       autoComplete='address-line1'
-                      className='h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
+                      className='block w-full h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
                       placeholder='123 Main Street'
                       {...register("addressLine1")}
                     />
@@ -427,7 +427,7 @@ export function RegisterAccountForm() {
                     <Input
                       id='addressLine2'
                       autoComplete='address-line2'
-                      className='h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
+                      className='block w-full h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
                       placeholder='Apt, suite, unit, building'
                       {...register("addressLine2")}
                     />
@@ -445,7 +445,7 @@ export function RegisterAccountForm() {
                     <Input
                       id='city'
                       autoComplete='address-level2'
-                      className='h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
+                      className='block w-full h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
                       placeholder='New York'
                       {...register("city")}
                     />
@@ -461,7 +461,7 @@ export function RegisterAccountForm() {
                       id='state'
                       autoComplete='address-level1'
                       maxLength={2}
-                      className='h-12 rounded-xl border-slate-300 bg-white pl-10 uppercase focus-visible:ring-blue-200'
+                      className='block w-full h-12 rounded-xl border-slate-300 bg-white pl-10 uppercase focus-visible:ring-blue-200'
                       placeholder='NY'
                       {...register("state", {
                         setValueAs: (value) =>
@@ -479,7 +479,7 @@ export function RegisterAccountForm() {
                     <Input
                       id='zipCode'
                       autoComplete='postal-code'
-                      className='h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
+                      className='block w-full h-12 rounded-xl border-slate-300 bg-white pl-10 focus-visible:ring-blue-200'
                       placeholder='10001'
                       {...register("zipCode")}
                     />

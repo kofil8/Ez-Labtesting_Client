@@ -15,6 +15,7 @@ import {
   getSupportTicketById,
   getSupportTickets,
 } from "@/lib/services/support.service";
+import { cn } from "@/lib/utils";
 import {
   BookOpen,
   CreditCard,
@@ -71,7 +72,7 @@ export default function HelpCenterPage() {
           setActiveTicketId(response.data[0].id);
         }
       } catch {
-        // keep UI usable without forcing error state
+        // Keep the page usable without forcing an error state.
       }
     };
 
@@ -99,267 +100,208 @@ export default function HelpCenterPage() {
     loadActiveTicket();
   }, [activeTicketId, isAuthenticated]);
 
-  const supportCategories = [
+  const quickLinks = [
     {
-      title: "Getting Started",
-      description: "Learn the basics of using EzLabTesting",
-      icon: BookOpen,
-      links: [
-        { label: "How to Book a Test", href: "/how-it-works" },
-        { label: "Creating an Account", href: "/register" },
-      ],
-    },
-    {
-      title: "Test Information",
-      description: "Everything about our lab tests",
+      title: "Browse tests",
+      description: "Review available lab tests and panels.",
+      href: "/tests",
       icon: TestTube,
-      links: [
-        { label: "Browse Available Tests", href: "/tests" },
-        { label: "Test Preparation Guidelines", href: "/test-preparation" },
-        { label: "Understanding Your Results", href: "/results" },
-      ],
     },
     {
-      title: "Orders & Payments",
-      description: "Manage your orders and billing",
+      title: "Orders and results",
+      description: "Track order status and open reports.",
+      href: "/results",
       icon: CreditCard,
-      links: [
-        { label: "View My Orders", href: "/dashboard/customer/orders" },
-        { label: "Payment Methods", href: "/checkout" },
-        { label: "Refund Policy", href: "/terms-of-service#refunds" },
-      ],
+    },
+    {
+      title: "How it works",
+      description: "See the full order-to-results flow.",
+      href: "/how-it-works",
+      icon: BookOpen,
+    },
+  ];
+
+  const contactCards = [
+    {
+      title: "Chat support",
+      description: "Fastest option for order and result questions.",
+      actionLabel: "Open chat",
+      onClick: openSupportAssistant,
+      icon: MessageCircle,
+    },
+    {
+      title: "Email support",
+      description: "Good for non-urgent questions and follow-up.",
+      actionLabel: "support@ezlabtesting.com",
+      href: "mailto:support@ezlabtesting.com",
+      icon: Mail,
+    },
+    {
+      title: "Phone support",
+      description: "Speak with the care team directly.",
+      actionLabel: "+1 (702) 483-7477",
+      href: "tel:+17024837477",
+      meta: "Mon-Fri, 8am-8pm EST",
+      icon: Phone,
     },
   ];
 
   return (
-    <div className='min-h-screen bg-gray-50 py-12'>
-      <div className='container mx-auto px-4 max-w-6xl'>
-        {/* Header */}
-        <div className='text-center mb-12'>
-          <h1 className='text-4xl font-bold text-gray-900 mb-4'>Help Center</h1>
-          <p className='text-xl text-gray-600'>
-            Find answers to your questions and get the support you need
-          </p>
-        </div>
-
-        {/* Contact Options */}
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-12'>
-          <Card className='hover:shadow-lg transition-shadow'>
-            <CardHeader>
-              <div className='w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4'>
-                <Mail className='h-6 w-6 text-blue-600' />
-              </div>
-              <CardTitle>Email Support</CardTitle>
-              <CardDescription>
-                Get help via email within 24 hours
-              </CardDescription>
-            </CardHeader>
-            <CardContent className='space-y-2'>
-              <a
-                href='mailto:support@ezlabtesting.com'
-                className='block text-blue-600 hover:underline'
-              >
-                support@ezlabtesting.com
-              </a>
-              <a
-                href='mailto:drramseymail@gmail.com'
-                className='block text-blue-600 hover:underline'
-              >
-                drramseymail@gmail.com
-              </a>
-            </CardContent>
-          </Card>
-
-          <Card className='hover:shadow-lg transition-shadow'>
-            <CardHeader>
-              <div className='w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4'>
-                <Phone className='h-6 w-6 text-green-600' />
-              </div>
-              <CardTitle>Phone Support</CardTitle>
-              <CardDescription>Speak with our team directly</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <a
-                href='tel:+17024837477'
-                className='text-blue-600 hover:underline'
-              >
-                +1(702) 483-7477
-              </a>
-              <p className='text-sm text-gray-500 mt-2'>Mon-Fri: 8am-8pm EST</p>
-            </CardContent>
-          </Card>
-
-          <Card className='hover:shadow-lg transition-shadow'>
-            <CardHeader>
-              <div className='w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-4'>
-                <MessageCircle className='h-6 w-6 text-purple-600' />
-              </div>
-              <CardTitle>Live Chat</CardTitle>
-              <CardDescription>Chat with us in real-time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <button
-                type='button'
-                className='text-blue-600 hover:underline'
-                onClick={openSupportAssistant}
-              >
-                Start Chat
-              </button>
-              <p className='text-sm text-gray-500 mt-2'>
-                Average wait: 2 minutes
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Support Categories */}
+    <div className='min-h-screen bg-[linear-gradient(180deg,#f7fbff_0%,#eef7ff_34%,#f8fbfd_100%)] py-10 sm:py-12'>
+      <div className='container mx-auto max-w-7xl px-4'>
         <div className='space-y-8'>
-          <h2 className='text-3xl font-bold text-gray-900 mb-6'>
-            Browse by Category
-          </h2>
+          <section className='rounded-[32px] border border-white/70 bg-[linear-gradient(135deg,rgba(14,165,233,0.12)_0%,rgba(255,255,255,0.96)_52%,rgba(16,185,129,0.08)_100%)] px-6 py-7 shadow-[0_24px_60px_-44px_rgba(15,23,42,0.35)] sm:px-8'>
+            <div className='max-w-3xl'>
+              <p className='text-xs font-semibold uppercase tracking-[0.24em] text-sky-700'>
+                Support
+              </p>
+              <h1 className='mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl'>
+                Get help without the noise
+              </h1>
+              <p className='mt-3 text-sm leading-7 text-slate-600 sm:text-base'>
+                Use chat for quick help, email for follow-up, or open a ticket to
+                keep one issue tracked in a single thread.
+              </p>
+            </div>
+          </section>
 
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {supportCategories.map((category) => (
+          <div className='grid gap-4 md:grid-cols-3'>
+            {contactCards.map((card) => (
               <Card
-                key={category.title}
-                className='hover:shadow-lg transition-shadow'
+                key={card.title}
+                className='rounded-[28px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'
               >
                 <CardHeader>
-                  <div className='w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4'>
-                    <category.icon className='h-6 w-6 text-blue-600' />
+                  <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700'>
+                    <card.icon className='h-5 w-5' />
                   </div>
-                  <CardTitle>{category.title}</CardTitle>
-                  <CardDescription>{category.description}</CardDescription>
+                  <CardTitle className='pt-2 text-lg'>{card.title}</CardTitle>
+                  <CardDescription>{card.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ul className='space-y-2'>
-                    {category.links.map((link) => (
-                      <li key={link.label}>
-                        <Link
-                          href={link.href}
-                          className='text-blue-600 hover:underline text-sm'
-                        >
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                <CardContent className='space-y-2'>
+                  {"onClick" in card ? (
+                    <button
+                      type='button'
+                      onClick={card.onClick}
+                      className='text-sm font-semibold text-sky-700 transition-colors hover:text-sky-800'
+                    >
+                      {card.actionLabel}
+                    </button>
+                  ) : (
+                    <a
+                      href={card.href}
+                      className='text-sm font-semibold text-sky-700 transition-colors hover:text-sky-800'
+                    >
+                      {card.actionLabel}
+                    </a>
+                  )}
+                  {"meta" in card && card.meta ? (
+                    <p className='text-xs text-slate-500'>{card.meta}</p>
+                  ) : null}
                 </CardContent>
               </Card>
             ))}
           </div>
-        </div>
 
-        {/* Quick Links */}
-        <div className='mt-12 bg-white rounded-lg shadow-md p-8'>
-          <h2 className='text-2xl font-bold text-gray-900 mb-6'>Quick Links</h2>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <Link href='/faqs' className='text-blue-600 hover:underline'>
-              → Frequently Asked Questions
-            </Link>
-            <Link
-              href='/test-preparation'
-              className='text-blue-600 hover:underline'
-            >
-              → Test Preparation Guidelines
-            </Link>
-            <Link
-              href='/privacy-policy'
-              className='text-blue-600 hover:underline'
-            >
-              → Privacy Policy
-            </Link>
-            <Link
-              href='/terms-of-service'
-              className='text-blue-600 hover:underline'
-            >
-              → Terms of Service
-            </Link>
-            <Link
-              href='/hipaa-notice'
-              className='text-blue-600 hover:underline'
-            >
-              → HIPAA Notice
-            </Link>
-            <Link
-              href='/accessibility'
-              className='text-blue-600 hover:underline'
-            >
-              → Accessibility Statement
-            </Link>
-          </div>
-        </div>
+          <Card className='rounded-[30px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'>
+            <CardHeader>
+              <CardTitle className='text-xl text-slate-950'>Common tasks</CardTitle>
+              <CardDescription>
+                Jump directly to the pages customers use most often.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='grid gap-3 md:grid-cols-3'>
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className='rounded-[22px] border border-slate-200/80 bg-slate-50/70 p-4 transition-colors hover:border-slate-300 hover:bg-white'
+                >
+                  <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm'>
+                    <link.icon className='h-5 w-5' />
+                  </div>
+                  <p className='mt-4 text-sm font-semibold text-slate-950'>
+                    {link.title}
+                  </p>
+                  <p className='mt-1 text-sm leading-6 text-slate-600'>
+                    {link.description}
+                  </p>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
 
-        {isAuthenticated && (
-          <div className='mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6'>
-            <Card className='lg:col-span-1'>
-              <CardHeader>
-                <CardTitle>Your Support Tickets</CardTitle>
-                <CardDescription>
-                  Open an issue or continue an existing conversation
-                </CardDescription>
-              </CardHeader>
-              <CardContent className='space-y-2'>
-                {ticketList.length === 0 ? (
-                  <p className='text-sm text-gray-500'>No tickets yet.</p>
+          {isAuthenticated ? (
+            <div className='grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]'>
+              <Card className='rounded-[30px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'>
+                <CardHeader>
+                  <CardTitle className='text-xl text-slate-950'>Your tickets</CardTitle>
+                  <CardDescription>
+                    Continue an existing conversation or open a new issue.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className='space-y-2'>
+                  {ticketList.length === 0 ? (
+                    <p className='text-sm text-slate-500'>No tickets yet.</p>
+                  ) : (
+                    ticketList.map((ticketItem) => (
+                      <button
+                        key={ticketItem.id}
+                        className={cn(
+                          "w-full rounded-[22px] border p-3 text-left transition-colors",
+                          activeTicketId === ticketItem.id
+                            ? "border-sky-500 bg-sky-50"
+                            : "border-slate-200 bg-slate-50/70 hover:bg-white",
+                        )}
+                        onClick={() => setActiveTicketId(ticketItem.id)}
+                      >
+                        <p className='text-sm font-semibold text-slate-900'>
+                          {ticketItem.subject}
+                        </p>
+                        <p className='mt-1 text-xs text-slate-500'>
+                          {ticketItem.status.replace("_", " ")} • {ticketItem.priority}
+                        </p>
+                      </button>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className='min-w-0'>
+                {loadingTicket ? (
+                  <Card className='rounded-[30px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'>
+                    <CardContent className='py-10 text-center text-slate-500'>
+                      Loading support conversation...
+                    </CardContent>
+                  </Card>
                 ) : (
-                  ticketList.map((ticketItem) => (
-                    <button
-                      key={ticketItem.id}
-                      className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                        activeTicketId === ticketItem.id
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:bg-gray-50"
-                      }`}
-                      onClick={() => setActiveTicketId(ticketItem.id)}
-                    >
-                      <p className='text-sm font-semibold text-gray-900'>
-                        {ticketItem.subject}
-                      </p>
-                      <p className='text-xs text-gray-500 mt-1'>
-                        {ticketItem.status.replace("_", " ")} ·{" "}
-                        {ticketItem.priority}
-                      </p>
-                    </button>
-                  ))
+                  <EnhancedSupportChat
+                    ticket={activeTicket}
+                    onNewTicket={async (subject, message) => {
+                      const created = await createSupportTicket({
+                        subject,
+                        message,
+                        category: "general",
+                        priority: "medium",
+                      });
+                      setActiveTicketId(created.id);
+                      const response = await getSupportTickets({
+                        page: 1,
+                        limit: 20,
+                      });
+                      setTicketList(response.data);
+                    }}
+                    onSendMessage={async (ticketId, message) => {
+                      await addSupportMessage(ticketId, message);
+                      const data = await getSupportTicketById(ticketId);
+                      setTicket(data);
+                    }}
+                  />
                 )}
-              </CardContent>
-            </Card>
-
-            <div className='lg:col-span-2'>
-              {loadingTicket ? (
-                <Card>
-                  <CardContent className='py-10 text-center text-gray-500'>
-                    Loading support conversation...
-                  </CardContent>
-                </Card>
-              ) : (
-                <EnhancedSupportChat
-                  ticket={activeTicket}
-                  onNewTicket={async (subject, message) => {
-                    const created = await createSupportTicket({
-                      subject,
-                      message,
-                      category: "general",
-                      priority: "medium",
-                    });
-                    setActiveTicketId(created.id);
-                    const response = await getSupportTickets({
-                      page: 1,
-                      limit: 20,
-                    });
-                    setTicketList(response.data);
-                  }}
-                  onSendMessage={async (ticketId, message) => {
-                    await addSupportMessage(ticketId, message);
-                    const data = await getSupportTicketById(ticketId);
-                    setTicket(data);
-                  }}
-                />
-              )}
+              </div>
             </div>
-          </div>
-        )}
+          ) : null}
+        </div>
       </div>
     </div>
   );

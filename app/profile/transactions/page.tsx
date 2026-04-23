@@ -2,10 +2,7 @@
 
 import { AccountSidebar } from "@/components/profile/AccountSidebar";
 import { TransactionHistory } from "@/components/transaction/TransactionHistory";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface Transaction {
   id: string;
@@ -25,76 +22,60 @@ interface Transaction {
 }
 
 export default function ProfileTransactionsPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  useEffect(() => {
-    // TODO: Fetch actual transactions from API
-    // For now, using mock data
-    setTransactions([
-      {
-        id: "txn-001",
-        type: "payment",
-        amount: 99.99,
-        status: "completed",
-        date: new Date().toISOString(),
-        description: "Blood Panel Test - Order #ORD-123",
-        paymentMethod: "card",
-        last4: "4242",
-      },
-      {
-        id: "txn-002",
-        type: "payment",
-        amount: 149.99,
-        status: "completed",
-        date: new Date(Date.now() - 86400000).toISOString(),
-        description: "Comprehensive Metabolic Test - Order #ORD-122",
-        paymentMethod: "card",
-        last4: "4242",
-      },
-      {
-        id: "txn-003",
-        type: "refund",
-        amount: 50,
-        status: "completed",
-        date: new Date(Date.now() - 172800000).toISOString(),
-        description: "Partial Refund - Order #ORD-121",
-        paymentMethod: "card",
-        last4: "4242",
-      },
-    ]);
-  }, []);
+  const [transactions] = useState<Transaction[]>([
+    {
+      id: "txn-001",
+      type: "payment",
+      amount: 99.99,
+      status: "completed",
+      date: "2026-04-22T09:00:00.000Z",
+      description: "Blood Panel Test - Order #ORD-123",
+      paymentMethod: "card",
+      last4: "4242",
+    },
+    {
+      id: "txn-002",
+      type: "payment",
+      amount: 149.99,
+      status: "completed",
+      date: "2026-04-21T09:00:00.000Z",
+      description: "Comprehensive Metabolic Test - Order #ORD-122",
+      paymentMethod: "card",
+      last4: "4242",
+    },
+    {
+      id: "txn-003",
+      type: "refund",
+      amount: 50,
+      status: "completed",
+      date: "2026-04-20T09:00:00.000Z",
+      description: "Partial Refund - Order #ORD-121",
+      paymentMethod: "card",
+      last4: "4242",
+    },
+  ]);
 
   return (
-    <main className='w-full bg-white'>
-      <div className='mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10'>
-        <div className='mb-6 flex items-center gap-2'>
-          <Button asChild variant='ghost' size='sm'>
-            <Link href='/profile' className='flex items-center gap-1'>
-              <ChevronLeft className='w-4 h-4' />
-              Back to Profile
-            </Link>
-          </Button>
-        </div>
-
-        <div className='grid gap-6 md:grid-cols-4'>
-          {/* Sidebar */}
+    <main className='min-h-screen bg-[linear-gradient(180deg,#f7fbff_0%,#eef7ff_34%,#f8fbfd_100%)]'>
+      <div className='mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8'>
+        <div className='grid gap-6 lg:grid-cols-[288px_minmax(0,1fr)]'>
           <AccountSidebar />
 
-          {/* Main Content */}
-          <div className='md:col-span-3'>
-            <div className='space-y-6'>
-              <div>
-                <h1 className='text-3xl font-bold text-slate-900'>
-                  Transactions
-                </h1>
-                <p className='mt-2 text-slate-600'>
-                  View your payment and refund history
-                </p>
-              </div>
+          <div className='space-y-6'>
+            <section className='rounded-[30px] border border-white/70 bg-[linear-gradient(135deg,rgba(14,165,233,0.12)_0%,rgba(255,255,255,0.96)_52%,rgba(16,185,129,0.08)_100%)] px-6 py-7 shadow-[0_24px_60px_-44px_rgba(15,23,42,0.35)] sm:px-8'>
+              <p className='text-xs font-semibold uppercase tracking-[0.24em] text-sky-700'>
+                Billing History
+              </p>
+              <h1 className='mt-2 text-3xl font-semibold tracking-tight text-slate-950'>
+                Payments and refunds
+              </h1>
+              <p className='mt-3 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base'>
+                Review recorded charges, refunds, and payment methods tied to your
+                account.
+              </p>
+            </section>
 
-              {/* Transaction History */}
-              <TransactionHistory transactions={transactions} />
-            </div>
+            <TransactionHistory transactions={transactions} />
           </div>
         </div>
       </div>

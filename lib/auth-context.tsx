@@ -4,6 +4,7 @@ import {
   AUTH_SESSION_EXPIRED_EVENT,
   logoutSession,
 } from "@/lib/auth/client";
+import { isAuthSessionError } from "@/lib/auth/session-errors";
 import { normalizeUserRole } from "@/lib/auth/shared";
 import { clientFetch, getApiUrl } from "@/lib/api-client";
 import { AuthState, User } from "@/types/user";
@@ -54,6 +55,15 @@ function buildLoggedOutState(): AuthState {
     user: null,
     token: null,
     isAuthenticated: false,
+    isLoading: false,
+  };
+}
+
+function buildResolvedState(user: User | null): AuthState {
+  return {
+    user,
+    token: null,
+    isAuthenticated: Boolean(user),
     isLoading: false,
   };
 }
@@ -149,8 +159,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       applyLoggedInState(user);
       return user;
     } catch (error) {
-      clearAuthState();
-      return null;
+      if (isAuthSessionError(error)) {
+        clearAuthState();
+        return null;
+      }
+
+      setAuthState((current) => buildResolvedState(current.user));
+      throw error;
     }
   }, [applyLoggedInState, clearAuthState]);
 
@@ -166,7 +181,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         if (isActive) {
-          clearAuthState();
+          if (isAuthSessionError(error)) {
+            clearAuthState();
+          } else {
+            setAuthState((current) => buildResolvedState(current.user));
+          }
         }
       }
     };

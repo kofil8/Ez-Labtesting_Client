@@ -35,7 +35,8 @@ function mapOrderToTransaction(order: UserOrderSummary): Transaction {
         ? "pending"
         : "completed";
 
-  const orderNumber = `ORD-${order.id.slice(0, 8).toUpperCase()}`;
+  const orderNumber =
+    order.orderNumber || `ORD-${order.id.slice(0, 8).toUpperCase()}`;
 
   return {
     id: order.id,

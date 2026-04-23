@@ -134,9 +134,10 @@ export default function CheckoutPatientInfoPage() {
         ) {
           setOrder({
             orderId: resumableOrder.id,
-            subtotal: getSubtotal(),
-            processingFee,
-            total: getTotal() + processingFee,
+            subtotal: resumableOrder.subtotal ?? getSubtotal(),
+            processingFee: resumableOrder.processingFee ?? processingFee,
+            total:
+              resumableOrder.total ?? getTotal() + processingFee,
           });
           setLastRecoveredAt(Date.now());
 

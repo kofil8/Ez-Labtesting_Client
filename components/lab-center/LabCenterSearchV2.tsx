@@ -19,6 +19,7 @@ interface LabCenterSearchV2Props {
   isBusy?: boolean;
   onSearch: (query: string) => Promise<void> | void;
   onUseMyLocation: () => Promise<void> | void;
+  placeholder?: string;
   value: string;
   onValueChange: (value: string) => void;
 }
@@ -28,6 +29,7 @@ export function LabCenterSearchV2({
   isBusy = false,
   onSearch,
   onUseMyLocation,
+  placeholder = "Search city, state, or ZIP",
   value,
   onValueChange,
 }: LabCenterSearchV2Props) {
@@ -176,7 +178,7 @@ export function LabCenterSearchV2({
               aria-expanded={isExpanded}
               aria-activedescendant={activeSuggestionId}
               className='h-14 w-full rounded-[22px] border border-slate-200/80 bg-white/80 pl-11 pr-14 text-sm text-slate-800 shadow-inner shadow-slate-100 outline-none transition focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10'
-              placeholder='Search city, state, or ZIP'
+              placeholder={placeholder}
               value={value}
               onChange={(event) => {
                 onValueChange(event.target.value);
@@ -206,7 +208,7 @@ export function LabCenterSearchV2({
             <Button
               type='button'
               variant='glass'
-              className='h-12 rounded-full px-4 text-slate-700'
+              className='h-12 w-full rounded-full px-4 text-slate-700 sm:w-auto'
               onClick={handleUseMyLocation}
               disabled={isBusy || isLocating}
             >
@@ -219,7 +221,7 @@ export function LabCenterSearchV2({
             </Button>
             <Button
               type='submit'
-              className='h-12 rounded-full bg-gradient-to-r from-sky-700 to-cyan-700 px-5 text-white shadow-lg shadow-sky-200/60 hover:from-sky-800 hover:to-cyan-800'
+              className='h-12 w-full rounded-full bg-gradient-to-r from-sky-700 to-cyan-700 px-5 text-white shadow-lg shadow-sky-200/60 hover:from-sky-800 hover:to-cyan-800 sm:w-auto'
               disabled={isBusy || !value.trim()}
             >
               {isBusy ? (

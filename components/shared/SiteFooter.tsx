@@ -22,7 +22,7 @@ const testsLinks = [
 
 const companyLinks = [
   { href: "/how-it-works", label: "How It Works" },
-  { href: "/lab-partner", label: "Lab Partners" },
+  { href: "/lab-partners", label: "Lab Partners" },
   { href: "/find-lab-center", label: "Draw Center Locator" },
   { href: "/faqs", label: "FAQs" },
   { href: "/help-center", label: "Help Center" },

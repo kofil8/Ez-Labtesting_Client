@@ -1,7 +1,7 @@
 "use client";
 
 import { getOrderDetails } from "@/lib/services/order.service";
-import { ClientLocation } from "@/types/lab-center";
+import { AssignedLabCenter, ClientLocation } from "@/types/lab-center";
 import { useEffect, useState } from "react";
 
 const FIND_LAB_CENTER_ACCESS_TTL_MS = 2 * 60 * 60 * 1000;
@@ -19,13 +19,47 @@ type FindLabCenterAccessPayload = {
 
 interface UseClientLocationFromOrderResult {
   clientLocation: ClientLocation | null;
+  orderContext: {
+    orderId: string | null;
+    requisitionPdfUrl: string | null;
+    assignedLab: AssignedLabCenter | null;
+    source: "checkout" | "dashboard" | null;
+  };
   isLoading: boolean;
+}
+
+function buildAssignedLabAddress(location: {
+  formattedAddress?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+}) {
+  if (location.formattedAddress?.trim()) {
+    return location.formattedAddress.trim();
+  }
+
+  return [location.address, location.city, location.state, location.zip]
+    .map((part) => (part || "").trim())
+    .filter(Boolean)
+    .join(", ");
 }
 
 export function useClientLocationFromOrder(): UseClientLocationFromOrderResult {
   const [clientLocation, setClientLocation] = useState<ClientLocation | null>(
     null,
   );
+  const [orderContext, setOrderContext] = useState<{
+    orderId: string | null;
+    requisitionPdfUrl: string | null;
+    assignedLab: AssignedLabCenter | null;
+    source: "checkout" | "dashboard" | null;
+  }>({
+    orderId: null,
+    requisitionPdfUrl: null,
+    assignedLab: null,
+    source: null,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -61,27 +95,64 @@ export function useClientLocationFromOrder(): UseClientLocationFromOrderResult {
           return;
         }
 
+        setOrderContext((current) => ({
+          ...current,
+          orderId: parsed.orderId || null,
+          source,
+        }));
+
         if (parsed.orderId) {
           try {
             const details = await getOrderDetails(parsed.orderId);
             const confirmed = details.confirmedLabLocation;
+            const assignedAddress = confirmed
+              ? buildAssignedLabAddress(confirmed)
+              : "";
+
+            if (!isCancelled) {
+              setOrderContext({
+                orderId: parsed.orderId,
+                requisitionPdfUrl: details.requisitionPdfUrl || null,
+                assignedLab:
+                  confirmed &&
+                  Boolean(
+                    confirmed.siteId ||
+                      confirmed.name ||
+                      assignedAddress ||
+                      confirmed.latitude !== undefined ||
+                      confirmed.longitude !== undefined,
+                  )
+                    ? {
+                        id: confirmed.siteId || parsed.orderId,
+                        siteId: confirmed.siteId,
+                        name:
+                          confirmed.name ||
+                          assignedAddress ||
+                          "Assigned draw center",
+                        address: assignedAddress || "Assigned draw center",
+                        latitude: confirmed.latitude,
+                        longitude: confirmed.longitude,
+                        city: confirmed.city,
+                        state: confirmed.state,
+                        zip: confirmed.zip,
+                        formattedAddress: confirmed.formattedAddress,
+                        source: "assigned",
+                      }
+                    : null,
+                source,
+              });
+            }
 
             if (
               !isCancelled &&
-              confirmed?.latitude !== undefined &&
-              confirmed?.longitude !== undefined
+              parsed.location
             ) {
               setClientLocation({
-                lat: confirmed.latitude,
-                lng: confirmed.longitude,
-                label:
-                  confirmed.name ||
-                  confirmed.formattedAddress ||
-                  confirmed.address ||
-                  "Client location",
-                address:
-                  confirmed.formattedAddress || confirmed.address || undefined,
-                source: "order",
+                lat: parsed.location.lat,
+                lng: parsed.location.lng,
+                label: parsed.location.address || "Client location",
+                address: parsed.location.address,
+                source: "payload",
               });
               return;
             }
@@ -115,5 +186,5 @@ export function useClientLocationFromOrder(): UseClientLocationFromOrderResult {
     };
   }, []);
 
-  return { clientLocation, isLoading };
+  return { clientLocation, orderContext, isLoading };
 }

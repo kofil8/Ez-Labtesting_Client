@@ -29,12 +29,6 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "ik.imagekit.io",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
         hostname: "ez-labtesting-bucket.s3.us-west-1.amazonaws.com",
         port: "",
         pathname: "/**",

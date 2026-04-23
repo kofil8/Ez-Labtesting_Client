@@ -54,9 +54,16 @@ export function normalizeUserRole(
   }
 
   const normalized = String(role).trim().toLowerCase().replace(/[-\s]+/g, "_");
+  const aliases: Record<string, NormalizedUserRole> = {
+    superadmin: "super_admin",
+    super_admin: "super_admin",
+    labpartner: "lab_partner",
+    lab_partner: "lab_partner",
+  };
+  const resolved = aliases[normalized] || normalized;
 
-  if (normalized in DASHBOARD_ROUTE_BY_ROLE) {
-    return normalized as NormalizedUserRole;
+  if (resolved in DASHBOARD_ROUTE_BY_ROLE) {
+    return resolved as NormalizedUserRole;
   }
 
   return null;

@@ -1,9 +1,9 @@
 import { CartSidebarWrapper } from "@/components/cart/CartSidebarWrapper";
 import { PublicRouteAssistant } from "@/components/chat/PublicRouteAssistant";
 import NotificationsProvider from "@/components/notifications/NotificationsProvider";
+import { AppChrome } from "@/components/shared/AppChrome";
 import { KallesBackground } from "@/components/shared/KallesBackground";
 import { LocationInitializer } from "@/components/shared/LocationInitializer";
-import { SiteHeader } from "@/components/shared/SiteHeader";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth-context";
 import { CartSidebarProvider } from "@/lib/cart-sidebar-context";
@@ -14,11 +14,74 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ez LabTesting",
+  title: {
+    default: "Ez LabTesting - HIPAA-Secure Lab Tests Online",
+    template: "%s | Ez LabTesting",
+  },
   description:
-    "Order lab tests online without a doctor's visit. HIPAA-secure, CLIA-certified labs, encrypted checkout.",
+    "Order lab tests online without a doctor's visit. HIPAA-secure, CLIA-certified labs, encrypted checkout. Access your lab results online securely.",
   keywords:
-    "lab tests, online lab testing, at-home lab tests, health testing, medical tests, blood tests, urine tests, diagnostic tests, wellness tests, health screenings",
+    "lab tests, online lab testing, health testing, medical tests, blood tests, diagnostic tests, wellness tests",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://ezlabtesting.com",
+    title: "Ez LabTesting - Complete Lab Tests Without a Doctor's Visit",
+    description:
+      "Get comprehensive lab results from CLIA-certified facilities. Order online, visit your nearest collection center, and access secure reports.",
+    siteName: "Ez LabTesting",
+    images: [
+      {
+        url: "https://ezlabtesting.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Ez LabTesting",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ez LabTesting - HIPAA-Secure Lab Tests Online",
+    description:
+      "Get comprehensive lab results from CLIA-certified facilities. Order online, visit your nearest collection center, and access secure reports.",
+    images: ["https://ezlabtesting.com/og-image.jpg"],
+  },
+  alternates: {
+    canonical: "https://ezlabtesting.com",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://ezlabtesting.com/#website",
+      url: "https://ezlabtesting.com/",
+      name: "Ez LabTesting",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: "https://ezlabtesting.com/tests?q={search_term_string}",
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "MedicalOrganization",
+      "@id": "https://ezlabtesting.com/#organization",
+      name: "Ez LabTesting",
+      url: "https://ezlabtesting.com/",
+      logo: "https://ezlabtesting.com/logo.png",
+      sameAs: [
+        "https://www.facebook.com/ezlabtesting",
+        "https://www.instagram.com/ezlabtesting",
+      ],
+      description:
+        "Comprehensive online lab testing services utilizing CLIA-certified facilities.",
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -33,6 +96,12 @@ export default function RootLayout({
       data-scroll-behavior='smooth'
       suppressHydrationWarning
     >
+      <head>
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className='antialiased custom-scrollbar' suppressHydrationWarning>
         <Script
           id='sanitize-browser-injected-attrs'
@@ -94,10 +163,7 @@ export default function RootLayout({
             <CheckoutProvider>
               <CartSidebarProvider>
                 <LocationInitializer />
-                <SiteHeader />
-                <div id='page-content' className='min-h-screen flex flex-col'>
-                  {children}
-                </div>
+                <AppChrome>{children}</AppChrome>
                 <PublicRouteAssistant />
                 <CartSidebarWrapper />
                 <Toaster />
