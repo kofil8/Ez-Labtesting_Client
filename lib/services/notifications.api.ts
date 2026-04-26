@@ -9,8 +9,10 @@ export interface NotificationItem {
   title: string;
   body: string;
   data: Record<string, unknown>;
+  priority?: string;
   isRead: boolean;
   createdAt: string;
+  sentAt?: string;
   readAt?: string;
 }
 
@@ -79,10 +81,18 @@ export function normalizeNotificationItem(value: unknown): NotificationItem {
     title: String(item.title ?? item.subject ?? "Notification"),
     body: String(item.body ?? item.message ?? ""),
     data: toRecord(item.data),
+    priority:
+      typeof item.priority === "string" ? item.priority : undefined,
     isRead: Boolean(item.isRead ?? item.read ?? false),
     createdAt: String(
       item.createdAt ?? item.created_at ?? new Date().toISOString(),
     ),
+    sentAt:
+      typeof item.sentAt === "string"
+        ? item.sentAt
+        : typeof item.sent_at === "string"
+          ? item.sent_at
+          : undefined,
     readAt:
       typeof item.readAt === "string"
         ? item.readAt

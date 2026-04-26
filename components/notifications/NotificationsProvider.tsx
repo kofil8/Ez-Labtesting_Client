@@ -136,6 +136,10 @@ export default function NotificationsProvider() {
           );
         };
 
+        const handleMissedNotification = (payload: NotificationItem) => {
+          handleNewNotification(payload);
+        };
+
         const handleCountUpdate = ({
           unreadCount,
         }: {
@@ -161,6 +165,7 @@ export default function NotificationsProvider() {
 
         socket.on("connect", handleConnect);
         socket.on("notification:new", handleNewNotification);
+        socket.on("notification:missed", handleMissedNotification);
         socket.on("notification:count-update", handleCountUpdate);
         socket.on("notification:read", handleRead);
         socket.on("notification:data", handleData);
@@ -169,6 +174,7 @@ export default function NotificationsProvider() {
         cleanup = () => {
           socket.off("connect", handleConnect);
           socket.off("notification:new", handleNewNotification);
+          socket.off("notification:missed", handleMissedNotification);
           socket.off("notification:count-update", handleCountUpdate);
           socket.off("notification:read", handleRead);
           socket.off("notification:data", handleData);

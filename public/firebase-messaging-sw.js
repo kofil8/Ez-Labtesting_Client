@@ -4,15 +4,9 @@ importScripts(
 importScripts(
   "https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js",
 );
+importScripts("/firebase-messaging-config.js");
 
-firebase.initializeApp({
-  apiKey: "AIzaSyDIeXtKJMTEnqnmZi44QoYuvgNehInBY0s",
-  authDomain: "ezlabtesting-a772a.firebaseapp.com",
-  projectId: "ezlabtesting-a772a",
-  storageBucket: "ezlabtesting-a772a.firebasestorage.app",
-  messagingSenderId: "44380631715",
-  appId: "1:44380631715:web:6739728ff2b1679aa08516",
-});
+firebase.initializeApp(self.__FIREBASE_CONFIG__);
 
 const messaging = firebase.messaging();
 

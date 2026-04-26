@@ -9,7 +9,9 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 // Check if auth bypass is enabled for testing
-const BYPASS_AUTH = process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
+const BYPASS_AUTH =
+  process.env.NODE_ENV !== "production" &&
+  process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
 
 export default function ChangePasswordPage() {
   const { user, isAuthenticated, isLoading } = useAuth();

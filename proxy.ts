@@ -32,6 +32,7 @@ const PUBLIC_ROUTES = [
   "/test-preparation",
   // Allow service worker and messaging scope without auth so push can register
   "/firebase-messaging-sw.js",
+  "/firebase-messaging-config.js",
   "/firebase-cloud-messaging-push-scope",
 ];
 
@@ -131,7 +132,9 @@ export function proxy(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
 
   // Bypass auth for development if enabled
-  const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
+  const bypassAuth =
+    process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
 
   // Extract role directly from JWT (authoritative source)
   const userRole = getRoleFromToken(accessToken);

@@ -84,7 +84,7 @@ export function TestLabAvailability({ test }: { test: PublicCatalogTest }) {
                   </div>
                   <p className='mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400'>
                     {lab.isAvailable && lab.labTestCode
-                      ? `Offer code: ${lab.labTestCode}`
+                      ? `Test Code: ${lab.labTestCode}`
                       : "No public storefront offer is currently shown for this lab."}
                   </p>
                 </div>

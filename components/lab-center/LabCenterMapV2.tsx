@@ -72,6 +72,10 @@ function toText(value: unknown): string {
   return "";
 }
 
+function stripHtml(value: string): string {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
 async function requestRoute({
   origin,
   destination,
@@ -666,10 +670,9 @@ function DirectionsPanel({
                   <div className='space-y-1'>
                     <p
                       className='text-sm leading-6 text-slate-800'
-                      dangerouslySetInnerHTML={{
-                        __html: step.instruction.replace(/<b>|<\/b>/g, ""),
-                      }}
-                    />
+                    >
+                      {stripHtml(step.instruction)}
+                    </p>
                     <p className='text-xs text-slate-500'>
                       {step.distance} {step.duration ? `• ${step.duration}` : ""}
                     </p>
