@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
+import { cn } from "@/lib/utils";
 import {
   markAllNotificationsRead,
   markNotificationRead,
@@ -10,13 +11,12 @@ import {
 import { useNotificationsStore } from "@/lib/store/notifications-store";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-export function NotificationsBell() {
+export function NotificationsBell({ className }: { className?: string }) {
   const { user } = useAuth();
-  const router = useRouter();
 
   const hydrated = useNotificationsStore((state) => state.hydrated);
   const ownerUserId = useNotificationsStore((state) => state.ownerUserId);
@@ -38,8 +38,7 @@ export function NotificationsBell() {
     return notifications;
   }, [hydrated, notifications, ownerUserId, user?.id]);
 
-  const unread =
-    hydrated && ownerUserId === user?.id ? unreadCount : 0;
+  const unread = hydrated && ownerUserId === user?.id ? unreadCount : 0;
 
   useEffect(() => {
     const onDocClick = (event: MouseEvent) => {
@@ -62,11 +61,7 @@ export function NotificationsBell() {
       });
     }
 
-    const clickAction = notification.data["clickAction"];
-    if (typeof clickAction === "string" && clickAction.startsWith("/")) {
-      setOpen(false);
-      router.push(clickAction);
-    }
+    setOpen(false);
   };
 
   const handleMarkAllRead = () => {
@@ -80,24 +75,24 @@ export function NotificationsBell() {
   };
 
   return (
-    <div ref={containerRef} className='relative'>
+    <div ref={containerRef} className={cn("relative", className)}>
       <Button
         variant='ghost'
         size='icon'
         onClick={() => setOpen((value) => !value)}
-        className='relative hover:bg-primary/10 transition-colors group h-11 w-11 touch-manipulation'
+        className='group relative h-10 w-10 shrink-0 rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950 sm:h-11 sm:w-11'
         aria-label={
           unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
         }
       >
-        <Bell className='h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform' />
+        <Bell className='h-5 w-5 transition-transform group-hover:scale-105' />
         <AnimatePresence>
           {unread > 0 && (
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className='absolute -top-1 -right-1 h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-gradient-to-br from-red-600 to-pink-600 text-[10px] sm:text-xs text-white flex items-center justify-center font-bold shadow-lg'
+              className='absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white shadow-sm'
             >
               {unread > 99 ? "99+" : unread}
             </motion.span>
@@ -114,14 +109,16 @@ export function NotificationsBell() {
             transition={{ duration: 0.15 }}
             role='dialog'
             aria-label='Notifications'
-            className='absolute right-0 mt-2 w-80 sm:w-96 rounded-xl border-2 border-blue-100 dark:border-cyan-900/40 bg-white dark:bg-gray-900 shadow-xl z-50'
+            className='fixed left-3 right-3 top-16 z-[100] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96'
           >
-            <div className='flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-800'>
-              <p className='text-sm font-bold'>Notifications</p>
+            <div className='flex items-center justify-between border-b border-slate-200 px-4 py-3'>
+              <p className='text-sm font-semibold text-slate-950'>
+                Notifications
+              </p>
               <Button
                 variant='ghost'
                 size='sm'
-                className='text-xs'
+                className='text-xs text-slate-600'
                 onClick={handleMarkAllRead}
                 disabled={items.length === 0 || unread === 0 || isMarkingAll}
               >
@@ -131,7 +128,7 @@ export function NotificationsBell() {
 
             <div className='max-h-80 overflow-auto py-1'>
               {items.length === 0 ? (
-                <div className='px-4 py-8 text-center text-sm text-muted-foreground'>
+                <div className='px-4 py-8 text-center text-sm text-slate-500'>
                   No notifications yet
                 </div>
               ) : (
@@ -139,26 +136,35 @@ export function NotificationsBell() {
                   <button
                     key={notification.id}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`w-full text-left px-4 py-3 flex flex-col gap-1 hover:bg-muted transition-colors ${
+                    className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors hover:bg-slate-50 ${
                       notification.isRead ? "opacity-70" : ""
                     }`}
                   >
                     <div className='flex items-center justify-between gap-3'>
-                      <span className='text-sm font-semibold truncate'>
+                      <span className='min-w-0 truncate text-sm font-semibold text-slate-950'>
                         {notification.title}
                       </span>
-                      <span className='text-[11px] text-muted-foreground shrink-0'>
+                      <span className='shrink-0 text-[11px] text-slate-500'>
                         {new Date(notification.createdAt).toLocaleString()}
                       </span>
                     </div>
                     {notification.body && (
-                      <span className='text-sm text-muted-foreground line-clamp-2'>
+                      <span className='line-clamp-2 text-sm text-slate-600'>
                         {notification.body}
                       </span>
                     )}
                   </button>
                 ))
               )}
+            </div>
+            <div className='border-t border-slate-200 px-4 py-3'>
+              <Link
+                href='/dashboard/customer/notifications'
+                onClick={() => setOpen(false)}
+                className='inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600'
+              >
+                View all notifications
+              </Link>
             </div>
           </motion.div>
         )}
