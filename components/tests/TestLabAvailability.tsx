@@ -9,7 +9,13 @@ import {
 } from "@/lib/tests/storefront-display";
 import { formatCurrency } from "@/lib/utils";
 import type { PublicCatalogTest } from "@/types/public-test";
-import { Clock3, ShieldCheck, Wallet } from "lucide-react";
+import {
+  CalendarDays,
+  Clock3,
+  FileBadge2,
+  ShieldCheck,
+  Wallet,
+} from "lucide-react";
 
 export function TestLabAvailability({ test }: { test: PublicCatalogTest }) {
   const labCards = buildStorefrontLabCards(test);
@@ -114,6 +120,30 @@ export function TestLabAvailability({ test }: { test: PublicCatalogTest }) {
                     {formatTurnaroundDaysLabel(lab.turnaroundDays)}
                   </p>
                 </div>
+                {lab.code === "ACCESS" && lab.cptCode ? (
+                  <div className='rounded-xl border border-slate-200 bg-white p-3'>
+                    <p className='text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500'>
+                      CPT Code
+                    </p>
+                    <p className='mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-white'>
+                      <FileBadge2 className='h-3.5 w-3.5 text-sky-700' />
+                      <span className='break-words'>{lab.cptCode}</span>
+                    </p>
+                  </div>
+                ) : null}
+                {lab.code === "ACCESS" && lab.setUpSchedule?.length ? (
+                  <div className='rounded-xl border border-slate-200 bg-white p-3'>
+                    <p className='text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500'>
+                      Setup Schedule
+                    </p>
+                    <p className='mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-white'>
+                      <CalendarDays className='h-3.5 w-3.5 text-sky-700' />
+                      <span className='break-words'>
+                        {lab.setUpSchedule.join(", ")}
+                      </span>
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </div>
           ))}

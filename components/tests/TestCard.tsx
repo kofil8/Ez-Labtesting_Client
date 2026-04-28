@@ -240,7 +240,7 @@ export function TestCard({
             asChild
             className='h-11 w-full rounded-full bg-sky-600 text-white hover:bg-sky-700'
           >
-            <Link href={`/tests/${test.slug}`}>
+            <Link href={`/tests/${test.slug}`} scroll>
               View Details
               <ArrowRight className='ml-2 h-4 w-4' />
             </Link>

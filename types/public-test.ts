@@ -45,6 +45,7 @@ export interface PublicCatalogTest {
   specimenType: string;
   turnaround: number;
   cptCode?: string;
+  setUpSchedule?: string[];
   preparation?: string;
   keywords?: string[];
   requiresFasting?: boolean;
