@@ -1,6 +1,7 @@
 import { handleAuthFailure, refreshSession } from "@/lib/auth/client";
 import { isAuthSessionErrorMessage } from "@/lib/auth/session-errors";
 import { getApiOrigin } from "@/lib/api/config";
+import { getCartDeviceId } from "@/lib/store/cart-store";
 import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
@@ -44,6 +45,9 @@ export async function connectNotificationSocket() {
     socket = io(getSocketBaseUrl(), {
       transports: ["websocket", "polling"],
       withCredentials: true,
+      auth: {
+        deviceId: getCartDeviceId(),
+      },
     });
     socketToken = "cookie-session";
 

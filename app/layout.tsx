@@ -2,6 +2,7 @@ import { CartSidebarWrapper } from "@/components/cart/CartSidebarWrapper";
 import { PublicRouteAssistant } from "@/components/chat/PublicRouteAssistant";
 import NotificationsProvider from "@/components/notifications/NotificationsProvider";
 import { AppChrome } from "@/components/shared/AppChrome";
+import { CartInitializer } from "@/components/shared/CartInitializer";
 import { KallesBackground } from "@/components/shared/KallesBackground";
 import { LocationInitializer } from "@/components/shared/LocationInitializer";
 import { Toaster } from "@/components/ui/toaster";
@@ -158,6 +159,7 @@ export default function RootLayout({
         <KallesBackground />
 
         <AuthProvider>
+          <CartInitializer />
           <NotificationsProvider />
           <RestrictionStatusProvider>
             <CheckoutProvider>

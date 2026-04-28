@@ -421,7 +421,7 @@ export default function CheckoutVisitLabPage() {
 
               <Button
                 variant='ghost'
-                onClick={() => router.push("/transactions")}
+                onClick={() => router.push("/dashboard/customer/transactions")}
               >
                 View Orders
               </Button>

@@ -71,7 +71,7 @@ export function ProfileReadiness({
       </div>
 
       <Button asChild variant='outline' className='mt-5 w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700'>
-        <Link href='/profile'>Update Profile</Link>
+        <Link href='/dashboard/customer/profile'>Update Profile</Link>
       </Button>
     </section>
   );

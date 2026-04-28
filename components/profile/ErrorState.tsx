@@ -31,7 +31,7 @@ export function ErrorState({
           {action}
           {!action && sessionExpired && (
             <Button asChild aria-label='Sign in to continue'>
-              <Link href='/login?from=/profile'>Sign In</Link>
+              <Link href='/login?from=/dashboard/customer/profile'>Sign In</Link>
             </Button>
           )}
           {!action && !sessionExpired && (
@@ -40,7 +40,7 @@ export function ErrorState({
               variant='outline'
               aria-label='Retry loading profile'
             >
-              <Link href='/profile'>Retry</Link>
+              <Link href='/dashboard/customer/profile'>Retry</Link>
             </Button>
           )}
         </div>

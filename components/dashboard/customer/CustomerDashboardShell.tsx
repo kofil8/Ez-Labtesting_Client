@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/lib/auth-context";
 import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
+import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { CustomerSidebar } from "./CustomerSidebar";
@@ -38,6 +39,14 @@ export function CustomerDashboardShell({
           isSigningOut={isSigningOut}
           isPanelHidden={isPanelHidden}
           onTogglePanel={() => setIsPanelHidden((current) => !current)}
+        />
+
+        <div
+          aria-hidden='true'
+          className={cn(
+            "hidden shrink-0 xl:block",
+            isPanelHidden ? "w-[84px]" : "w-[268px]",
+          )}
         />
 
         <div className='flex min-w-0 flex-1 flex-col'>

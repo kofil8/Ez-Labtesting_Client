@@ -3,10 +3,12 @@
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { Button } from "@/components/ui/button";
 import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
+import { cn } from "@/lib/utils";
 import {
   CalendarDays,
   MapPinned,
   Search,
+  ShieldCheck,
   UserRoundCheck,
 } from "lucide-react";
 import Link from "next/link";
@@ -16,6 +18,34 @@ import {
   formatMemberSince,
   getProfileReadinessPercent,
 } from "./dashboard-helpers";
+
+function formatAccountStatus(status?: string) {
+  const normalized = status?.trim().toUpperCase() || "ACTIVE";
+
+  return normalized
+    .toLowerCase()
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function getAccountStatusClasses(status?: string) {
+  const normalized = status?.trim().toUpperCase() || "ACTIVE";
+
+  if (normalized === "ACTIVE") {
+    return "border-emerald-100 bg-emerald-50/80 text-emerald-700";
+  }
+
+  if (normalized === "DISABLED") {
+    return "border-amber-100 bg-amber-50/80 text-amber-700";
+  }
+
+  if (normalized === "BLOCKED") {
+    return "border-rose-100 bg-rose-50/80 text-rose-700";
+  }
+
+  return "border-blue-100 bg-white/85 text-slate-950";
+}
 
 export function DashboardWelcome({
   viewer,
@@ -46,7 +76,7 @@ export function DashboardWelcome({
             </div>
 
             <Link
-              href='/profile'
+              href='/dashboard/customer/profile'
               aria-label='Open profile'
               className='relative block h-14 w-14 shrink-0 shadow-lg shadow-blue-100/60'
             >
@@ -54,7 +84,7 @@ export function DashboardWelcome({
             </Link>
           </div>
 
-          <div className='mt-6 grid gap-3 sm:grid-cols-2'>
+          <div className='mt-6 grid gap-3 sm:grid-cols-3'>
             <div className='rounded-xl border border-blue-100 bg-white/85 px-4 py-3 shadow-sm'>
               <div className='flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500'>
                 <UserRoundCheck className='h-4 w-4 text-teal-600' />
@@ -71,6 +101,20 @@ export function DashboardWelcome({
               </div>
               <p className='mt-2 text-sm font-semibold text-slate-950'>
                 {formatMemberSince(viewer.createdAt)}
+              </p>
+            </div>
+            <div
+              className={cn(
+                "rounded-xl border px-4 py-3 shadow-sm",
+                getAccountStatusClasses(viewer.status),
+              )}
+            >
+              <div className='flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500'>
+                <ShieldCheck className='h-4 w-4 text-current' />
+                Account status
+              </div>
+              <p className='mt-2 text-sm font-semibold'>
+                {formatAccountStatus(viewer.status)}
               </p>
             </div>
           </div>
@@ -103,7 +147,7 @@ export function DashboardWelcome({
               </Link>
             </Button>
             <Button asChild variant='ghost' className='w-full hover:bg-blue-50 hover:text-blue-700'>
-              <Link href='/profile/orders'>View Orders</Link>
+              <Link href='/dashboard/customer/orders'>View Orders</Link>
             </Button>
           </div>
         </div>

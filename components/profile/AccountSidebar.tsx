@@ -28,27 +28,27 @@ export function AccountSidebar() {
   const menuItems: SidebarItem[] = [
     {
       label: "Profile",
-      href: "/profile",
+      href: "/dashboard/customer/profile",
       icon: <User className='w-4 h-4' />,
     },
     {
       label: "Orders",
-      href: "/profile/orders",
+      href: "/dashboard/customer/orders",
       icon: <ShoppingBag className='w-4 h-4' />,
     },
     {
       label: "Transactions",
-      href: "/profile/transactions",
+      href: "/dashboard/customer/transactions",
       icon: <ReceiptText className='w-4 h-4' />,
     },
     {
       label: "Change Password",
-      href: "/change-password",
+      href: "/dashboard/customer/change-password",
       icon: <Lock className='w-4 h-4' />,
     },
     {
       label: "Security",
-      href: "/profile/security",
+      href: "/dashboard/customer/security",
       icon: <Shield className='w-4 h-4' />,
     },
   ];

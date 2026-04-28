@@ -234,7 +234,9 @@ export function ResultsList() {
             Sign in to view orders, requisitions, and lab results.
           </p>
           <Button asChild className='rounded-full'>
-            <Link href='/login?from=/results'>Go to Sign In</Link>
+            <Link href='/login?from=/dashboard/customer/results'>
+              Go to Sign In
+            </Link>
           </Button>
         </CardContent>
       </Card>

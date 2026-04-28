@@ -22,7 +22,7 @@ export function HeaderAuthButtons({
       {isAuthenticated ? (
         <>
           <Link
-            href='/profile'
+            href='/dashboard/customer/profile'
             onClick={onLinkClick}
             aria-label='Go to profile'
           >

@@ -268,12 +268,12 @@ export function OrderTrackingCard({
 
           {tracking.status === "failed" ? (
             <Button variant='ghost' asChild className='rounded-full'>
-              <Link href='/help-center'>Get help</Link>
+              <Link href='/dashboard/customer/support'>Get help</Link>
             </Button>
           ) : null}
 
           <Button variant='ghost' asChild className='rounded-full'>
-            <Link href={`/results/${orderId}`}>
+            <Link href={`/dashboard/customer/results/${orderId}`}>
               <Eye className='h-4 w-4' />
               Details
             </Link>

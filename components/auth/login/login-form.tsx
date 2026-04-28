@@ -128,7 +128,9 @@ export function LoginForm() {
               title: "Two-factor authentication is required for your account.",
             });
             setTimeout(() => {
-              router.push("/profile/security?setup=required&mandatory=true");
+              router.push(
+                "/dashboard/customer/security?setup=required&mandatory=true",
+              );
             }, 1000);
             return;
           }
@@ -142,7 +144,9 @@ export function LoginForm() {
               title: "Enable two-factor authentication for extra security.",
             });
             setTimeout(() => {
-              router.push("/profile/security?setup=suggested&firstLogin=true");
+              router.push(
+                "/dashboard/customer/security?setup=suggested&firstLogin=true",
+              );
             }, 1000);
             return;
           }

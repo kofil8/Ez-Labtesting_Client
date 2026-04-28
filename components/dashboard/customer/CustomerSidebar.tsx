@@ -37,7 +37,7 @@ export function CustomerSidebar({
   return (
     <aside
       className={cn(
-        "relative hidden shrink-0 border-r border-blue-100 bg-white px-4 py-5 shadow-sm transition-[width] duration-300 xl:flex xl:flex-col",
+        "fixed inset-y-0 left-0 z-40 hidden h-screen shrink-0 overflow-hidden border-r border-blue-100 bg-white px-4 py-5 shadow-sm xl:flex xl:flex-col min-[1680px]:left-[calc((100vw-1680px)/2)]",
         isPanelHidden ? "w-[84px]" : "w-[268px]",
       )}
     >
@@ -96,7 +96,7 @@ export function CustomerSidebar({
       )}
 
       <Link
-        href='/profile'
+        href='/dashboard/customer/profile'
         aria-label='Open profile'
         title='Profile'
         className={cn("mt-5 flex", isPanelHidden ? "justify-center" : "hidden")}
@@ -131,27 +131,36 @@ export function CustomerSidebar({
       <div className='mt-auto space-y-3 pt-6'>
         {!isPanelHidden && (
           <div className='rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-3'>
-          <p className='text-sm font-semibold text-slate-950'>
-            Order lab testing
-          </p>
-          <p className='mt-1 text-xs leading-5 text-slate-600'>
-            Browse clinical tests or locate a nearby collection center.
-          </p>
-          <div className='mt-3 grid gap-2'>
-            <Button asChild size='sm' className='bg-blue-600 hover:bg-blue-700'>
-              <Link href='/tests'>
-                <Search className='h-4 w-4' />
-                Browse Tests
-              </Link>
-            </Button>
-            <Button asChild size='sm' variant='outline' className='border-blue-200 hover:bg-blue-50 hover:text-blue-700'>
-              <Link href='/find-lab-center'>
-                <MapPinned className='h-4 w-4' />
-                Find Lab Center
-              </Link>
-            </Button>
+            <p className='text-sm font-semibold text-slate-950'>
+              Order lab testing
+            </p>
+            <p className='mt-1 text-xs leading-5 text-slate-600'>
+              Browse clinical tests or locate a nearby collection center.
+            </p>
+            <div className='mt-3 grid gap-2'>
+              <Button
+                asChild
+                size='sm'
+                className='bg-blue-600 hover:bg-blue-700'
+              >
+                <Link href='/tests'>
+                  <Search className='h-4 w-4' />
+                  Browse Tests
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size='sm'
+                variant='outline'
+                className='border-blue-200 hover:bg-blue-50 hover:text-blue-700'
+              >
+                <Link href='/find-lab-center'>
+                  <MapPinned className='h-4 w-4' />
+                  Find Lab Center
+                </Link>
+              </Button>
+            </div>
           </div>
-        </div>
         )}
 
         <Button

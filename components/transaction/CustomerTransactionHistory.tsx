@@ -121,7 +121,9 @@ export function CustomerTransactionHistory() {
             Please sign in to view your transaction history.
           </p>
           <Button asChild>
-            <Link href='/login?from=/transactions'>Go to Sign In</Link>
+            <Link href='/login?from=/dashboard/customer/transactions'>
+              Go to Sign In
+            </Link>
           </Button>
         </CardContent>
       </Card>

@@ -105,6 +105,44 @@ function isCustomerOnlyPublicPath(pathname: string) {
   );
 }
 
+function getCanonicalCustomerDashboardPath(pathname: string): string | null {
+  if (pathname === "/profile" || pathname === "/profile/pages/personal") {
+    return "/dashboard/customer/profile";
+  }
+
+  if (pathname === "/profile/orders") {
+    return "/dashboard/customer/orders";
+  }
+
+  if (pathname === "/profile/transactions" || pathname === "/transactions") {
+    return "/dashboard/customer/transactions";
+  }
+
+  if (pathname === "/profile/security") {
+    return "/dashboard/customer/security";
+  }
+
+  if (pathname === "/change-password") {
+    return "/dashboard/customer/change-password";
+  }
+
+  if (pathname === "/results") {
+    return "/dashboard/customer/results";
+  }
+
+  const pendingResultMatch = pathname.match(/^\/results\/([^/]+)\/pending$/);
+  if (pendingResultMatch) {
+    return `/dashboard/customer/results/${pendingResultMatch[1]}/pending`;
+  }
+
+  const resultMatch = pathname.match(/^\/results\/([^/]+)$/);
+  if (resultMatch) {
+    return `/dashboard/customer/results/${resultMatch[1]}`;
+  }
+
+  return null;
+}
+
 function getRoleFromToken(token?: string): NormalizedUserRole | null {
   if (!token) return null;
 
@@ -138,6 +176,7 @@ export function proxy(req: NextRequest) {
 
   // Extract role directly from JWT (authoritative source)
   const userRole = getRoleFromToken(accessToken);
+  const canonicalCustomerPath = getCanonicalCustomerDashboardPath(pathname);
 
   // Reduced logging - only log in development and only non-asset requests
   if (
@@ -147,6 +186,22 @@ export function proxy(req: NextRequest) {
     console.log(
       `[PROXY] Path: ${pathname}, Token: ${accessToken ? "exists" : "none"}, Role: ${userRole}`,
     );
+  }
+
+  if (canonicalCustomerPath) {
+    if (!bypassAuth && !accessToken) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set(
+        "from",
+        `${canonicalCustomerPath}${search || ""}`,
+      );
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const canonicalUrl = req.nextUrl.clone();
+    canonicalUrl.pathname = canonicalCustomerPath;
+    return NextResponse.redirect(canonicalUrl);
   }
 
   // IMPORTANT: Check protected paths first (checkout, orders, payment)

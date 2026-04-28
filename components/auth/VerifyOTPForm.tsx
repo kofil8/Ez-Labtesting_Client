@@ -156,7 +156,7 @@ export function VerifyOTPForm() {
           setTimeout(() => {
             const from = searchParams.get("from");
             if (fromLogin) {
-              router.push(from || "/results");
+              router.push(from || "/dashboard/customer/results");
             } else {
               // New registration - redirect to login with verified flag
               const loginUrl =

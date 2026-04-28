@@ -117,7 +117,7 @@ export function TransactionSummaryCard() {
       <CardFooter className='border-t pt-3'>
         <Button asChild variant='outline' size='sm' className='w-full'>
           <Link
-            href='/profile/transactions'
+            href='/dashboard/customer/transactions'
             className='flex items-center justify-between'
           >
             View History

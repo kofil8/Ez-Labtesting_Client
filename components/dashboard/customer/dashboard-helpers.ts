@@ -156,7 +156,7 @@ export function formatCompactDate(value?: string) {
 }
 
 export function getOrderHref(order: CustomerDashboardOrder) {
-  return `/results/${order.id}`;
+  return `/dashboard/customer/results/${order.id}`;
 }
 
 export function isResultsReady(order: CustomerDashboardOrder) {
@@ -297,25 +297,25 @@ export function buildProfileChecklist(
     {
       label: "Contact phone",
       ready: hasPhone,
-      href: "/profile",
+      href: "/dashboard/customer/profile",
       helper: "Used for order and support follow-up.",
     },
     {
       label: "Date of birth",
       ready: hasDob,
-      href: "/profile",
+      href: "/dashboard/customer/profile",
       helper: "Needed for patient identity matching.",
     },
     {
       label: "Address",
       ready: hasAddress,
-      href: "/profile",
+      href: "/dashboard/customer/profile",
       helper: "Helps avoid checkout and billing delays.",
     },
     {
       label: "Two-factor security",
       ready: Boolean(viewer.mfaEnabled),
-      href: "/profile/security",
+      href: "/dashboard/customer/security",
       helper: "Recommended for result and account access.",
     },
   ];
@@ -459,7 +459,7 @@ export function getNextClinicalAction(
       description: `${latestResult.primaryTest?.testName || "Your completed lab report"} was updated ${formatSafeDate(latestResult.updatedAt)}.`,
       primaryHref: getOrderHref(latestResult),
       primaryLabel: "View Result",
-      secondaryHref: "/results",
+      secondaryHref: "/dashboard/customer/results",
       secondaryLabel: "All Results",
       externalHref: latestResult.requisitionPdfUrl || undefined,
       externalLabel: latestResult.requisitionPdfUrl ? "Download Requisition" : undefined,
@@ -493,7 +493,7 @@ export function getNextClinicalAction(
       description: `${status.label}. Latest update: ${formatSafeDate(activeOrder.updatedAt)}.`,
       primaryHref: getOrderHref(activeOrder),
       primaryLabel: "Track Order",
-      secondaryHref: "/profile/orders",
+      secondaryHref: "/dashboard/customer/orders",
       secondaryLabel: "All Orders",
       order: activeOrder,
     };
@@ -506,9 +506,9 @@ export function getNextClinicalAction(
       title: "Complete your patient record",
       description:
         "Add the remaining patient details to reduce checkout, requisition, and result-access delays.",
-      primaryHref: "/profile",
+      primaryHref: "/dashboard/customer/profile",
       primaryLabel: "Update Profile",
-      secondaryHref: "/profile/security",
+      secondaryHref: "/dashboard/customer/security",
       secondaryLabel: "Security Settings",
     };
   }

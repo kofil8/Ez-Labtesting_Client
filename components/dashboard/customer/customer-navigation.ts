@@ -2,7 +2,9 @@ import {
   FileCheck2,
   LayoutDashboard,
   LifeBuoy,
+  Lock,
   PackageCheck,
+  ReceiptText,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
@@ -16,11 +18,25 @@ export type CustomerNavItem = {
 
 export const CUSTOMER_NAV_ITEMS: CustomerNavItem[] = [
   { href: "/dashboard/customer", label: "Overview", icon: LayoutDashboard },
-  { href: "/profile/orders", label: "Orders", icon: PackageCheck },
-  { href: "/results", label: "Results", icon: FileCheck2 },
-  { href: "/profile", label: "Profile", icon: UserRound },
-  { href: "/profile/security", label: "Security", icon: ShieldCheck },
-  { href: "/help-center", label: "Support", icon: LifeBuoy },
+  { href: "/dashboard/customer/orders", label: "Orders", icon: PackageCheck },
+  { href: "/dashboard/customer/results", label: "Results", icon: FileCheck2 },
+  { href: "/dashboard/customer/profile", label: "Profile", icon: UserRound },
+  {
+    href: "/dashboard/customer/transactions",
+    label: "Transactions",
+    icon: ReceiptText,
+  },
+  {
+    href: "/dashboard/customer/change-password",
+    label: "Password",
+    icon: Lock,
+  },
+  {
+    href: "/dashboard/customer/security",
+    label: "Security",
+    icon: ShieldCheck,
+  },
+  { href: "/dashboard/customer/support", label: "Support", icon: LifeBuoy },
 ];
 
 export function isCustomerNavActive(pathname: string | null, href: string) {

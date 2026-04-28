@@ -25,7 +25,7 @@ export function SupportCard() {
 
       <div className='mt-5 grid gap-2'>
         <Button asChild className='w-full bg-blue-600 hover:bg-blue-700'>
-          <Link href='/help-center'>
+          <Link href='/dashboard/customer/support'>
             <MessageCircle className='h-4 w-4' />
             Contact Support
           </Link>

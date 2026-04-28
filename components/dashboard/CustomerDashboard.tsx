@@ -107,7 +107,7 @@ function getActionCenter(order?: UserOrderSummary | null): DashboardAction {
         "Start a new lab order whenever you need it. Results and requisitions will show up here automatically.",
       primaryHref: "/tests",
       primaryLabel: "Browse Tests",
-      secondaryHref: "/help-center",
+      secondaryHref: "/dashboard/customer/support",
       secondaryLabel: "Get Support",
     };
   }
@@ -119,9 +119,9 @@ function getActionCenter(order?: UserOrderSummary | null): DashboardAction {
       title: `${order.orderNumber} is waiting for payment`,
       description:
         "Complete payment to generate your requisition and move the order into lab processing.",
-      primaryHref: "/results",
+      primaryHref: "/dashboard/customer/results",
       primaryLabel: "Review Order Status",
-      secondaryHref: "/help-center",
+      secondaryHref: "/dashboard/customer/support",
       secondaryLabel: "Contact Support",
     };
   }
@@ -131,9 +131,9 @@ function getActionCenter(order?: UserOrderSummary | null): DashboardAction {
       title: `${order.orderNumber} is under review`,
       description:
         "Our team is checking this order before final lab submission. You do not need to place a duplicate order.",
-      primaryHref: "/results",
+      primaryHref: "/dashboard/customer/results",
       primaryLabel: "Track This Order",
-      secondaryHref: "/help-center",
+      secondaryHref: "/dashboard/customer/support",
       secondaryLabel: "Contact Support",
     };
   }
@@ -143,7 +143,7 @@ function getActionCenter(order?: UserOrderSummary | null): DashboardAction {
       title: `${order.orderNumber} is ready for collection`,
       description:
         "Download your requisition and bring it with a valid ID when you visit the lab.",
-      primaryHref: "/results",
+      primaryHref: "/dashboard/customer/results",
       primaryLabel: "View Order Details",
       secondaryHref: "/find-lab-center",
       secondaryLabel: "Find a Lab Center",
@@ -155,9 +155,9 @@ function getActionCenter(order?: UserOrderSummary | null): DashboardAction {
       title: `${order.orderNumber} is moving through fulfillment`,
       description:
         "Payment is confirmed and your lab submission is being prepared. Check back here for requisition and results updates.",
-      primaryHref: "/results",
+      primaryHref: "/dashboard/customer/results",
       primaryLabel: "Track This Order",
-      secondaryHref: "/help-center",
+      secondaryHref: "/dashboard/customer/support",
       secondaryLabel: "Get Support",
     };
   }
@@ -166,9 +166,9 @@ function getActionCenter(order?: UserOrderSummary | null): DashboardAction {
     title: `${order.orderNumber} needs your attention`,
     description:
       "There is an issue blocking this order. Review the latest order status or contact support for help.",
-    primaryHref: "/results",
+    primaryHref: "/dashboard/customer/results",
     primaryLabel: "Review Order",
-    secondaryHref: "/help-center",
+    secondaryHref: "/dashboard/customer/support",
     secondaryLabel: "Contact Support",
   };
 }
@@ -189,25 +189,25 @@ function DashboardLoadingState() {
 function DashboardShortcuts() {
   const items = [
     {
-      href: "/profile",
+      href: "/dashboard/customer/profile",
       label: "Profile",
       description: "Update your personal and contact information.",
       icon: UserCircle2,
     },
     {
-      href: "/profile/transactions",
+      href: "/dashboard/customer/transactions",
       label: "Transactions",
       description: "Review payment and refund activity.",
       icon: ReceiptText,
     },
     {
-      href: "/help-center",
+      href: "/dashboard/customer/support",
       label: "Support",
       description: "Open support resources and order help.",
       icon: LifeBuoy,
     },
     {
-      href: "/profile/security",
+      href: "/dashboard/customer/security",
       label: "Security",
       description: "Manage password and account security settings.",
       icon: ShieldCheck,
@@ -348,7 +348,7 @@ export function CustomerDashboard() {
                 </Link>
               </Button>
               <Button asChild variant='outline' className='rounded-full px-5'>
-                <Link href='/results'>View Results</Link>
+                <Link href='/dashboard/customer/results'>View Results</Link>
               </Button>
             </div>
           </div>
@@ -543,7 +543,7 @@ export function CustomerDashboard() {
               </p>
             </div>
             <Button asChild variant='outline' className='rounded-full'>
-              <Link href='/results'>View all orders</Link>
+              <Link href='/dashboard/customer/results'>View all orders</Link>
             </Button>
           </div>
 
@@ -610,13 +610,13 @@ export function CustomerDashboard() {
                         </Button>
                       )}
                       <Button asChild variant='outline' className='rounded-full'>
-                        <Link href='/results'>
+                        <Link href='/dashboard/customer/results'>
                           <ClipboardList className='mr-2 h-4 w-4' />
                           View Results
                         </Link>
                       </Button>
                       <Button asChild variant='ghost' className='rounded-full'>
-                        <Link href='/help-center'>
+                        <Link href='/dashboard/customer/support'>
                           <LifeBuoy className='mr-2 h-4 w-4' />
                           Support
                         </Link>
@@ -664,7 +664,7 @@ export function CustomerDashboard() {
                       {formatCurrency(order.total)}
                     </span>
                     <Button asChild variant='ghost' className='rounded-full'>
-                      <Link href='/results'>
+                      <Link href='/dashboard/customer/results'>
                         <FileText className='mr-2 h-4 w-4' />
                         Details
                       </Link>

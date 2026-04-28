@@ -28,7 +28,7 @@ export function RecentOrders({
           </h2>
         </div>
         <Button asChild variant='outline' size='sm' className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto'>
-          <Link href='/profile/orders'>View All Orders</Link>
+          <Link href='/dashboard/customer/orders'>View All Orders</Link>
         </Button>
       </div>
 

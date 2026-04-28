@@ -15,6 +15,7 @@ export type CustomerDashboardViewer = {
   firstName: string;
   lastName: string;
   role: string;
+  status?: string;
   createdAt: string;
   phone?: string;
   phoneNumber?: string;
@@ -122,6 +123,7 @@ function normalizeViewer(rawProfile: unknown): CustomerDashboardViewer | null {
     firstName: toStringValue(profile.firstName, "Customer"),
     lastName: toStringValue(profile.lastName),
     role: normalizeUserRole(profile.role) || toStringValue(profile.role),
+    status: toStringValue(profile.status, "ACTIVE"),
     createdAt: toStringValue(profile.createdAt, new Date().toISOString()),
     phone: toOptionalString(profile.phone),
     phoneNumber: toOptionalString(profile.phoneNumber),
