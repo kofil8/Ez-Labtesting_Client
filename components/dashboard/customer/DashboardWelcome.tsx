@@ -1,54 +1,111 @@
-import { Button } from "@/components/ui/button";
+"use client";
+
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
+import { Button } from "@/components/ui/button";
 import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
-import { MapPinned, Search } from "lucide-react";
+import {
+  CalendarDays,
+  MapPinned,
+  Search,
+  UserRoundCheck,
+} from "lucide-react";
 import Link from "next/link";
-import { buildCustomerName, buildInitials } from "./dashboard-helpers";
+import { CustomerAvatar } from "./CustomerAvatar";
+import {
+  buildCustomerName,
+  formatMemberSince,
+  getProfileReadinessPercent,
+} from "./dashboard-helpers";
 
 export function DashboardWelcome({
   viewer,
 }: {
   viewer: CustomerDashboardViewer;
 }) {
-  const firstName = viewer.firstName?.trim() || buildCustomerName(viewer);
-  const initials = buildInitials(viewer.firstName, viewer.lastName, viewer.email);
+  const name = buildCustomerName(viewer);
+  const readiness = getProfileReadinessPercent(viewer);
 
   return (
-    <section className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6'>
-      <div className='flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between'>
-        <div className='min-w-0'>
-          <p className='text-sm font-medium text-sky-700'>Customer portal</p>
-          <h1 className='mt-2 break-words text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl'>
-            Welcome back, {firstName}
-          </h1>
-          <p className='mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base'>
-            Manage your lab tests, orders, and results from one secure place.
-          </p>
+    <section className='overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-xl shadow-blue-100/30'>
+      <div className='grid gap-0 xl:grid-cols-[minmax(0,1fr)_300px]'>
+        <div className='relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-5 sm:p-6 lg:p-7'>
+          <div className='pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-200/30 blur-3xl' />
+          <div className='pointer-events-none absolute -bottom-20 left-1/3 h-44 w-44 rounded-full bg-blue-200/30 blur-3xl' />
+          <div className='flex flex-col gap-5 md:flex-row md:items-start md:justify-between'>
+            <div className='min-w-0'>
+              <p className='relative text-xs font-bold uppercase tracking-[0.18em] text-blue-600'>
+                Medical record dashboard
+              </p>
+              <h1 className='relative mt-3 break-words text-2xl font-extrabold tracking-normal text-slate-950 sm:text-3xl'>
+                {name}
+              </h1>
+              <p className='relative mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base'>
+                Review orders, requisitions, results, appointments, and patient
+                profile readiness from one secure portal.
+              </p>
+            </div>
+
+            <Link
+              href='/profile'
+              aria-label='Open profile'
+              className='relative block h-14 w-14 shrink-0 shadow-lg shadow-blue-100/60'
+            >
+              <CustomerAvatar viewer={viewer} className='h-14 w-14 rounded-xl' />
+            </Link>
+          </div>
+
+          <div className='mt-6 grid gap-3 sm:grid-cols-2'>
+            <div className='rounded-xl border border-blue-100 bg-white/85 px-4 py-3 shadow-sm'>
+              <div className='flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500'>
+                <UserRoundCheck className='h-4 w-4 text-teal-600' />
+                Profile
+              </div>
+              <p className='mt-2 text-sm font-semibold text-slate-950'>
+                {readiness}% complete
+              </p>
+            </div>
+            <div className='rounded-xl border border-blue-100 bg-white/85 px-4 py-3 shadow-sm'>
+              <div className='flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500'>
+                <CalendarDays className='h-4 w-4 text-cyan-600' />
+                Member
+              </div>
+              <p className='mt-2 text-sm font-semibold text-slate-950'>
+                {formatMemberSince(viewer.createdAt)}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className='flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center'>
-          <Button asChild className='w-full bg-sky-700 hover:bg-sky-800 sm:w-auto'>
-            <Link href='/tests'>
-              <Search className='h-4 w-4' />
-              Browse Tests
-            </Link>
-          </Button>
-          <Button asChild variant='outline' className='w-full sm:w-auto'>
-            <Link href='/find-lab-center'>
-              <MapPinned className='h-4 w-4' />
-              Find Lab Center
-            </Link>
-          </Button>
-          <div className='hidden xl:block'>
+        <div className='border-t border-blue-100 bg-white p-5 xl:border-l xl:border-t-0'>
+          <div className='flex items-center justify-between gap-3'>
+            <div>
+              <p className='text-xs font-semibold uppercase tracking-[0.16em] text-slate-500'>
+                Quick actions
+              </p>
+              <p className='mt-1 text-sm font-medium text-slate-950'>
+                Orders and alerts
+              </p>
+            </div>
             <NotificationsBell />
           </div>
-          <Link
-            href='/profile'
-            aria-label='Open profile'
-            className='hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 xl:flex'
-          >
-            {initials}
-          </Link>
+
+          <div className='mt-5 grid gap-3'>
+            <Button asChild className='w-full bg-blue-600 shadow-md shadow-blue-100 hover:bg-blue-700'>
+              <Link href='/tests'>
+                <Search className='h-4 w-4' />
+                Browse Tests
+              </Link>
+            </Button>
+            <Button asChild variant='outline' className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700'>
+              <Link href='/find-lab-center'>
+                <MapPinned className='h-4 w-4' />
+                Find Lab Center
+              </Link>
+            </Button>
+            <Button asChild variant='ghost' className='w-full hover:bg-blue-50 hover:text-blue-700'>
+              <Link href='/profile/orders'>View Orders</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </section>

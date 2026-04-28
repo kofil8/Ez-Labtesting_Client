@@ -16,8 +16,8 @@ export function EmptyState({
   actionLabel?: string;
 }) {
   return (
-    <div className='rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center sm:px-5'>
-      <div className='mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm ring-1 ring-slate-200'>
+    <div className='rounded-xl border border-dashed border-blue-200 bg-blue-50/50 px-4 py-8 text-center sm:px-5'>
+      <div className='mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-600 shadow-sm'>
         <Icon className='h-5 w-5' />
       </div>
       <h3 className='mt-4 text-base font-semibold text-slate-950'>{title}</h3>
@@ -25,7 +25,7 @@ export function EmptyState({
         {description}
       </p>
       {actionHref && actionLabel ? (
-        <Button asChild className='mt-5 w-full bg-sky-700 hover:bg-sky-800 sm:w-auto'>
+        <Button asChild className='mt-5 w-full bg-blue-600 hover:bg-blue-700 sm:w-auto'>
           <Link href={actionHref}>{actionLabel}</Link>
         </Button>
       ) : null}

@@ -138,8 +138,8 @@ export function CustomerNotificationsPage() {
       className={cn(
         "shrink-0 rounded-full border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600",
         filter === key
-          ? "border-sky-200 bg-sky-50 text-sky-800"
-          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+          ? "border-blue-200 bg-blue-50 text-blue-800"
+          : "border-blue-100 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-700",
       )}
     >
       {label} ({count})
@@ -148,10 +148,10 @@ export function CustomerNotificationsPage() {
 
   return (
     <div className='space-y-6'>
-      <section className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6'>
+      <section className='rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-blue-100/25 sm:p-6'>
         <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
           <div className='min-w-0'>
-            <p className='text-sm font-medium text-sky-700'>
+            <p className='text-sm font-medium text-blue-600'>
               Customer portal
             </p>
             <h1 className='mt-2 break-words text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl'>
@@ -184,7 +184,7 @@ export function CustomerNotificationsPage() {
                 unreadCount === 0 ||
                 isMarkingAll
               }
-              className='w-full bg-sky-700 hover:bg-sky-800 sm:w-auto'
+              className='w-full bg-blue-600 hover:bg-blue-700 sm:w-auto'
             >
               <CheckCheck className='h-4 w-4' />
               Mark all read
@@ -193,10 +193,10 @@ export function CustomerNotificationsPage() {
         </div>
       </section>
 
-      <section className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6'>
+      <section className='rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-blue-100/25 sm:p-6'>
         <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div className='flex min-w-0 items-center gap-3'>
-            <span className='flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100'>
+            <span className='flex h-10 w-10 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600'>
               <Bell className='h-5 w-5' />
             </span>
             <div className='min-w-0'>
@@ -243,14 +243,14 @@ export function CustomerNotificationsPage() {
                   key={notification.id}
                   className={cn(
                     "bg-white p-4 sm:p-5",
-                    !notification.isRead && "bg-sky-50/40",
+                    !notification.isRead && "bg-blue-50/50",
                   )}
                 >
                   <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
                     <div className='min-w-0 flex-1'>
                       <div className='flex flex-wrap items-center gap-2'>
                         {!notification.isRead ? (
-                          <span className='rounded-full bg-sky-700 px-2 py-0.5 text-xs font-semibold text-white'>
+                          <span className='rounded-full bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white'>
                             New
                           </span>
                         ) : (
@@ -312,7 +312,7 @@ export function CustomerNotificationsPage() {
                         <Button
                           asChild
                           size='sm'
-                          className='w-full bg-sky-700 hover:bg-sky-800 sm:w-auto lg:w-full'
+                          className='w-full bg-blue-600 hover:bg-blue-700 sm:w-auto lg:w-full'
                         >
                           <Link href={clickAction}>
                             Open

@@ -5,16 +5,14 @@ import type {
   CustomerDashboardViewer,
 } from "@/lib/dashboard/customer.server";
 import { DashboardStats } from "./DashboardStats";
+import { DashboardVisuals } from "./DashboardVisuals";
 import { DashboardWelcome } from "./DashboardWelcome";
-import {
-  isOpenOrder,
-  sortOrdersByNewest,
-} from "./dashboard-helpers";
+import { sortOrdersByNewest } from "./dashboard-helpers";
+import { HealthInsightsPlaceholder } from "./HealthInsightsPlaceholder";
 import { NextActionCard } from "./NextActionCard";
 import { ProfileReadiness } from "./ProfileReadiness";
 import { RecentOrders } from "./RecentOrders";
 import { RecentResults } from "./RecentResults";
-import { SupportCard } from "./SupportCard";
 
 export function CustomerDashboardOverview({
   viewer,
@@ -26,23 +24,23 @@ export function CustomerDashboardOverview({
   ordersError?: string | null;
 }) {
   const sortedOrders = sortOrdersByNewest(orders);
-  const activeOrder = sortedOrders.find(isOpenOrder) ?? null;
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-5 lg:space-y-6'>
       <DashboardWelcome viewer={viewer} />
       <DashboardStats viewer={viewer} orders={sortedOrders} />
+      <DashboardVisuals orders={sortedOrders} />
 
-      <div className='grid gap-6 2xl:grid-cols-[minmax(0,1fr)_340px]'>
-        <div className='min-w-0 space-y-6'>
-          <NextActionCard viewer={viewer} activeOrder={activeOrder} />
+      <div className='grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]'>
+        <div className='min-w-0 space-y-5'>
+          <NextActionCard viewer={viewer} orders={sortedOrders} />
           <RecentOrders orders={sortedOrders} ordersError={ordersError} />
           <RecentResults orders={sortedOrders} />
         </div>
 
-        <aside className='grid gap-6 lg:grid-cols-2 2xl:block 2xl:space-y-6'>
+        <aside className='grid gap-5 md:grid-cols-2 xl:block xl:space-y-5'>
           <ProfileReadiness viewer={viewer} />
-          <SupportCard />
+          <HealthInsightsPlaceholder />
         </aside>
       </div>
     </div>

@@ -17,17 +17,17 @@ export function ProfileReadiness({
   const readiness = getProfileReadinessPercent(viewer);
 
   return (
-    <section className='rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6'>
+    <section className='rounded-2xl border border-blue-100 bg-white p-5 shadow-lg shadow-blue-100/25 sm:p-6'>
       <div className='flex items-start justify-between gap-4'>
         <div className='min-w-0'>
-          <h2 className='text-lg font-semibold text-slate-950'>
+          <p className='text-xs font-bold uppercase tracking-[0.16em] text-blue-600'>
+            Patient summary
+          </p>
+          <h2 className='mt-1 text-lg font-semibold text-slate-950'>
             Profile Readiness
           </h2>
-          <p className='mt-1 text-sm text-slate-600'>
-            Keep required patient details current.
-          </p>
         </div>
-        <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100'>
+        <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-600'>
           <ShieldCheck className='h-5 w-5' />
         </span>
       </div>
@@ -37,10 +37,10 @@ export function ProfileReadiness({
           <span className='font-medium text-slate-700'>Completion</span>
           <span className='font-semibold text-slate-950'>{readiness}%</span>
         </div>
-        <Progress value={readiness} className='mt-2 bg-slate-100' />
+        <Progress value={readiness} className='mt-2 h-2 bg-slate-100' />
       </div>
 
-      <div className='mt-5 space-y-3'>
+      <div className='mt-5 space-y-2'>
         {checklist.map((item) => {
           const Icon = item.ready ? CheckCircle2 : Circle;
 
@@ -48,12 +48,12 @@ export function ProfileReadiness({
             <Link
               key={item.label}
               href={item.href}
-              className='flex items-start gap-3 rounded-xl p-2 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600'
+              className='flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
             >
               <Icon
                 className={
                   item.ready
-                    ? "mt-0.5 h-5 w-5 shrink-0 text-emerald-600"
+                    ? "mt-0.5 h-5 w-5 shrink-0 text-teal-600"
                     : "mt-0.5 h-5 w-5 shrink-0 text-slate-400"
                 }
               />
@@ -70,7 +70,7 @@ export function ProfileReadiness({
         })}
       </div>
 
-      <Button asChild variant='outline' className='mt-5 w-full'>
+      <Button asChild variant='outline' className='mt-5 w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700'>
         <Link href='/profile'>Update Profile</Link>
       </Button>
     </section>

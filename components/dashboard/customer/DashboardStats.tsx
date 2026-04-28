@@ -4,16 +4,13 @@ import type {
 } from "@/lib/dashboard/customer.server";
 import { formatCurrency } from "@/lib/utils";
 import {
-  CircleDollarSign,
+  Activity,
+  AlertTriangle,
   ClipboardList,
   FileCheck2,
-  UserCheck,
+  WalletCards,
 } from "lucide-react";
-import {
-  getProfileReadinessPercent,
-  isOpenOrder,
-  isResultsReady,
-} from "./dashboard-helpers";
+import { getDashboardSummary } from "./dashboard-helpers";
 
 export function DashboardStats({
   viewer,
@@ -22,57 +19,67 @@ export function DashboardStats({
   viewer: CustomerDashboardViewer;
   orders: CustomerDashboardOrder[];
 }) {
-  const openOrders = orders.filter(isOpenOrder).length;
-  const resultsReady = orders.filter(isResultsReady).length;
-  const readiness = getProfileReadinessPercent(viewer);
-  const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
+  const summary = getDashboardSummary(viewer, orders);
 
   const cards = [
     {
-      label: "Open Orders",
-      value: openOrders.toString(),
-      helper: "Orders in checkout, review, or fulfillment.",
+      label: "Total Orders",
+      value: summary.totalOrders.toString(),
+      helper: "All lab orders",
       icon: ClipboardList,
+      tone: "text-blue-600 bg-blue-50 border-blue-100",
+    },
+    {
+      label: "Active",
+      value: summary.active.toString(),
+      helper: "In checkout or fulfillment",
+      icon: Activity,
+      tone: "text-cyan-600 bg-cyan-50 border-cyan-100",
     },
     {
       label: "Results Ready",
-      value: resultsReady.toString(),
-      helper: "Completed reports available to view.",
+      value: summary.resultsReady.toString(),
+      helper: "Completed reports",
       icon: FileCheck2,
+      tone: "text-teal-600 bg-teal-50 border-teal-100",
     },
     {
-      label: "Profile Completion",
-      value: `${readiness}%`,
-      helper: "Core patient and security details on file.",
-      icon: UserCheck,
+      label: "Needs Help",
+      value: summary.attention.toString(),
+      helper: "Review or support",
+      icon: AlertTriangle,
+      tone: "text-rose-600 bg-rose-50 border-rose-100",
     },
     {
-      label: "Total Spent",
-      value: formatCurrency(totalSpent),
-      helper: "Recorded totals across your orders.",
-      icon: CircleDollarSign,
+      label: "Total Spend",
+      value: formatCurrency(summary.totalSpent),
+      helper: "Recorded order totals",
+      icon: WalletCards,
+      tone: "text-blue-700 bg-blue-50 border-blue-100",
     },
   ];
 
   return (
-    <section className='grid gap-4 sm:grid-cols-2 2xl:grid-cols-4'>
-      {cards.map(({ label, value, helper, icon: Icon }) => (
+    <section className='grid gap-3 sm:grid-cols-2 xl:grid-cols-5'>
+      {cards.map(({ label, value, helper, icon: Icon, tone }) => (
         <div
           key={label}
-          className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'
+          className='rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-blue-100/25 transition-shadow hover:shadow-xl hover:shadow-blue-100/40'
         >
-          <div className='flex items-start justify-between gap-4'>
+          <div className='flex items-start justify-between gap-3'>
             <div className='min-w-0'>
-              <p className='text-sm font-medium text-slate-500'>{label}</p>
-              <p className='mt-2 break-words text-2xl font-semibold tracking-tight text-slate-950'>
+              <p className='text-xs font-semibold uppercase tracking-[0.12em] text-slate-500'>
+                {label}
+              </p>
+              <p className='mt-2 break-words text-2xl font-semibold tracking-normal text-slate-950'>
                 {value}
               </p>
             </div>
-            <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700 ring-1 ring-sky-100'>
-              <Icon className='h-5 w-5' />
+            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md border ${tone}`}>
+              <Icon className='h-4 w-4' />
             </span>
           </div>
-          <p className='mt-3 text-sm leading-6 text-slate-600'>{helper}</p>
+          <p className='mt-3 text-sm leading-5 text-slate-600'>{helper}</p>
         </div>
       ))}
     </section>

@@ -126,7 +126,7 @@ function normalizeViewer(rawProfile: unknown): CustomerDashboardViewer | null {
     phone: toOptionalString(profile.phone),
     phoneNumber: toOptionalString(profile.phoneNumber),
     dateOfBirth: toOptionalString(profile.dateOfBirth),
-    profileImage: toOptionalString(profile.profileImage),
+    profileImage: toOptionalString(profile.profileImage ?? profile.avatarUrl),
     address: toOptionalString(profile.address),
     addressLine1: toOptionalString(profile.addressLine1),
     addressLine2: toOptionalString(profile.addressLine2),

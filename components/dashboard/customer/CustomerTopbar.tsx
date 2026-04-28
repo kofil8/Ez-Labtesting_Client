@@ -4,14 +4,14 @@ import { NotificationsBell } from "@/components/notifications/NotificationsBell"
 import { Button } from "@/components/ui/button";
 import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
 import { cn } from "@/lib/utils";
-import { FlaskConical, LogOut } from "lucide-react";
+import { FlaskConical, LogOut, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CUSTOMER_NAV_ITEMS,
   isCustomerNavActive,
 } from "./customer-navigation";
-import { buildInitials } from "./dashboard-helpers";
+import { CustomerAvatar } from "./CustomerAvatar";
 
 export function CustomerTopbar({
   viewer,
@@ -23,27 +23,22 @@ export function CustomerTopbar({
   isSigningOut: boolean;
 }) {
   const pathname = usePathname();
-  const initials = buildInitials(
-    viewer?.firstName,
-    viewer?.lastName,
-    viewer?.email,
-  );
 
   return (
-    <header className='sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur xl:hidden'>
+    <header className='sticky top-0 z-30 border-b border-blue-100 bg-white/95 backdrop-blur xl:hidden'>
       <div className='flex items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-4'>
         <Link
           href='/dashboard/customer'
           className='flex min-w-0 items-center gap-2'
         >
-          <span className='flex h-9 w-9 items-center justify-center rounded-xl bg-sky-700 text-white'>
+          <span className='flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 text-white shadow-sm'>
             <FlaskConical className='h-4 w-4' />
           </span>
           <span className='min-w-0'>
             <span className='block truncate text-sm font-semibold text-slate-950'>
               Ez LabTesting
             </span>
-            <span className='block text-xs text-slate-500'>Portal</span>
+            <span className='block text-xs text-slate-500'>Records</span>
           </span>
         </Link>
 
@@ -51,24 +46,27 @@ export function CustomerTopbar({
           <Button
             asChild
             size='sm'
-            className='hidden bg-sky-700 hover:bg-sky-800 xs:inline-flex'
+            className='hidden bg-blue-600 hover:bg-blue-700 xs:inline-flex'
           >
-            <Link href='/tests'>Browse Tests</Link>
+            <Link href='/tests'>
+              <Search className='h-4 w-4' />
+              Tests
+            </Link>
           </Button>
           <NotificationsBell />
           <Link
             href='/profile'
             aria-label='Open profile'
-            className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-sm font-semibold text-slate-800 ring-1 ring-slate-200'
+            className='block h-9 w-9 shrink-0'
           >
-            {initials}
+            <CustomerAvatar viewer={viewer} className='h-9 w-9 rounded-lg' />
           </Link>
           <button
             type='button'
             onClick={onSignOut}
             disabled={isSigningOut}
             aria-label={isSigningOut ? "Signing out" : "Sign out"}
-            className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600'
+            className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
           >
             <LogOut className='h-4 w-4' />
           </button>
@@ -84,10 +82,10 @@ export function CustomerTopbar({
               key={href}
               href={href}
               className={cn(
-                "inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600",
+                "inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                 active
-                  ? "border-sky-200 bg-sky-50 text-sky-800"
-                  : "border-slate-200 bg-white text-slate-600",
+                  ? "border-blue-600 bg-blue-600 text-white"
+                  : "border-blue-100 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-700",
               )}
             >
               <Icon className='h-4 w-4' />

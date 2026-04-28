@@ -8,11 +8,12 @@ export function StatusBadge({ order }: { order: CustomerDashboardOrder }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold capitalize",
+        "inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold capitalize",
         status.tone,
       )}
     >
-      {status.label}
+      <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", status.dot)} />
+      <span className='truncate'>{status.label}</span>
     </span>
   );
 }
