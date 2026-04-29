@@ -36,6 +36,11 @@ const PUBLIC_ROUTES = [
   "/firebase-cloud-messaging-push-scope",
 ];
 
+const PUBLIC_FILE_ROUTES = new Set([
+  "/robots.txt",
+  "/sitemap.xml",
+]);
+
 // Protected routes (require authentication)
 const PROTECTED_PREFIXES = ["/checkout", "/orders", "/payment"];
 
@@ -170,6 +175,10 @@ export function proxy(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
   const refreshToken = req.cookies.get("refreshToken")?.value;
   const hasSessionCookie = Boolean(accessToken || refreshToken);
+
+  if (PUBLIC_FILE_ROUTES.has(pathname)) {
+    return NextResponse.next();
+  }
 
   // Bypass auth for development if enabled
   const bypassAuth =
