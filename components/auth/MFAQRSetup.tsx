@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SixDigitCodeInput } from "@/components/shared/SixDigitCodeInput";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hook/use-toast";
@@ -44,8 +45,8 @@ export function MFAQRSetup({ onSuccess }: MFAQRSetupProps) {
     });
   };
 
-  const handleVerifySetup = () => {
-    if (verificationCode.length !== 6) {
+  const handleVerifySetup = (code = verificationCode) => {
+    if (code.length !== 6) {
       toast({
         title: "Invalid Code",
         description: "Please enter a 6-digit code",
@@ -55,7 +56,7 @@ export function MFAQRSetup({ onSuccess }: MFAQRSetupProps) {
     }
 
     startTransition(async () => {
-      const result = await verifySetup(secret, verificationCode);
+      const result = await verifySetup(secret, code);
 
       if (result.success && result.data) {
         toast({
@@ -112,25 +113,23 @@ export function MFAQRSetup({ onSuccess }: MFAQRSetupProps) {
             </div>
 
             <div className='space-y-2 w-full'>
-              <Label htmlFor='verificationCode'>
-                Enter 6-digit code from your app
-              </Label>
-              <Input
-                id='verificationCode'
-                type='text'
-                placeholder='000000'
-                maxLength={6}
+              <Label>Enter 6-digit code from your app</Label>
+              <SixDigitCodeInput
                 value={verificationCode}
-                onChange={(e) =>
-                  setVerificationCode(e.target.value.replace(/\D/g, ""))
-                }
-                className='text-center text-2xl tracking-widest font-mono'
+                onChange={setVerificationCode}
+                onComplete={(value) => {
+                  if (!isPending) {
+                    handleVerifySetup(value);
+                  }
+                }}
+                disabled={isPending}
+                ariaLabel='MFA setup verification code'
               />
             </div>
 
             <div className='flex gap-2 w-full'>
               <Button
-                onClick={handleVerifySetup}
+                onClick={() => handleVerifySetup()}
                 disabled={isPending || verificationCode.length !== 6}
               >
                 Verify & Enable

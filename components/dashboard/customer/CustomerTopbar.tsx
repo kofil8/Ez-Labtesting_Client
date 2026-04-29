@@ -57,7 +57,7 @@ export function CustomerTopbar({
 
   return (
     <>
-      <header className='sticky top-0 z-40 border-b border-blue-100 bg-white/95 backdrop-blur xl:hidden'>
+      <header className='sticky top-0 z-40 border-b border-blue-100 bg-white/95 backdrop-blur lg:hidden'>
         <div className='flex items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-4'>
           <button
             type='button'
@@ -119,7 +119,7 @@ export function CustomerTopbar({
       </header>
 
       {isMenuOpen && (
-        <div className='xl:hidden'>
+        <div className='lg:hidden'>
           <button
             type='button'
             aria-label='Close dashboard menu'

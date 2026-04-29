@@ -1,9 +1,12 @@
 import {
+  FlaskConical,
   FileCheck2,
   LayoutDashboard,
   LifeBuoy,
   Lock,
+  MapPinned,
   PackageCheck,
+  PanelsTopLeft,
   ReceiptText,
   ShieldCheck,
   UserRound,
@@ -18,23 +21,26 @@ export type CustomerNavItem = {
 
 export const CUSTOMER_NAV_ITEMS: CustomerNavItem[] = [
   { href: "/dashboard/customer", label: "Overview", icon: LayoutDashboard },
+  { href: "/tests", label: "Browse Tests", icon: FlaskConical },
+  { href: "/panels", label: "Test Panels", icon: PanelsTopLeft },
+  { href: "/find-lab-center", label: "Find Lab Center", icon: MapPinned },
   { href: "/dashboard/customer/orders", label: "Orders", icon: PackageCheck },
-  { href: "/dashboard/customer/results", label: "Results", icon: FileCheck2 },
-  { href: "/dashboard/customer/profile", label: "Profile", icon: UserRound },
   {
     href: "/dashboard/customer/transactions",
     label: "Transactions",
     icon: ReceiptText,
   },
-  {
-    href: "/dashboard/customer/change-password",
-    label: "Password",
-    icon: Lock,
-  },
+  { href: "/dashboard/customer/results", label: "Results", icon: FileCheck2 },
+  { href: "/dashboard/customer/profile", label: "Profile", icon: UserRound },
   {
     href: "/dashboard/customer/security",
     label: "Security",
     icon: ShieldCheck,
+  },
+  {
+    href: "/dashboard/customer/change-password",
+    label: "Password",
+    icon: Lock,
   },
   { href: "/dashboard/customer/support", label: "Support", icon: LifeBuoy },
 ];

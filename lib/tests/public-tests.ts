@@ -359,6 +359,14 @@ export function normalizePublicTest(rawTest: any): PublicCatalogTest {
       typeof rawTest?.isPopular === "boolean" ? rawTest.isPopular : undefined,
     isPanel:
       typeof rawTest?.isPanel === "boolean" ? rawTest.isPanel : undefined,
+    accessLabTestId:
+      typeof rawTest?.accessLabTestId === "string" && rawTest.accessLabTestId
+        ? rawTest.accessLabTestId
+        : null,
+    startingLabTestId:
+      typeof rawTest?.startingLabTestId === "string" && rawTest.startingLabTestId
+        ? rawTest.startingLabTestId
+        : null,
     startingPrice: normalizeNumber(rawTest?.startingPrice),
     startingLab,
     componentCount:

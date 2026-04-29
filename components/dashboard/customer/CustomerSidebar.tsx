@@ -6,17 +6,12 @@ import { cn } from "@/lib/utils";
 import {
   FlaskConical,
   LogOut,
-  MapPinned,
   PanelLeftClose,
   PanelLeftOpen,
-  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  CUSTOMER_NAV_ITEMS,
-  isCustomerNavActive,
-} from "./customer-navigation";
+import { CUSTOMER_NAV_ITEMS, isCustomerNavActive } from "./customer-navigation";
 import { CustomerAvatar } from "./CustomerAvatar";
 
 export function CustomerSidebar({
@@ -37,8 +32,8 @@ export function CustomerSidebar({
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-40 hidden h-screen shrink-0 overflow-hidden border-r border-blue-100 bg-white px-4 py-5 shadow-sm xl:flex xl:flex-col min-[1680px]:left-[calc((100vw-1680px)/2)]",
-        isPanelHidden ? "w-[84px]" : "w-[268px]",
+        "fixed inset-y-0 left-0 z-40 hidden h-screen shrink-0 overflow-hidden border-r border-blue-100 bg-white px-3 py-4 shadow-sm lg:flex lg:flex-col xl:px-4 xl:py-5 min-[1680px]:left-[calc((100vw-1680px)/2)]",
+        isPanelHidden ? "w-[76px] xl:w-[84px]" : "w-[244px] xl:w-[268px]",
       )}
     >
       <div
@@ -64,7 +59,7 @@ export function CustomerSidebar({
                 Ez LabTesting
               </span>
               <span className='block truncate text-xs font-medium text-slate-500'>
-                Medical records
+                Customer Dashboard
               </span>
             </span>
           )}
@@ -95,18 +90,10 @@ export function CustomerSidebar({
         </button>
       )}
 
-      <Link
-        href='/dashboard/customer/profile'
-        aria-label='Open profile'
-        title='Profile'
-        className={cn("mt-5 flex", isPanelHidden ? "justify-center" : "hidden")}
-      >
-        <CustomerAvatar viewer={viewer} className='h-10 w-10 rounded-lg' />
-      </Link>
-
       <nav className={cn("space-y-1", isPanelHidden ? "mt-5" : "mt-6")}>
         {CUSTOMER_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = isCustomerNavActive(pathname, href);
+          const isProfileItem = href === "/dashboard/customer/profile";
 
           return (
             <Link
@@ -121,48 +108,24 @@ export function CustomerSidebar({
                   : "text-slate-600 hover:bg-blue-50 hover:text-blue-700",
               )}
             >
-              <Icon className='h-4 w-4' />
+              {isProfileItem ? (
+                <CustomerAvatar
+                  viewer={viewer}
+                  className={cn(
+                    "h-5 w-5 rounded-md border-current/20",
+                    isPanelHidden && "h-10 w-10 rounded-lg",
+                  )}
+                />
+              ) : (
+                <Icon className='h-4 w-4' />
+              )}
               {!isPanelHidden && label}
             </Link>
           );
         })}
       </nav>
 
-      <div className='mt-auto space-y-3 pt-6'>
-        {!isPanelHidden && (
-          <div className='rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-cyan-50 p-3'>
-            <p className='text-sm font-semibold text-slate-950'>
-              Order lab testing
-            </p>
-            <p className='mt-1 text-xs leading-5 text-slate-600'>
-              Browse clinical tests or locate a nearby collection center.
-            </p>
-            <div className='mt-3 grid gap-2'>
-              <Button
-                asChild
-                size='sm'
-                className='bg-blue-600 hover:bg-blue-700'
-              >
-                <Link href='/tests'>
-                  <Search className='h-4 w-4' />
-                  Browse Tests
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size='sm'
-                variant='outline'
-                className='border-blue-200 hover:bg-blue-50 hover:text-blue-700'
-              >
-                <Link href='/find-lab-center'>
-                  <MapPinned className='h-4 w-4' />
-                  Find Lab Center
-                </Link>
-              </Button>
-            </div>
-          </div>
-        )}
-
+      <div className='mt-auto pt-6'>
         <Button
           type='button'
           variant='ghost'

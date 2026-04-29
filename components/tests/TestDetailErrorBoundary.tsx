@@ -2,6 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  isRateLimitBlockedError,
+  RATE_LIMIT_BLOCKED_MESSAGE,
+} from "@/lib/errors/api-errors";
 import { AlertCircle } from "lucide-react";
 import { useEffect } from "react";
 
@@ -14,6 +18,8 @@ export function TestDetailErrorBoundary({
   error,
   reset,
 }: TestDetailErrorBoundaryProps) {
+  const isRateLimited = isRateLimitBlockedError(error);
+
   useEffect(() => {
     // Log the error to an error reporting service
     console.error("Test Detail Error:", error);
@@ -28,13 +34,21 @@ export function TestDetailErrorBoundary({
               <AlertCircle className='h-6 w-6 text-red-600 dark:text-red-400' />
             </div>
             <CardTitle className='text-xl'>
-              Unable to Load Test Details
+              {isRateLimited ? "Request blocked" : "Unable to Load Test Details"}
             </CardTitle>
           </div>
         </CardHeader>
         <CardContent className='space-y-4'>
-          <p className='text-muted-foreground'>
-            We encountered an issue loading this test. This may be temporary.
+          <p
+            className={
+              isRateLimited
+                ? "font-semibold text-red-600"
+                : "text-muted-foreground"
+            }
+          >
+            {isRateLimited
+              ? RATE_LIMIT_BLOCKED_MESSAGE
+              : "We encountered an issue loading this test. This may be temporary."}
           </p>
           <div className='flex gap-3'>
             <Button onClick={reset} variant='default'>

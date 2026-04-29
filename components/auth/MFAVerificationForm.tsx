@@ -2,6 +2,7 @@
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { SixDigitCodeInput } from "@/components/shared/SixDigitCodeInput";
 import {
   Card,
   CardContent,
@@ -39,8 +40,8 @@ export function MFAVerificationForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
-  const handleVerifyMFA = () => {
-    if (verificationCode.length !== 6) {
+  const handleVerifyMFA = (code = verificationCode) => {
+    if (code.length !== 6) {
       setError("Please enter a 6-digit code");
       return;
     }
@@ -53,7 +54,7 @@ export function MFAVerificationForm() {
     setError("");
 
     startTransition(async () => {
-      const result = await verifyMFAAction(tempToken, verificationCode);
+      const result = await verifyMFAAction(tempToken, code);
 
       if (!result.success) {
         setError(
@@ -154,29 +155,26 @@ export function MFAVerificationForm() {
         {!useBackup ? (
           <>
             <div className='space-y-2'>
-              <Label htmlFor='verificationCode'>Verification Code</Label>
-              <Input
-                id='verificationCode'
-                type='text'
-                placeholder='000000'
-                maxLength={6}
+              <Label>Verification Code</Label>
+              <SixDigitCodeInput
                 value={verificationCode}
-                onChange={(e) => {
-                  setVerificationCode(e.target.value.replace(/\D/g, ""));
+                onChange={(value) => {
+                  setVerificationCode(value);
                   setError("");
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && verificationCode.length === 6) {
-                    handleVerifyMFA();
+                onComplete={(value) => {
+                  if (!isPending) {
+                    handleVerifyMFA(value);
                   }
                 }}
-                className='text-center text-2xl tracking-widest font-mono'
+                disabled={isPending}
                 autoFocus
+                ariaLabel='Verification code'
               />
             </div>
 
             <Button
-              onClick={handleVerifyMFA}
+              onClick={() => handleVerifyMFA()}
               disabled={isPending || verificationCode.length !== 6}
               className='w-full'
             >

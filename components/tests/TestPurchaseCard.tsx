@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hook/use-toast";
 import { useCartSync } from "@/hook/useCartSync";
+import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/store/cart-store";
 import {
   buildCartItemFromPublicTest,
@@ -24,6 +25,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { WhatsIncluded } from "./purchase/WhatsIncluded";
 
 interface TestPurchaseCardProps {
@@ -33,6 +35,10 @@ interface TestPurchaseCardProps {
 export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
   const { toast } = useToast();
   const { manualSync } = useCartSync({ autoSync: false });
+  const { isAuthenticated, isLoading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const addItem = useCartStore((state) => state.addItem);
   const items = useCartStore((state) => state.items);
   const categoryName = test.category?.name;
@@ -53,6 +59,15 @@ export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
   const isAlreadyInCart = items.some((item) => item.id === `test-${test.id}`);
 
   const handleAddToCart = async () => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      const query = searchParams.toString();
+      const from = query ? `${pathname}?${query}` : pathname;
+      router.push(`/login?from=${encodeURIComponent(from)}`);
+      return;
+    }
+
     if (!cartItem) {
       toast({
         title: "Unavailable for cart",
@@ -185,12 +200,17 @@ export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
 
         <Button
           onClick={handleAddToCart}
-          disabled={!canAddToCart || isAlreadyInCart}
+          disabled={
+            isLoading ||
+            (isAuthenticated && (!canAddToCart || isAlreadyInCart))
+          }
           className='h-11 w-full bg-blue-600 text-base font-semibold shadow-sm hover:bg-blue-700 disabled:bg-slate-300 disabled:text-slate-600'
           size='lg'
         >
           <ShoppingCart className='mr-2 h-4 w-4' />
-          {isAlreadyInCart
+          {!isAuthenticated
+            ? "Add to Cart"
+            : isAlreadyInCart
             ? "Already in Cart"
             : canAddToCart
               ? "Add to Cart"

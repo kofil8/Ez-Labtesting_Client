@@ -66,7 +66,7 @@ export async function updateProfile(formData: FormData) {
     if (bio !== null) dataObj.bio = bio;
     if (phone !== null) dataObj.phoneNumber = phone;
     if (gender !== null) dataObj.gender = normalizeGender(gender);
-    if (dateOfBirth !== null) {
+    if (dateOfBirth !== null && dateOfBirth.trim()) {
       // Convert "YYYY-MM-DD" to ISO-8601 DateTime format
       dataObj.dateOfBirth = new Date(dateOfBirth).toISOString();
     }

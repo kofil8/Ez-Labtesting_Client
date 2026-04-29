@@ -1,6 +1,7 @@
 "use client";
 
 import type { CustomerDashboardOrder } from "@/lib/dashboard/customer.server";
+import { ClipboardList } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -36,7 +37,7 @@ export function OrderActivityChart({
         </span>
       </div>
 
-      <div className='mt-5 h-64'>
+      <div className={hasOrders ? "mt-5 h-64" : "mt-5 h-32 sm:h-36"}>
         {hasOrders ? (
           <ResponsiveContainer width='100%' height='100%'>
             <AreaChart data={data} margin={{ left: -18, right: 8, top: 12 }}>
@@ -89,13 +90,18 @@ export function OrderActivityChart({
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className='flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-blue-200 bg-blue-50/50 px-4 text-center'>
-            <p className='text-sm font-semibold text-slate-950'>
-              No order activity yet
-            </p>
-            <p className='mt-2 max-w-md text-sm leading-6 text-slate-600'>
-              Weekly order and result trends will appear here after checkout.
-            </p>
+          <div className='flex h-full items-center justify-center gap-4 rounded-xl border border-dashed border-blue-200 bg-blue-50/50 px-4 text-left'>
+            <span className='flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-600 shadow-sm'>
+              <ClipboardList className='h-5 w-5' />
+            </span>
+            <div className='min-w-0'>
+              <p className='text-sm font-semibold text-slate-950'>
+                No order activity yet
+              </p>
+              <p className='mt-1 max-w-md text-sm leading-6 text-slate-600'>
+                Weekly order and result trends will appear here after checkout.
+              </p>
+            </div>
           </div>
         )}
       </div>

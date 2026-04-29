@@ -143,10 +143,14 @@ function normalizeProfile(rawProfile: unknown): Profile {
     id: toStringValue(root.id) || toStringValue(root.userId) || "profile",
     firstName,
     lastName,
+    username: toOptionalString(root.username),
+    bio: toOptionalString(root.bio),
     displayName: toOptionalString(root.displayName),
     email,
     role: toRole(root.role),
     roleName: toOptionalString(root.roleName),
+    status: toOptionalString(root.status),
+    isVerified: typeof root.isVerified === "boolean" ? root.isVerified : undefined,
     avatarUrl: toOptionalString(root.avatarUrl ?? root.profileImage),
     contactInfo: {
       email,
@@ -155,7 +159,14 @@ function normalizeProfile(rawProfile: unknown): Profile {
       ),
       dateOfBirth,
       gender: toGender(contactInfo.gender ?? root.gender),
-      address: toOptionalString(contactInfo.address ?? root.address),
+      address: toOptionalString(
+        contactInfo.address ??
+          root.address ??
+          [root.addressLine1, root.addressLine2, root.city, root.state, root.zipCode]
+            .map(toStringValue)
+            .filter(Boolean)
+            .join(", "),
+      ),
       addressLine1: toOptionalString(
         contactInfo.addressLine1 ?? root.addressLine1,
       ),

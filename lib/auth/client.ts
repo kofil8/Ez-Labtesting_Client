@@ -14,6 +14,7 @@ import {
   clearPushRegistrationAttempts,
   clearRegisteredPushTokenMarker,
 } from "@/lib/push";
+import { useCartStore } from "@/lib/store/cart-store";
 import { useNotificationsStore } from "@/lib/store/notifications-store";
 
 export const AUTH_SESSION_EXPIRED_EVENT = "ezlab:auth-session-expired";
@@ -97,6 +98,7 @@ function clearClientAuthState() {
   sessionStorage.removeItem("reset_email");
   clearRegisteredPushTokenMarker();
   clearPushRegistrationAttempts();
+  useCartStore.getState().resetCart();
   useNotificationsStore.getState().resetNotifications();
 }
 
@@ -527,6 +529,31 @@ export async function getMFAStatus() {
     return {
       success: true,
       data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: normalizeNetworkError(error).message,
+    };
+  }
+}
+
+export async function verifySensitiveMFA(token: string, action = "CHANGE_PASSWORD") {
+  try {
+    await requestAuthEndpoint(
+      "/auth/mfa/verify-sensitive",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token, action }),
+      },
+      "MFA verification failed",
+    );
+
+    return {
+      success: true,
     };
   } catch (error) {
     return {

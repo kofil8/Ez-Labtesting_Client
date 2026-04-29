@@ -2,7 +2,7 @@ import type {
   CustomerDashboardOrder,
   CustomerDashboardViewer,
 } from "@/lib/dashboard/customer.server";
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import {
   Activity,
   AlertTriangle,
@@ -49,6 +49,7 @@ export function DashboardStats({
       helper: "Review or support",
       icon: AlertTriangle,
       tone: "text-rose-600 bg-rose-50 border-rose-100",
+      critical: summary.attention > 0,
     },
     {
       label: "Total Spend",
@@ -60,18 +61,33 @@ export function DashboardStats({
   ];
 
   return (
-    <section className='grid gap-3 sm:grid-cols-2 xl:grid-cols-5'>
-      {cards.map(({ label, value, helper, icon: Icon, tone }) => (
+    <section className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5'>
+      {cards.map(({ label, value, helper, icon: Icon, tone, critical }) => (
         <div
           key={label}
-          className='rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-blue-100/25 transition-shadow hover:shadow-xl hover:shadow-blue-100/40'
+          className={cn(
+            "rounded-xl border bg-white p-4 shadow-lg transition-shadow hover:shadow-xl sm:rounded-2xl",
+            critical
+              ? "border-rose-200 shadow-rose-100/50 ring-1 ring-rose-100 hover:shadow-rose-100/70"
+              : "border-blue-100 shadow-blue-100/25 hover:shadow-blue-100/40",
+          )}
         >
           <div className='flex items-start justify-between gap-3'>
             <div className='min-w-0'>
-              <p className='text-xs font-semibold uppercase tracking-[0.12em] text-slate-500'>
+              <p
+                className={cn(
+                  "text-xs font-semibold uppercase tracking-[0.12em]",
+                  critical ? "text-rose-700" : "text-slate-500",
+                )}
+              >
                 {label}
               </p>
-              <p className='mt-2 break-words text-2xl font-semibold tracking-normal text-slate-950'>
+              <p
+                className={cn(
+                  "mt-2 break-words text-2xl font-semibold tracking-normal",
+                  critical ? "text-rose-700" : "text-slate-950",
+                )}
+              >
                 {value}
               </p>
             </div>
@@ -79,7 +95,14 @@ export function DashboardStats({
               <Icon className='h-4 w-4' />
             </span>
           </div>
-          <p className='mt-3 text-sm leading-5 text-slate-600'>{helper}</p>
+          <p
+            className={cn(
+              "mt-3 text-sm leading-5",
+              critical ? "font-medium text-rose-700" : "text-slate-600",
+            )}
+          >
+            {helper}
+          </p>
         </div>
       ))}
     </section>

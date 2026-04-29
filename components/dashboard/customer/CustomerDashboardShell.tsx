@@ -19,7 +19,7 @@ export function CustomerDashboardShell({
   const { logout, user } = useAuth();
   const [isSigningOut, startSignOutTransition] = useTransition();
   const [isPanelHidden, setIsPanelHidden] = useState(false);
-  const displayUser = user ?? viewer ?? null;
+  const displayUser = viewer ?? user ?? null;
 
   const handleLogout = () => {
     startSignOutTransition(() => {
@@ -44,8 +44,8 @@ export function CustomerDashboardShell({
         <div
           aria-hidden='true'
           className={cn(
-            "hidden shrink-0 xl:block",
-            isPanelHidden ? "w-[84px]" : "w-[268px]",
+            "hidden shrink-0 lg:block",
+            isPanelHidden ? "w-[76px] xl:w-[84px]" : "w-[244px] xl:w-[268px]",
           )}
         />
 
@@ -56,7 +56,7 @@ export function CustomerDashboardShell({
             isSigningOut={isSigningOut}
           />
 
-          <main className='mx-auto min-w-0 w-full max-w-[1260px] flex-1 px-4 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 xl:px-7 xl:py-7 2xl:max-w-[1360px]'>
+          <main className='mx-auto min-w-0 w-full max-w-[1360px] flex-1 px-3 py-4 sm:px-4 sm:py-5 md:px-5 lg:px-6 lg:py-6 xl:px-7 xl:py-7'>
             {children}
           </main>
         </div>

@@ -25,6 +25,20 @@ interface UseCartSyncOptions {
   syncOnChange?: boolean;
 }
 
+function getCartSyncKey() {
+  const { items, pendingRemovalLabTestIds } = useCartStore.getState();
+  const activeLabTestIds = items
+    .filter((item) => item.itemType === "TEST" && item.labTestId)
+    .map((item) => item.labTestId as string)
+    .sort();
+  const removalLabTestIds = [...pendingRemovalLabTestIds].sort();
+
+  return JSON.stringify({
+    activeLabTestIds,
+    removalLabTestIds,
+  });
+}
+
 /**
  * Hook for managing cart synchronization between client and server
  * Handles:
@@ -39,6 +53,7 @@ export function useCartSync(options: UseCartSyncOptions = {}) {
   const { user } = useAuth();
   const {
     items,
+    pendingRemovalLabTestIds,
     isSyncing,
     isInitialized,
     initializeFromServer,
@@ -49,6 +64,7 @@ export function useCartSync(options: UseCartSyncOptions = {}) {
     undefined,
   );
   const hasSyncedRef = useRef(false);
+  const lastSyncedKeyRef = useRef<string | null>(null);
 
   /**
    * Initialize cart from server on mount if user is authenticated
@@ -57,7 +73,9 @@ export function useCartSync(options: UseCartSyncOptions = {}) {
     if (!autoSync || !user?.id || hasSyncedRef.current) return;
 
     hasSyncedRef.current = true;
-    initializeFromServer();
+    initializeFromServer().finally(() => {
+      lastSyncedKeyRef.current = getCartSyncKey();
+    });
   }, [autoSync, user?.id, initializeFromServer]);
 
   /**
@@ -66,14 +84,18 @@ export function useCartSync(options: UseCartSyncOptions = {}) {
   useEffect(() => {
     if (!syncOnChange || !user?.id || isSyncing || !isInitialized) return;
 
+    const syncKey = getCartSyncKey();
+    if (syncKey === lastSyncedKeyRef.current) return;
+
     // Clear existing timeout
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current);
     }
 
     // Set new timeout for debounced sync
-    syncTimeoutRef.current = setTimeout(() => {
-      syncWithServer();
+    syncTimeoutRef.current = setTimeout(async () => {
+      await syncWithServer();
+      lastSyncedKeyRef.current = getCartSyncKey();
     }, syncDelay);
 
     return () => {
@@ -83,6 +105,7 @@ export function useCartSync(options: UseCartSyncOptions = {}) {
     };
   }, [
     items,
+    pendingRemovalLabTestIds,
     user?.id,
     syncOnChange,
     isSyncing,
@@ -97,6 +120,7 @@ export function useCartSync(options: UseCartSyncOptions = {}) {
   const manualSync = useCallback(async () => {
     if (!user?.id) return;
     await syncWithServer();
+    lastSyncedKeyRef.current = getCartSyncKey();
   }, [user?.id, syncWithServer]);
 
   /**
@@ -206,6 +230,7 @@ export function useCartSyncCrossTab() {
 
       channel.onmessage = (event) => {
         if (event.data.type === "CART_UPDATED") {
+          if (event.data.deviceId === getCartDeviceId()) return;
           syncWithServer();
         }
       };

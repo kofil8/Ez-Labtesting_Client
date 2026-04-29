@@ -168,6 +168,8 @@ function isRoleAllowed(pathname: string, role: NormalizedUserRole | null) {
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const accessToken = req.cookies.get("accessToken")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
+  const hasSessionCookie = Boolean(accessToken || refreshToken);
 
   // Bypass auth for development if enabled
   const bypassAuth =
@@ -184,12 +186,12 @@ export function proxy(req: NextRequest) {
     !pathname.startsWith("/_next")
   ) {
     console.log(
-      `[PROXY] Path: ${pathname}, Token: ${accessToken ? "exists" : "none"}, Role: ${userRole}`,
+      `[PROXY] Path: ${pathname}, Access: ${accessToken ? "exists" : "none"}, Refresh: ${refreshToken ? "exists" : "none"}, Role: ${userRole}`,
     );
   }
 
   if (canonicalCustomerPath) {
-    if (!bypassAuth && !accessToken) {
+    if (!bypassAuth && !hasSessionCookie) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       loginUrl.searchParams.set(
@@ -206,7 +208,7 @@ export function proxy(req: NextRequest) {
 
   // IMPORTANT: Check protected paths first (checkout, orders, payment)
   if (isProtectedPath(pathname)) {
-    if (!bypassAuth && !accessToken) {
+    if (!bypassAuth && !hasSessionCookie) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       loginUrl.searchParams.set("from", `${pathname}${search || ""}`);
@@ -214,6 +216,10 @@ export function proxy(req: NextRequest) {
         `[PROXY] PROTECTED: Redirecting ${pathname} to login (from: ${pathname}${search})`,
       );
       return NextResponse.redirect(loginUrl);
+    }
+
+    if (!accessToken && refreshToken) {
+      return NextResponse.next();
     }
 
     if (!bypassAuth && !isRoleAllowed(pathname, userRole)) {
@@ -251,15 +257,15 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // If no access token exists, redirect authenticated routes to login
-  if (!accessToken) {
+  // If no session cookie exists, redirect authenticated routes to login.
+  if (!hasSessionCookie) {
     // If trying to access authenticated route, redirect to login
     if (!isPublicPath(pathname) && pathname !== "/dashboard") {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       loginUrl.searchParams.set("from", `${pathname}${search}`);
       console.log(
-        `[PROXY] NO TOKEN: Redirecting ${pathname} to login (from: ${pathname}${search})`,
+        `[PROXY] NO SESSION: Redirecting ${pathname} to login (from: ${pathname}${search})`,
       );
       return NextResponse.redirect(loginUrl);
     }
@@ -274,6 +280,12 @@ export function proxy(req: NextRequest) {
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("from", `${pathname}${search}`);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // A refresh token without an access token is still a valid cookie session.
+  // Let the server-side route load refresh/rotate the session and enforce role.
+  if (!accessToken && refreshToken) {
+    return NextResponse.next();
   }
 
   // Redirect authenticated users away from the public home/dashboard root to their role dashboard

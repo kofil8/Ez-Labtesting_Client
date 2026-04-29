@@ -28,6 +28,7 @@ interface CartState {
   addItem: (item: CartItem) => void;
   removeItem: (itemId: string) => void;
   clearCart: () => void;
+  resetCart: () => void;
   setPromoCode: (code: string, discount: number) => void;
   clearPromoCode: () => void;
   getTotal: () => number;
@@ -43,6 +44,11 @@ interface CartState {
 }
 
 const CART_DEVICE_ID_KEY = "cart-device-id";
+const CART_SYNC_MIN_INTERVAL_MS = 5000;
+
+let activeSyncPromise: Promise<void> | null = null;
+let lastCompletedSyncSignature: string | null = null;
+let lastSyncStartedAt = 0;
 
 export function getCartDeviceId() {
   if (typeof window === "undefined") return "server";
@@ -80,6 +86,19 @@ function serverItemsToClientItems(items: any[]): CartItem[] {
     slug: item.slug || undefined,
     isPanel: false,
   }));
+}
+
+function getCartSyncSignature(state: Pick<CartState, "items" | "pendingRemovalLabTestIds">) {
+  const activeLabTestIds = state.items
+    .filter((item) => item.itemType === "TEST" && item.labTestId)
+    .map((item) => item.labTestId as string)
+    .sort();
+  const removalLabTestIds = [...state.pendingRemovalLabTestIds].sort();
+
+  return JSON.stringify({
+    activeLabTestIds,
+    removalLabTestIds,
+  });
 }
 
 export const useCartStore = create<CartState>()(
@@ -138,6 +157,25 @@ export const useCartStore = create<CartState>()(
             ] as string[]),
           ],
         }));
+        broadcastCartUpdated();
+      },
+
+      resetCart: () => {
+        activeSyncPromise = null;
+        lastCompletedSyncSignature = null;
+        lastSyncStartedAt = 0;
+
+        set({
+          items: [],
+          promoCode: null,
+          discount: 0,
+          lastSyncAt: null,
+          isSyncing: false,
+          isInitialized: false,
+          pendingRemovalLabTestIds: [],
+          isLocked: false,
+          lockExpiresAt: null,
+        });
         broadcastCartUpdated();
       },
 
@@ -230,57 +268,78 @@ export const useCartStore = create<CartState>()(
        */
       syncWithServer: async () => {
         const state = get();
-        if (state.isSyncing) return; // Prevent duplicate syncs
+        const syncSignature = getCartSyncSignature(state);
+        const hasPendingRemovals = state.pendingRemovalLabTestIds.length > 0;
+        const now = Date.now();
 
-        set({ isSyncing: true });
-        try {
-          const syncItems = [
-            ...state.items
-              .filter((item) => item.itemType === "TEST" && item.labTestId)
-              .map((item) => ({
-                labTestId: item.labTestId,
-                quantity: 1,
+        if (activeSyncPromise) return activeSyncPromise;
+        if (!hasPendingRemovals && syncSignature === lastCompletedSyncSignature) return;
+        if (
+          !hasPendingRemovals &&
+          now - lastSyncStartedAt < CART_SYNC_MIN_INTERVAL_MS &&
+          syncSignature === lastCompletedSyncSignature
+        ) {
+          return;
+        }
+
+        activeSyncPromise = (async () => {
+          set({ isSyncing: true });
+          lastSyncStartedAt = Date.now();
+
+          try {
+            const syncItems = [
+              ...state.items
+                .filter((item) => item.itemType === "TEST" && item.labTestId)
+                .map((item) => ({
+                  labTestId: item.labTestId,
+                  quantity: 1,
+                  drawCenterId: null,
+                })),
+              ...state.pendingRemovalLabTestIds.map((labTestId) => ({
+                labTestId,
+                quantity: 0,
                 drawCenterId: null,
               })),
-            ...state.pendingRemovalLabTestIds.map((labTestId) => ({
-              labTestId,
-              quantity: 0,
-              drawCenterId: null,
-            })),
-          ];
+            ];
 
-          const response = await clientFetch("/cart/sync", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Cart-Device-Id": getCartDeviceId(),
-            },
-            body: JSON.stringify({
-              items: syncItems,
-              clientTimestamp: new Date(),
-              deviceId: getCartDeviceId(),
-            }),
-            redirectOnAuthFailure: false,
-          });
+            const deviceId = getCartDeviceId();
+            const response = await clientFetch("/cart/sync", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Cart-Device-Id": deviceId,
+              },
+              body: JSON.stringify({
+                items: syncItems,
+                clientTimestamp: new Date(),
+                deviceId,
+              }),
+              redirectOnAuthFailure: false,
+            });
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data.data && data.data.items) {
-              get().applyServerCart(data.data);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.data && data.data.items) {
+                get().applyServerCart(data.data);
+              }
+              lastCompletedSyncSignature = getCartSyncSignature(get());
+            } else if (response.status === 409) {
+              const data = await response.json().catch(() => null);
+              console.warn(data?.message || "Cart is locked during checkout");
+            } else if (response.status === 401) {
+              // User session expired
+              console.warn("User session expired, unable to sync cart");
             }
-          } else if (response.status === 409) {
-            const data = await response.json().catch(() => null);
-            console.warn(data?.message || "Cart is locked during checkout");
-          } else if (response.status === 401) {
-            // User session expired
-            console.warn("User session expired, unable to sync cart");
+          } catch (error) {
+            console.error("Failed to sync cart with server:", error);
+            // Silently fail - use local cache
+          } finally {
+            set({ isSyncing: false });
+            activeSyncPromise = null;
           }
-        } catch (error) {
-          console.error("Failed to sync cart with server:", error);
-          // Silently fail - use local cache
-        } finally {
-          set({ isSyncing: false });
-        }
+        })();
+
+        return activeSyncPromise;
       },
     }),
     {
