@@ -1,15 +1,19 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ezlabtesting.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+    "https://ezlabtesting.com";
 
   const routes = [
     "",
     "/how-it-works",
-    "/partners",
+    "/find-lab-center",
     "/faqs",
     "/help-center",
     "/lab-partner",
+    "/lab-partners",
     "/privacy-policy",
     "/terms-of-service",
   ].map((route) => ({
