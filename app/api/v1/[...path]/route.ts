@@ -13,6 +13,15 @@ const HOP_BY_HOP_HEADERS = new Set([
   "upgrade",
 ]);
 
+const CLIENT_SUPPLIED_PROXY_HEADERS = [
+  "forwarded",
+  "x-forwarded-for",
+  "x-forwarded-host",
+  "x-forwarded-port",
+  "x-forwarded-proto",
+  "x-real-ip",
+];
+
 function getBackendBaseUrl() {
   return (
     process.env.API_BASE_URL ||
@@ -40,6 +49,13 @@ function buildProxyHeaders(request: NextRequest) {
   HOP_BY_HOP_HEADERS.forEach((header) => {
     headers.delete(header);
   });
+
+  CLIENT_SUPPLIED_PROXY_HEADERS.forEach((header) => {
+    headers.delete(header);
+  });
+
+  headers.set("x-forwarded-host", request.headers.get("host") || request.nextUrl.host);
+  headers.set("x-forwarded-proto", request.nextUrl.protocol.replace(":", ""));
 
   return headers;
 }

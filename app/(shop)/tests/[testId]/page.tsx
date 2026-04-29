@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/app/actions/auth";
 import { getPublicTestById } from "@/app/actions/public-tests";
 import { PageContainer } from "@/components/shared/PageContainer";
+import { ScrollToTopOnMount } from "@/components/shared/ScrollToTopOnMount";
 import { SiteFooter } from "@/components/shared/SiteFooter";
 import { TestDetail } from "@/components/tests/TestDetail";
 import { TestDetailSkeleton } from "@/components/tests/TestDetailSkeleton";
@@ -54,6 +55,7 @@ export default async function TestDetailPage({
 
   return (
     <div className='flex min-h-screen flex-col bg-background'>
+      <ScrollToTopOnMount scrollKey={test.id} />
       <div className='border-b border-slate-200 bg-white/95 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95'>
         <PageContainer>
           <div className='flex flex-wrap items-center justify-center gap-4 text-sm font-medium text-slate-600 dark:text-slate-400'>

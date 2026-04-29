@@ -55,6 +55,8 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (orderId: string) => toApiUrl(`/orders/${orderId}`),
     GET_TRACKING: (orderId: string) =>
       toApiUrl(`/orders/${orderId}/tracking`),
+    GET_REQUISITION: (orderId: string) =>
+      toApiUrl(`/orders/${orderId}/requisition`),
     CONFIRM_PAYMENT: (orderId: string) =>
       toApiUrl(`/orders/${orderId}/confirm-payment`),
     RETRY_ACCESS: (orderId: string) =>
@@ -63,10 +65,10 @@ export const API_ENDPOINTS = {
 
   // Payment endpoints
   PAYMENTS: {
-    CREATE_INTENT: toApiUrl("/payments/create-intent"),
-    CONFIRM: toApiUrl("/payments/confirm"),
+    CREATE_INTENT: toApiUrl("/payment/order-intent"),
+    CONFIRM: toApiUrl("/payment/confirm-payment-intent"),
     GET_STATUS: (paymentIntentId: string) =>
-      toApiUrl(`/payments/${paymentIntentId}`),
+      toApiUrl(`/payment/${paymentIntentId}`),
   },
 
   // Lab tests

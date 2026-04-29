@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hook/use-toast";
+import { useCartSync } from "@/hook/useCartSync";
+import { useAuth } from "@/lib/auth-context";
+import { useCartStore } from "@/lib/store/cart-store";
 import {
   buildCartItemFromPublicTest,
   canAddCatalogTestToCart,
@@ -12,7 +15,6 @@ import {
   formatStartingPriceLabel,
   getTestStartingLab,
 } from "@/lib/tests/storefront-display";
-import { useCartStore } from "@/lib/store/cart-store";
 import type { PublicCatalogTest } from "@/types/public-test";
 import {
   ArrowRight,
@@ -23,6 +25,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { WhatsIncluded } from "./purchase/WhatsIncluded";
 
 interface TestPurchaseCardProps {
@@ -31,6 +34,11 @@ interface TestPurchaseCardProps {
 
 export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
   const { toast } = useToast();
+  const { manualSync } = useCartSync({ autoSync: false });
+  const { isAuthenticated, isLoading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const addItem = useCartStore((state) => state.addItem);
   const items = useCartStore((state) => state.items);
   const categoryName = test.category?.name;
@@ -40,17 +48,31 @@ export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
       : "Most adults";
   const startingLab = getTestStartingLab(test);
   const primaryBrowseHref = test.isPanel ? "/panels" : "/tests";
-  const primaryBrowseLabel = test.isPanel ? "Browse More Panels" : "Browse More Tests";
-  const primaryHeading = test.isPanel ? "Review This Panel" : "Review This Test";
+  const primaryBrowseLabel = test.isPanel
+    ? "Browse More Panels"
+    : "Browse More Tests";
+  const primaryHeading = test.isPanel
+    ? "Review This Panel"
+    : "Review This Test";
   const cartItem = buildCartItemFromPublicTest(test);
   const canAddToCart = canAddCatalogTestToCart(test) && !!cartItem;
   const isAlreadyInCart = items.some((item) => item.id === `test-${test.id}`);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      const query = searchParams.toString();
+      const from = query ? `${pathname}?${query}` : pathname;
+      router.push(`/login?from=${encodeURIComponent(from)}`);
+      return;
+    }
+
     if (!cartItem) {
       toast({
         title: "Unavailable for cart",
-        description: "This product does not currently have a public storefront price.",
+        description:
+          "This product does not currently have a public storefront price.",
         variant: "destructive",
       });
       return;
@@ -65,6 +87,10 @@ export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
     }
 
     addItem(cartItem);
+
+    // Sync with server after adding item
+    await manualSync();
+
     toast({
       title: "Added to cart",
       description: `${test.testName} has been added to your cart.`,
@@ -136,7 +162,9 @@ export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
             </div>
             <div>
               <h4 className='font-semibold text-slate-900 dark:text-white'>
-                {test.isPanel ? "What to expect from this panel" : "What to expect"}
+                {test.isPanel
+                  ? "What to expect from this panel"
+                  : "What to expect"}
               </h4>
               <p className='mt-1 text-sm text-slate-600 dark:text-slate-400'>
                 {test.isPanel
@@ -158,9 +186,10 @@ export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
                   Panel composition
                 </h4>
                 <p className='mt-1 text-sm text-slate-600'>
-                  This panel currently includes {test.componentCount ?? 0} active
-                  component {test.componentCount === 1 ? "test" : "tests"} in
-                  the order defined by the backend catalog.
+                  This panel currently includes {test.componentCount ?? 0}{" "}
+                  active component{" "}
+                  {test.componentCount === 1 ? "test" : "tests"} in the order
+                  defined by the backend catalog.
                 </p>
               </div>
             </div>
@@ -171,12 +200,17 @@ export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
 
         <Button
           onClick={handleAddToCart}
-          disabled={!canAddToCart || isAlreadyInCart}
+          disabled={
+            isLoading ||
+            (isAuthenticated && (!canAddToCart || isAlreadyInCart))
+          }
           className='h-11 w-full bg-blue-600 text-base font-semibold shadow-sm hover:bg-blue-700 disabled:bg-slate-300 disabled:text-slate-600'
           size='lg'
         >
           <ShoppingCart className='mr-2 h-4 w-4' />
-          {isAlreadyInCart
+          {!isAuthenticated
+            ? "Add to Cart"
+            : isAlreadyInCart
             ? "Already in Cart"
             : canAddToCart
               ? "Add to Cart"

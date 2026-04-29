@@ -2,6 +2,7 @@ import { LabCenterService } from "@/lib/services/lab-centers.service";
 import {
   LabCenter,
   MarkerData,
+  ProviderCode,
   SearchCache,
   SearchSuggestion,
 } from "@/types/lab-center";
@@ -20,6 +21,7 @@ interface UsePlacesSearchReturn {
     type?: string,
     status?: string,
     search?: string,
+    providerCode?: ProviderCode,
   ) => Promise<void>;
   searchByQuery: (query: string) => Promise<void>;
   getSuggestions: (query: string) => Promise<void>;
@@ -65,9 +67,10 @@ class SearchResultsCache {
     type?: string,
     status?: string,
     search?: string,
+    providerCode?: ProviderCode,
   ): string {
     // Round to 4 decimals to avoid cache misses for slightly different coords
-    return `${lat.toFixed(4)}:${lng.toFixed(4)}:${radius}:${type || "all"}:${status || "all"}:${(search || "").trim().toLowerCase()}`;
+    return `${lat.toFixed(4)}:${lng.toFixed(4)}:${radius}:${type || "all"}:${status || "all"}:${providerCode || "all"}:${(search || "").trim().toLowerCase()}`;
   }
 }
 
@@ -96,6 +99,7 @@ export function usePlacesSearch(): UsePlacesSearchReturn {
       type?: string,
       status?: string,
       search?: string,
+      providerCode?: ProviderCode,
     ) => {
       // Cancel previous request if exists
       if (abortControllerRef.current) {
@@ -110,6 +114,7 @@ export function usePlacesSearch(): UsePlacesSearchReturn {
         type,
         status,
         search,
+        providerCode,
       );
 
       // Check cache first
@@ -118,7 +123,7 @@ export function usePlacesSearch(): UsePlacesSearchReturn {
         setLabs(
           cachedResults.map((lab) => ({
             ...lab,
-            source: "database" as const,
+            source: lab.source || "database",
           })),
         );
         setError(null);
@@ -136,6 +141,7 @@ export function usePlacesSearch(): UsePlacesSearchReturn {
           radius,
           search,
           type,
+          providerCode,
           status,
         });
 
@@ -147,7 +153,7 @@ export function usePlacesSearch(): UsePlacesSearchReturn {
         // Transform results to MarkerData
         const markerData: MarkerData[] = results.map((lab) => ({
           ...lab,
-          source: "database",
+          source: lab.source || "database",
         }));
 
         setLabs(markerData);
@@ -207,7 +213,7 @@ export function usePlacesSearch(): UsePlacesSearchReturn {
 
       const markerData: MarkerData[] = results.map((lab) => ({
         ...lab,
-        source: "database",
+        source: lab.source || "database",
       }));
 
       setLabs(markerData);

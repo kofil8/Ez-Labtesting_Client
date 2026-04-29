@@ -21,7 +21,6 @@ const PUBLIC_ROUTES = [
   "/find-lab-center",
   "/verify-otp",
   "/cart",
-  "/results",
   "/how-it-works",
   "/faqs",
   "/privacy-policy",
@@ -29,10 +28,11 @@ const PUBLIC_ROUTES = [
   "/hipaa-notice",
   "/accessibility",
   "/help-center",
+  "/lab-partners",
   "/test-preparation",
-  "/lab-partner",
   // Allow service worker and messaging scope without auth so push can register
   "/firebase-messaging-sw.js",
+  "/firebase-messaging-config.js",
   "/firebase-cloud-messaging-push-scope",
 ];
 
@@ -105,6 +105,44 @@ function isCustomerOnlyPublicPath(pathname: string) {
   );
 }
 
+function getCanonicalCustomerDashboardPath(pathname: string): string | null {
+  if (pathname === "/profile" || pathname === "/profile/pages/personal") {
+    return "/dashboard/customer/profile";
+  }
+
+  if (pathname === "/profile/orders") {
+    return "/dashboard/customer/orders";
+  }
+
+  if (pathname === "/profile/transactions" || pathname === "/transactions") {
+    return "/dashboard/customer/transactions";
+  }
+
+  if (pathname === "/profile/security") {
+    return "/dashboard/customer/security";
+  }
+
+  if (pathname === "/change-password") {
+    return "/dashboard/customer/change-password";
+  }
+
+  if (pathname === "/results") {
+    return "/dashboard/customer/results";
+  }
+
+  const pendingResultMatch = pathname.match(/^\/results\/([^/]+)\/pending$/);
+  if (pendingResultMatch) {
+    return `/dashboard/customer/results/${pendingResultMatch[1]}/pending`;
+  }
+
+  const resultMatch = pathname.match(/^\/results\/([^/]+)$/);
+  if (resultMatch) {
+    return `/dashboard/customer/results/${resultMatch[1]}`;
+  }
+
+  return null;
+}
+
 function getRoleFromToken(token?: string): NormalizedUserRole | null {
   if (!token) return null;
 
@@ -130,12 +168,17 @@ function isRoleAllowed(pathname: string, role: NormalizedUserRole | null) {
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const accessToken = req.cookies.get("accessToken")?.value;
+  const refreshToken = req.cookies.get("refreshToken")?.value;
+  const hasSessionCookie = Boolean(accessToken || refreshToken);
 
   // Bypass auth for development if enabled
-  const bypassAuth = process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
+  const bypassAuth =
+    process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_BYPASS_AUTH === "true";
 
   // Extract role directly from JWT (authoritative source)
   const userRole = getRoleFromToken(accessToken);
+  const canonicalCustomerPath = getCanonicalCustomerDashboardPath(pathname);
 
   // Reduced logging - only log in development and only non-asset requests
   if (
@@ -143,13 +186,29 @@ export function proxy(req: NextRequest) {
     !pathname.startsWith("/_next")
   ) {
     console.log(
-      `[PROXY] Path: ${pathname}, Token: ${accessToken ? "exists" : "none"}, Role: ${userRole}`,
+      `[PROXY] Path: ${pathname}, Access: ${accessToken ? "exists" : "none"}, Refresh: ${refreshToken ? "exists" : "none"}, Role: ${userRole}`,
     );
+  }
+
+  if (canonicalCustomerPath) {
+    if (!bypassAuth && !hasSessionCookie) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set(
+        "from",
+        `${canonicalCustomerPath}${search || ""}`,
+      );
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const canonicalUrl = req.nextUrl.clone();
+    canonicalUrl.pathname = canonicalCustomerPath;
+    return NextResponse.redirect(canonicalUrl);
   }
 
   // IMPORTANT: Check protected paths first (checkout, orders, payment)
   if (isProtectedPath(pathname)) {
-    if (!bypassAuth && !accessToken) {
+    if (!bypassAuth && !hasSessionCookie) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       loginUrl.searchParams.set("from", `${pathname}${search || ""}`);
@@ -157,6 +216,10 @@ export function proxy(req: NextRequest) {
         `[PROXY] PROTECTED: Redirecting ${pathname} to login (from: ${pathname}${search})`,
       );
       return NextResponse.redirect(loginUrl);
+    }
+
+    if (!accessToken && refreshToken) {
+      return NextResponse.next();
     }
 
     if (!bypassAuth && !isRoleAllowed(pathname, userRole)) {
@@ -194,15 +257,15 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // If no access token exists, redirect authenticated routes to login
-  if (!accessToken) {
+  // If no session cookie exists, redirect authenticated routes to login.
+  if (!hasSessionCookie) {
     // If trying to access authenticated route, redirect to login
     if (!isPublicPath(pathname) && pathname !== "/dashboard") {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       loginUrl.searchParams.set("from", `${pathname}${search}`);
       console.log(
-        `[PROXY] NO TOKEN: Redirecting ${pathname} to login (from: ${pathname}${search})`,
+        `[PROXY] NO SESSION: Redirecting ${pathname} to login (from: ${pathname}${search})`,
       );
       return NextResponse.redirect(loginUrl);
     }
@@ -217,6 +280,12 @@ export function proxy(req: NextRequest) {
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("from", `${pathname}${search}`);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // A refresh token without an access token is still a valid cookie session.
+  // Let the server-side route load refresh/rotate the session and enforce role.
+  if (!accessToken && refreshToken) {
+    return NextResponse.next();
   }
 
   // Redirect authenticated users away from the public home/dashboard root to their role dashboard

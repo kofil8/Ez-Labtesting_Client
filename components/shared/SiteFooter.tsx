@@ -22,7 +22,7 @@ const testsLinks = [
 
 const companyLinks = [
   { href: "/how-it-works", label: "How It Works" },
-  { href: "/lab-partner", label: "Lab Partners" },
+  { href: "/lab-partners", label: "Lab Partners" },
   { href: "/find-lab-center", label: "Draw Center Locator" },
   { href: "/faqs", label: "FAQs" },
   { href: "/help-center", label: "Help Center" },
@@ -179,34 +179,34 @@ export function SiteFooter({
           </div>
         </div>
 
-        <div className='pb-8 flex justify-center'>
+        <div className='flex justify-center pb-6'>
           <div
-            className={`w-full max-w-fit rounded-2xl border px-4 py-4 sm:px-6 shadow-lg ${cardToneClasses}`}
+            className={`w-full max-w-fit rounded-xl border px-3 py-2.5 shadow-md sm:px-4 ${cardToneClasses}`}
           >
-            <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-              <div className='flex items-center gap-4'>
-                <div className='rounded-full border border-white/10 bg-slate-950/40 p-2 sm:p-2.5'>
+            <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className='grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-slate-950/40'>
                   {isRestricted ? (
-                    <ShieldAlert className='h-4 w-4 sm:h-5 sm:w-5' />
+                    <ShieldAlert className='h-4 w-4' />
                   ) : (
-                    <Radar className='h-4 w-4 sm:h-5 sm:w-5' />
+                    <Radar className='h-4 w-4' />
                   )}
                 </div>
 
                 <div className='flex-1'>
                   <div className='flex flex-wrap items-center gap-2'>
-                    <p className='text-sm font-semibold text-white sm:text-base'>
+                    <p className='text-sm font-semibold leading-tight text-white'>
                       {isLoading && !restrictionStatus
                         ? "Refreshing signal..."
                         : availabilityLabel}
                     </p>
                     <span
-                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.1em] sm:px-2.5 ${statusChipClasses}`}
+                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] ${statusChipClasses}`}
                     >
                       {locationSourceLabel}
                     </span>
                   </div>
-                  <div className='mt-1 flex flex-wrap items-center text-[11px] text-slate-300 sm:text-xs'>
+                  <div className='mt-0.5 flex flex-wrap items-center text-[11px] leading-tight text-slate-300'>
                     <span>
                       {stateLabel
                         ? `Region: ${stateLabel}`

@@ -6,6 +6,7 @@ import { ReactNode } from "react";
 interface ErrorStateProps {
   title: string;
   description: string;
+  descriptionClassName?: string;
   sessionExpired?: boolean;
   action?: ReactNode;
 }
@@ -13,6 +14,7 @@ interface ErrorStateProps {
 export function ErrorState({
   title,
   description,
+  descriptionClassName = "text-slate-600",
   sessionExpired = false,
   action,
 }: ErrorStateProps) {
@@ -23,7 +25,7 @@ export function ErrorState({
           <AlertCircle className='mt-0.5 h-5 w-5 text-rose-600' />
           <div className='space-y-1'>
             <h2 className='text-base font-semibold text-slate-900'>{title}</h2>
-            <p className='text-sm text-slate-600'>{description}</p>
+            <p className={`text-sm ${descriptionClassName}`}>{description}</p>
           </div>
         </div>
 
@@ -31,7 +33,7 @@ export function ErrorState({
           {action}
           {!action && sessionExpired && (
             <Button asChild aria-label='Sign in to continue'>
-              <Link href='/login?from=/profile'>Sign In</Link>
+              <Link href='/login?from=/dashboard/customer/profile'>Sign In</Link>
             </Button>
           )}
           {!action && !sessionExpired && (
@@ -40,7 +42,7 @@ export function ErrorState({
               variant='outline'
               aria-label='Retry loading profile'
             >
-              <Link href='/profile'>Retry</Link>
+              <Link href='/dashboard/customer/profile'>Retry</Link>
             </Button>
           )}
         </div>

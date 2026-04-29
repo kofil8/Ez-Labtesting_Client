@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hook/use-toast";
+import { useAuth } from "@/lib/auth-context";
 import {
   buildCartItemFromPublicTest,
   canAddCatalogTestToCart,
@@ -27,6 +28,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface TestCardProps {
   test: PublicCatalogTest;
@@ -40,6 +42,10 @@ export function TestCard({
   index = 0,
 }: TestCardProps) {
   const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const addItem = useCartStore((state) => state.addItem);
   const items = useCartStore((state) => state.items);
   const categoryName = test.category?.name || "General Health";
@@ -57,6 +63,15 @@ export function TestCard({
   const isAlreadyInCart = items.some((item) => item.id === `test-${test.id}`);
 
   const handleAddToCart = () => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      const query = searchParams.toString();
+      const from = query ? `${pathname}?${query}` : pathname;
+      router.push(`/login?from=${encodeURIComponent(from)}`);
+      return;
+    }
+
     if (!cartItem) {
       toast({
         title: "Unavailable for cart",
@@ -225,12 +240,17 @@ export function TestCard({
         <div className='mt-5 grid gap-2 sm:grid-cols-2'>
           <Button
             onClick={handleAddToCart}
-            disabled={!canAddToCart || isAlreadyInCart}
+            disabled={
+              isLoading ||
+              (isAuthenticated && (!canAddToCart || isAlreadyInCart))
+            }
             variant='outline'
             className='h-11 rounded-full border-slate-300 text-slate-700 hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400'
           >
             <ShoppingCart className='mr-2 h-4 w-4' />
-            {isAlreadyInCart
+            {!isAuthenticated
+              ? "Add to Cart"
+              : isAlreadyInCart
               ? "In Cart"
               : canAddToCart
                 ? "Add to Cart"
@@ -240,7 +260,7 @@ export function TestCard({
             asChild
             className='h-11 w-full rounded-full bg-sky-600 text-white hover:bg-sky-700'
           >
-            <Link href={`/tests/${test.slug}`}>
+            <Link href={`/tests/${test.slug}`} scroll>
               View Details
               <ArrowRight className='ml-2 h-4 w-4' />
             </Link>

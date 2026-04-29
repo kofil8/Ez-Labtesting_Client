@@ -137,6 +137,26 @@ function normalizeNumber(value: unknown): number | null {
   return null;
 }
 
+function normalizeStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    return [value.trim()];
+  }
+
+  return [];
+}
+
+function normalizeStringListLabel(value: unknown): string | undefined {
+  const values = normalizeStringArray(value);
+  return values.length > 0 ? values.join(", ") : undefined;
+}
+
 function normalizeLabSummary(rawLab: any): PublicLabSummary | null {
   if (!rawLab || typeof rawLab !== "object") {
     return null;
@@ -196,10 +216,7 @@ function normalizePanelComponents(rawComponents: unknown): PublicPanelComponent[
             ? component.specimenType.trim()
             : undefined,
         baseTurnaroundDays: normalizeNumber(component.baseTurnaroundDays),
-        cptCode:
-          typeof component.cptCode === "string" && component.cptCode.trim()
-            ? component.cptCode.trim()
-            : undefined,
+        cptCode: normalizeStringListLabel(component.cptCode),
         testImageUrl: normalizePublicTestImageUrl(component.testImageUrl),
         isPanel:
           typeof component.isPanel === "boolean" ? component.isPanel : undefined,
@@ -311,10 +328,8 @@ export function normalizePublicTest(rawTest: any): PublicCatalogTest {
         : "Blood sample",
     turnaround: turnaroundDays * 24,
     turnaroundDays,
-    cptCode:
-      typeof rawTest?.cptCode === "string" && rawTest.cptCode.trim()
-        ? rawTest.cptCode.trim()
-        : undefined,
+    cptCode: normalizeStringListLabel(rawTest?.cptCode),
+    setUpSchedule: normalizeStringArray(rawTest?.setUpSchedule),
     preparation:
       typeof rawTest?.preparationInstructions === "string" &&
       rawTest.preparationInstructions.trim()
@@ -344,6 +359,14 @@ export function normalizePublicTest(rawTest: any): PublicCatalogTest {
       typeof rawTest?.isPopular === "boolean" ? rawTest.isPopular : undefined,
     isPanel:
       typeof rawTest?.isPanel === "boolean" ? rawTest.isPanel : undefined,
+    accessLabTestId:
+      typeof rawTest?.accessLabTestId === "string" && rawTest.accessLabTestId
+        ? rawTest.accessLabTestId
+        : null,
+    startingLabTestId:
+      typeof rawTest?.startingLabTestId === "string" && rawTest.startingLabTestId
+        ? rawTest.startingLabTestId
+        : null,
     startingPrice: normalizeNumber(rawTest?.startingPrice),
     startingLab,
     componentCount:

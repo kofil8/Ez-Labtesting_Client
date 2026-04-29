@@ -76,7 +76,7 @@ export function TransactionSummaryCard() {
   }, 0);
 
   return (
-    <Card className='hover:shadow-md transition-shadow'>
+    <Card className='rounded-[26px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_24px_60px_-40px_rgba(15,23,42,0.42)]'>
       <CardHeader className='pb-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
@@ -94,13 +94,13 @@ export function TransactionSummaryCard() {
         ) : (
           <>
             <div className='grid grid-cols-2 gap-3'>
-              <div className='p-3 rounded-lg bg-green-50 border border-green-200'>
+              <div className='rounded-[20px] border border-emerald-200 bg-emerald-50/80 p-3'>
                 <p className='text-xs text-muted-foreground'>Completed</p>
                 <p className='text-lg font-semibold text-green-700 mt-1'>
                   {completedCount}
                 </p>
               </div>
-              <div className='p-3 rounded-lg bg-blue-50 border border-blue-200'>
+              <div className='rounded-[20px] border border-sky-200 bg-sky-50/80 p-3'>
                 <p className='text-xs text-muted-foreground'>Net Amount</p>
                 <p className='text-lg font-semibold text-blue-700 mt-1'>
                   {formatCurrency(Math.abs(totalAmount))}
@@ -108,7 +108,7 @@ export function TransactionSummaryCard() {
               </div>
             </div>
             <p className='text-xs text-muted-foreground text-center'>
-              Total transactions: {transactions.length}
+              {transactions.length} recorded payment events
             </p>
           </>
         )}
@@ -117,7 +117,7 @@ export function TransactionSummaryCard() {
       <CardFooter className='border-t pt-3'>
         <Button asChild variant='outline' size='sm' className='w-full'>
           <Link
-            href='/profile/transactions'
+            href='/dashboard/customer/transactions'
             className='flex items-center justify-between'
           >
             View History

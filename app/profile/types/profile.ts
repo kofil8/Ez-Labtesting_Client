@@ -43,10 +43,14 @@ export interface Profile {
   id: string;
   firstName: string;
   lastName: string;
+  username?: string;
+  bio?: string;
   displayName?: string;
   email: string;
   role: Role;
   roleName?: string; // For display (e.g., "Super Admin", "Patient")
+  status?: string;
+  isVerified?: boolean;
   avatarUrl?: string;
   contactInfo: ContactInfo;
   medicalInfo: MedicalInfo;

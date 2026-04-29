@@ -207,7 +207,7 @@ export function MFASetupForm() {
               onDone={() => {
                 setSetupStep("idle");
                 setBackupCodes([]);
-                window.location.href = "/profile/security";
+                window.location.href = "/dashboard/customer/security";
               }}
             />
           )}

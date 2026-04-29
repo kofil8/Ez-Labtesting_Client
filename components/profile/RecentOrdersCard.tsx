@@ -62,6 +62,10 @@ export function RecentOrdersCard() {
       case "FAILED":
       case "CANCELLED":
         return "bg-red-100 text-red-700 border-red-200";
+      case "MANUAL_REVIEW":
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case "REFUNDED":
+        return "bg-slate-100 text-slate-700 border-slate-200";
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
@@ -73,7 +77,7 @@ export function RecentOrdersCard() {
   };
 
   return (
-    <Card className='hover:shadow-md transition-shadow'>
+    <Card className='rounded-[26px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)] transition-shadow hover:shadow-[0_24px_60px_-40px_rgba(15,23,42,0.42)]'>
       <CardHeader className='pb-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
@@ -95,19 +99,19 @@ export function RecentOrdersCard() {
           orders.map((order) => (
             <div
               key={order.id}
-              className='flex items-center justify-between p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors'
+              className='flex items-center justify-between rounded-[20px] border border-slate-200/80 bg-slate-50/70 p-3 transition-colors hover:bg-white'
             >
               <div className='flex-1 min-w-0'>
                 <p className='text-sm font-medium truncate'>
-                  Order #{order.id}
+                  {order.orderNumber}
                 </p>
                 <p className='text-xs text-muted-foreground'>
-                  {formatDateShort(order.createdAt)} | {formatCurrency(order.total)}
+                  {formatDateShort(order.createdAt)} • {formatCurrency(order.total)}
                 </p>
               </div>
               <Badge
                 variant='outline'
-                className={`ml-2 ${getStatusColor(order.status)} text-xs`}
+                className={`ml-2 rounded-full ${getStatusColor(order.status)} text-xs`}
               >
                 {toStatusLabel(order.status)}
               </Badge>
@@ -123,7 +127,7 @@ export function RecentOrdersCard() {
       <CardFooter className='border-t pt-3'>
         <Button asChild variant='outline' size='sm' className='w-full'>
           <Link
-            href='/profile/orders'
+            href='/dashboard/customer/orders'
             className='flex items-center justify-between'
           >
             View All Orders

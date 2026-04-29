@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { SixDigitCodeInput } from "@/components/shared/SixDigitCodeInput";
 import {
   Card,
   CardContent,
@@ -20,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 export function ResetPasswordForm() {
@@ -37,6 +38,8 @@ export function ResetPasswordForm() {
   const {
     register,
     handleSubmit,
+    control,
+    setValue,
     formState: { errors },
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
@@ -44,6 +47,7 @@ export function ResetPasswordForm() {
       email: email || "",
     },
   });
+  const otpValue = useWatch({ control, name: "otp" }) || "";
 
   const handleAction = (formData: FormData) => {
     setError("");
@@ -145,16 +149,19 @@ export function ResetPasswordForm() {
           </div>
 
           <div>
-            <Label htmlFor='otp' className='text-base'>
-              OTP Code
-            </Label>
-            <Input
-              id='otp'
-              type='text'
-              placeholder='123456'
-              maxLength={6}
-              {...register("otp")}
-              className='text-center text-2xl font-bold tracking-widest h-14'
+            <Label className='text-base'>OTP Code</Label>
+            <SixDigitCodeInput
+              value={otpValue}
+              onChange={(value) =>
+                setValue("otp", value, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: Boolean(errors.otp),
+                })
+              }
+              disabled={isPending}
+              ariaLabel='OTP code'
+              inputClassName='h-14 text-xl font-bold'
             />
             {errors.otp && (
               <p className='text-sm text-destructive mt-1'>

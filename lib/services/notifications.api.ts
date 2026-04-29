@@ -9,8 +9,10 @@ export interface NotificationItem {
   title: string;
   body: string;
   data: Record<string, unknown>;
+  priority?: string;
   isRead: boolean;
   createdAt: string;
+  sentAt?: string;
   readAt?: string;
 }
 
@@ -79,10 +81,18 @@ export function normalizeNotificationItem(value: unknown): NotificationItem {
     title: String(item.title ?? item.subject ?? "Notification"),
     body: String(item.body ?? item.message ?? ""),
     data: toRecord(item.data),
+    priority:
+      typeof item.priority === "string" ? item.priority : undefined,
     isRead: Boolean(item.isRead ?? item.read ?? false),
     createdAt: String(
       item.createdAt ?? item.created_at ?? new Date().toISOString(),
     ),
+    sentAt:
+      typeof item.sentAt === "string"
+        ? item.sentAt
+        : typeof item.sent_at === "string"
+          ? item.sent_at
+          : undefined,
     readAt:
       typeof item.readAt === "string"
         ? item.readAt
@@ -107,34 +117,6 @@ function extractNotificationItems(payload: ApiEnvelope<unknown>) {
   }
 
   return [] as NotificationItem[];
-}
-
-async function requestActionVariants(
-  requests: Array<{ method: "POST" | "PATCH"; url: string }>,
-  fallbackMessage: string,
-) {
-  let lastError: Error | null = null;
-
-  for (const request of requests) {
-    const response = await clientFetch(request.url, {
-      method: request.method,
-      headers: buildJsonHeaders(),
-    });
-
-    const payload = await parseJson<unknown>(response);
-    if (response.ok) {
-      return;
-    }
-
-    if (response.status === 404 || response.status === 405) {
-      lastError = new Error(payload.message || fallbackMessage);
-      continue;
-    }
-
-    throw new Error(payload.message || fallbackMessage);
-  }
-
-  throw lastError || new Error(fallbackMessage);
 }
 
 export async function fetchNotifications(
@@ -162,7 +144,7 @@ export async function fetchNotifications(
 }
 
 export async function fetchUnreadCount(): Promise<number> {
-  const response = await clientFetch(getApiUrl("/notifications/unread-count"), {
+  const response = await clientFetch(getApiUrl("/notifications/unread/count"), {
     method: "GET",
   });
 
@@ -184,41 +166,25 @@ export async function fetchUnreadCount(): Promise<number> {
 
 export async function markNotificationRead(id: string): Promise<void> {
   const encodedId = encodeURIComponent(id);
-  await requestActionVariants(
-    [
-      {
-        method: "POST",
-        url: getApiUrl(`/notifications/${encodedId}/read`),
-      },
-      {
-        method: "PATCH",
-        url: getApiUrl(`/notifications/${encodedId}/read`),
-      },
-    ],
+  const response = await clientFetch(getApiUrl(`/notifications/${encodedId}/read`), {
+    method: "PATCH",
+    headers: buildJsonHeaders(),
+  });
+
+  await assertOk(
+    response,
     "Failed to mark notification as read",
   );
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  await requestActionVariants(
-    [
-      {
-        method: "POST",
-        url: getApiUrl("/notifications/read-all"),
-      },
-      {
-        method: "PATCH",
-        url: getApiUrl("/notifications/read-all"),
-      },
-      {
-        method: "POST",
-        url: getApiUrl("/notifications/mark-all-read"),
-      },
-      {
-        method: "PATCH",
-        url: getApiUrl("/notifications/mark-all-read"),
-      },
-    ],
+  const response = await clientFetch(getApiUrl("/notifications/read/all"), {
+    method: "PATCH",
+    headers: buildJsonHeaders(),
+  });
+
+  await assertOk(
+    response,
     "Failed to mark all notifications as read",
   );
 }

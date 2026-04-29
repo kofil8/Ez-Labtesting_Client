@@ -2,6 +2,42 @@ import { NextResponse } from "next/server";
 
 const REALTIME_MODEL = "gpt-realtime";
 const REALTIME_VOICE = "cedar";
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 10;
+
+const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function getClientKey(request: Request) {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const firstForwardedIp = forwardedFor
+    ?.split(",")
+    .map((value) => value.trim())
+    .find(Boolean);
+
+  return (
+    request.headers.get("cf-connecting-ip") ||
+    request.headers.get("x-real-ip") ||
+    firstForwardedIp ||
+    "anonymous"
+  );
+}
+
+function isRateLimited(request: Request) {
+  const now = Date.now();
+  const key = getClientKey(request);
+  const bucket = rateLimitBuckets.get(key);
+
+  if (!bucket || bucket.resetAt <= now) {
+    rateLimitBuckets.set(key, {
+      count: 1,
+      resetAt: now + RATE_LIMIT_WINDOW_MS,
+    });
+    return false;
+  }
+
+  bucket.count += 1;
+  return bucket.count > RATE_LIMIT_MAX_REQUESTS;
+}
 
 const BASE_REALTIME_INSTRUCTIONS = [
   "You are Ez LabTesting's public website assistant for guest users.",
@@ -34,8 +70,14 @@ type RealtimeSessionRequest = {
 };
 
 export async function POST(request: Request) {
-  const apiKey =
-    process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+  if (isRateLimited(request)) {
+    return NextResponse.json(
+      { error: "Too many realtime session requests." },
+      { status: 429 },
+    );
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(

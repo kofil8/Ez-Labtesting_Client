@@ -34,8 +34,8 @@ const PUBLIC_NAV_LINKS: NavLink[] = [
 
 const CUSTOMER_NAV_LINKS: NavLink[] = [
   { href: "/dashboard/customer", label: "Dashboard" },
-  { href: "/transactions", label: "Orders" },
-  { href: "/results", label: "Results" },
+  { href: "/dashboard/customer/orders", label: "Orders" },
+  { href: "/dashboard/customer/results", label: "Results" },
 ];
 
 const ADMIN_NAV_LINKS: NavLink[] = [

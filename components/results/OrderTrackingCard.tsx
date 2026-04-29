@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { cn, formatCurrency } from "@/lib/utils";
 import {
   AlertCircle,
   Calendar,
@@ -13,7 +14,7 @@ import {
   Eye,
   MapPin,
   RotateCcw,
-  Zap,
+  ShieldAlert,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -42,6 +43,58 @@ interface OrderTrackingCardProps {
   isRetrying?: boolean;
 }
 
+const STEP_LABELS = [
+  "Order placed",
+  "Payment confirmed",
+  "Lab order submitted",
+  "Results ready",
+];
+
+function getStatusAppearance(status: OrderTrackingStatus["status"]) {
+  if (status === "completed") {
+    return {
+      badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      icon: CheckCircle2,
+      iconTone: "text-emerald-600",
+      banner: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    };
+  }
+
+  if (status === "processing") {
+    return {
+      badge: "border-sky-200 bg-sky-50 text-sky-700",
+      icon: Clock,
+      iconTone: "text-sky-600",
+      banner: "border-sky-200 bg-sky-50 text-sky-900",
+    };
+  }
+
+  if (status === "failed") {
+    return {
+      badge: "border-rose-200 bg-rose-50 text-rose-700",
+      icon: AlertCircle,
+      iconTone: "text-rose-600",
+      banner: "border-rose-200 bg-rose-50 text-rose-900",
+    };
+  }
+
+  if (status === "needs_review") {
+    return {
+      badge: "border-amber-200 bg-amber-50 text-amber-700",
+      icon: ShieldAlert,
+      iconTone: "text-amber-600",
+      banner: "border-amber-200 bg-amber-50 text-amber-900",
+    };
+  }
+
+  return {
+    badge: "border-slate-200 bg-slate-50 text-slate-700",
+    icon: Clock,
+    iconTone: "text-slate-600",
+    banner: "border-slate-200 bg-slate-50 text-slate-900",
+  };
+}
+
 export function OrderTrackingCard({
   orderId,
   orderNumber,
@@ -51,220 +104,177 @@ export function OrderTrackingCard({
   onRetry,
   isRetrying,
 }: OrderTrackingCardProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-emerald-100 text-emerald-700 border-emerald-300";
-      case "processing":
-        return "bg-blue-100 text-blue-700 border-blue-300";
-      case "failed":
-        return "bg-red-100 text-red-700 border-red-300";
-      case "needs_review":
-        return "bg-amber-100 text-amber-700 border-amber-300";
-      default:
-        return "bg-slate-100 text-slate-700 border-slate-300";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle2 className='w-5 h-5 text-emerald-600' />;
-      case "processing":
-        return <Clock className='w-5 h-5 text-blue-600 animate-spin' />;
-      case "failed":
-        return <AlertCircle className='w-5 h-5 text-red-600' />;
-      case "needs_review":
-        return <Zap className='w-5 h-5 text-amber-600' />;
-      default:
-        return <Clock className='w-5 h-5 text-slate-600' />;
-    }
-  };
-
+  const statusAppearance = getStatusAppearance(tracking.status);
+  const StatusIcon = statusAppearance.icon;
   const progressPercentage = (tracking.currentStep / tracking.totalSteps) * 100;
 
-  const steps = [
-    { label: "Order Placed", icon: "📋" },
-    { label: "Payment Processed", icon: "💰" },
-    { label: "Lab Order Submitted", icon: "📤" },
-    { label: "Results Available", icon: "🔬" },
-  ];
-
   return (
-    <Card className='overflow-hidden border-slate-200 dark:border-slate-700'>
-      <CardHeader className='bg-gradient-to-r from-slate-50 to-transparent dark:from-slate-800 dark:to-transparent pb-3'>
-        <div className='flex items-start justify-between gap-4'>
+    <Card className='rounded-[28px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'>
+      <CardHeader className='border-b border-slate-100/90 pb-4'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
           <div>
-            <CardTitle className='flex items-center gap-2'>
+            <CardTitle className='flex flex-wrap items-center gap-2 text-lg text-slate-950'>
               <span>{orderNumber}</span>
-              <Badge variant='outline' className='text-xs'>
+              <Badge variant='outline' className='rounded-full border-slate-200 bg-slate-50 text-slate-600'>
                 {testCount} {testCount === 1 ? "test" : "tests"}
               </Badge>
             </CardTitle>
-            <p className='text-sm text-muted-foreground mt-1'>
-              Total:{" "}
-              <span className='font-semibold text-foreground'>
-                ${totalAmount.toFixed(2)}
+            <p className='mt-2 text-sm text-slate-600'>
+              Total paid:{" "}
+              <span className='font-semibold text-slate-950'>
+                {formatCurrency(totalAmount)}
               </span>
             </p>
           </div>
-          <div className='flex items-center gap-2'>
-            {getStatusIcon(tracking.status)}
-            <Badge className={`${getStatusColor(tracking.status)} border`}>
-              {tracking.statusLabel}
-            </Badge>
-          </div>
+
+          <Badge
+            variant='outline'
+            className={cn("rounded-full border", statusAppearance.badge)}
+          >
+            <StatusIcon className={cn("mr-1 h-3.5 w-3.5", statusAppearance.iconTone)} />
+            {tracking.statusLabel}
+          </Badge>
         </div>
       </CardHeader>
 
-      <CardContent className='space-y-6 pt-6'>
-        {/* Status Description */}
-        <div className='bg-blue-50 dark:bg-blue-950/30 px-4 py-3 rounded-lg border border-blue-200 dark:border-blue-900'>
-          <p className='text-sm text-blue-900 dark:text-blue-200'>
-            {tracking.description}
-          </p>
+      <CardContent className='space-y-5 p-5'>
+        <div
+          className={cn(
+            "rounded-[22px] border px-4 py-3 text-sm leading-6",
+            statusAppearance.banner,
+          )}
+        >
+          {tracking.description}
         </div>
 
-        {/* Progress Bar */}
-        <div className='space-y-2'>
-          <div className='flex justify-between items-center text-sm'>
-            <span className='font-medium'>Progress</span>
-            <span className='text-muted-foreground'>
-              {tracking.currentStep} of {tracking.totalSteps}
+        <div className='space-y-3'>
+          <div className='flex items-center justify-between text-sm'>
+            <span className='font-medium text-slate-900'>Progress</span>
+            <span className='text-slate-500'>
+              Step {tracking.currentStep} of {tracking.totalSteps}
             </span>
           </div>
-          <Progress value={progressPercentage} className='h-2' />
+          <Progress value={progressPercentage} className='h-2.5' />
         </div>
 
-        {/* Timeline Steps */}
-        <div className='space-y-3'>
-          {steps.map((step, index) => {
-            const isCompleted = index < tracking.currentStep;
-            const isCurrent = index === tracking.currentStep - 1;
+        <div className='grid gap-3 md:grid-cols-4'>
+          {STEP_LABELS.map((label, index) => {
+            const stepIndex = index + 1;
+            const isComplete = stepIndex < tracking.currentStep;
+            const isCurrent = stepIndex === tracking.currentStep;
 
             return (
               <div
-                key={index}
-                className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                  isCompleted || isCurrent
-                    ? "bg-slate-100 dark:bg-slate-700"
-                    : "bg-slate-50 dark:bg-slate-800"
-                }`}
+                key={label}
+                className={cn(
+                  "rounded-[22px] border p-3",
+                  isComplete && "border-emerald-200 bg-emerald-50/70",
+                  isCurrent && "border-sky-200 bg-sky-50/70",
+                  !isComplete && !isCurrent && "border-slate-200 bg-slate-50/70",
+                )}
               >
                 <div
-                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-lg ${
-                    isCompleted
-                      ? "bg-emerald-100 text-emerald-700"
-                      : isCurrent
-                        ? "bg-blue-100 text-blue-700 animate-pulse"
-                        : "bg-slate-200 text-slate-500"
-                  }`}
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
+                    isComplete && "bg-emerald-600 text-white",
+                    isCurrent && "bg-sky-600 text-white",
+                    !isComplete && !isCurrent && "bg-white text-slate-500",
+                  )}
                 >
-                  {isCompleted ? "✓" : step.icon}
+                  {isComplete ? <CheckCircle2 className='h-4 w-4' /> : stepIndex}
                 </div>
-                <div className='flex-1'>
-                  <p
-                    className={`text-sm font-medium ${
-                      isCompleted || isCurrent
-                        ? "text-foreground"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {step.label}
-                  </p>
-                </div>
-                {isCurrent && (
-                  <span className='text-xs font-semibold text-blue-600 dark:text-blue-400'>
-                    In Progress
-                  </span>
-                )}
+                <p className='mt-3 text-sm font-medium text-slate-900'>{label}</p>
+                <p className='mt-1 text-xs uppercase tracking-[0.18em] text-slate-500'>
+                  {isComplete ? "Done" : isCurrent ? "Current" : "Upcoming"}
+                </p>
               </div>
             );
           })}
         </div>
 
-        {/* Estimated Completion */}
-        {tracking.estimatedCompletion && (
-          <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-            <Calendar className='w-4 h-4' />
-            <span>
-              Estimated completion:{" "}
-              <strong>{tracking.estimatedCompletion}</strong>
-            </span>
-          </div>
-        )}
+        <div className='grid gap-3 sm:grid-cols-2'>
+          {tracking.estimatedCompletion ? (
+            <div className='flex items-center gap-2 rounded-[22px] border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-600'>
+              <Calendar className='h-4 w-4 text-sky-600' />
+              <span>
+                Estimated completion:{" "}
+                <strong className='font-semibold text-slate-900'>
+                  {tracking.estimatedCompletion}
+                </strong>
+              </span>
+            </div>
+          ) : null}
 
-        {/* Lab Location - if assigned */}
-        {tracking.labLocation && (
-          <div className='border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-2'>
-            <div className='flex items-start gap-2'>
-              <MapPin className='w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0' />
+          {tracking.labOrderId ? (
+            <div className='rounded-[22px] border border-slate-200 bg-slate-50/70 px-4 py-3'>
+              <p className='text-xs uppercase tracking-[0.18em] text-slate-500'>
+                Lab order ID
+              </p>
+              <p className='mt-2 font-mono text-sm font-medium text-slate-900'>
+                {tracking.labOrderId}
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        {tracking.labLocation ? (
+          <div className='rounded-[22px] border border-slate-200 bg-slate-50/70 p-4'>
+            <div className='flex items-start gap-3'>
+              <MapPin className='mt-0.5 h-4 w-4 shrink-0 text-sky-600' />
               <div>
-                <p className='text-sm font-medium'>
+                <p className='text-sm font-semibold text-slate-900'>
                   {tracking.labLocation.name}
                 </p>
-                <p className='text-xs text-muted-foreground'>
+                <p className='mt-1 text-sm text-slate-600'>
                   {tracking.labLocation.address}
                 </p>
               </div>
             </div>
-            <Button asChild variant='ghost' size='sm' className='w-full'>
-              <Link href='/find-lab-center'>View Directions</Link>
+            <Button asChild variant='ghost' size='sm' className='mt-3 rounded-full'>
+              <Link href='/find-lab-center'>View directions</Link>
             </Button>
           </div>
-        )}
+        ) : null}
 
-        {/* Lab Order ID */}
-        {tracking.labOrderId && (
-          <div className='text-xs space-y-1'>
-            <p className='text-muted-foreground'>Lab Order ID</p>
-            <p className='font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded'>
-              {tracking.labOrderId}
-            </p>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className='flex gap-2 pt-3'>
-          {tracking.requisitionUrl && (
-            <Button variant='outline' size='sm' asChild className='flex-1'>
-              <a href={tracking.requisitionUrl} download target='_blank'>
-                <Download className='w-4 h-4 mr-2' />
+        <div className='flex flex-wrap gap-3 pt-1'>
+          {tracking.requisitionUrl ? (
+            <Button variant='outline' asChild className='rounded-full'>
+              <a href={tracking.requisitionUrl} download target='_blank' rel='noreferrer'>
+                <Download className='h-4 w-4' />
                 Requisition
               </a>
             </Button>
-          )}
+          ) : null}
 
-          {tracking.status === "needs_review" && onRetry && (
+          {tracking.status === "needs_review" && onRetry ? (
             <Button
-              size='sm'
               onClick={onRetry}
               disabled={isRetrying}
-              className='flex-1'
+              className='rounded-full'
             >
               {isRetrying ? (
                 <>
-                  <Clock className='w-4 h-4 mr-2 animate-spin' />
-                  Retrying...
+                  <Clock className='h-4 w-4 animate-spin' />
+                  Retrying
                 </>
               ) : (
                 <>
-                  <RotateCcw className='w-4 h-4 mr-2' />
+                  <RotateCcw className='h-4 w-4' />
                   Retry
                 </>
               )}
             </Button>
-          )}
+          ) : null}
 
-          {tracking.status === "failed" && (
-            <Button variant='ghost' size='sm' asChild className='flex-1'>
-              <Link href='/help-center'>Get Help</Link>
+          {tracking.status === "failed" ? (
+            <Button variant='ghost' asChild className='rounded-full'>
+              <Link href='/dashboard/customer/support'>Get help</Link>
             </Button>
-          )}
+          ) : null}
 
-          <Button variant='ghost' size='sm' asChild className='flex-1'>
-            <Link href={`/results/${orderId}`}>
-              <Eye className='w-4 h-4 mr-2' />
+          <Button variant='ghost' asChild className='rounded-full'>
+            <Link href={`/dashboard/customer/results/${orderId}`}>
+              <Eye className='h-4 w-4' />
               Details
             </Link>
           </Button>

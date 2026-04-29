@@ -45,6 +45,7 @@ export interface PublicCatalogTest {
   specimenType: string;
   turnaround: number;
   cptCode?: string;
+  setUpSchedule?: string[];
   preparation?: string;
   keywords?: string[];
   requiresFasting?: boolean;
@@ -52,6 +53,8 @@ export interface PublicCatalogTest {
   maxAge?: number;
   isPopular?: boolean;
   isPanel?: boolean;
+  accessLabTestId?: string | null;
+  startingLabTestId?: string | null;
   startingPrice?: number | null;
   startingLab?: PublicLabSummary | null;
   turnaroundDays?: number | null;

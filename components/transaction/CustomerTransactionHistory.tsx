@@ -35,7 +35,8 @@ function mapOrderToTransaction(order: UserOrderSummary): Transaction {
         ? "pending"
         : "completed";
 
-  const orderNumber = `ORD-${order.id.slice(0, 8).toUpperCase()}`;
+  const orderNumber =
+    order.orderNumber || `ORD-${order.id.slice(0, 8).toUpperCase()}`;
 
   return {
     id: order.id,
@@ -120,7 +121,9 @@ export function CustomerTransactionHistory() {
             Please sign in to view your transaction history.
           </p>
           <Button asChild>
-            <Link href='/login?from=/transactions'>Go to Sign In</Link>
+            <Link href='/login?from=/dashboard/customer/transactions'>
+              Go to Sign In
+            </Link>
           </Button>
         </CardContent>
       </Card>

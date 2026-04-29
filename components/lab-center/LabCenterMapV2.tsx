@@ -8,7 +8,12 @@ import {
   GOOGLE_MAPS_VERSION,
 } from "@/lib/google-maps-loader";
 import { getDirectionsUrl } from "@/lib/locator/controller";
-import { LabCenter, LabLocatorFilters } from "@/types/lab-center";
+import {
+  AssignedLabCenter,
+  LabCenter,
+  LabLocatorFilters,
+  LabLocatorPageMode,
+} from "@/types/lab-center";
 import type { Marker } from "@googlemaps/markerclusterer";
 import {
   MarkerClusterer,
@@ -65,6 +70,10 @@ function toText(value: unknown): string {
   }
 
   return "";
+}
+
+function stripHtml(value: string): string {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 async function requestRoute({
@@ -193,11 +202,13 @@ function ClientLocationMarker({
 }
 
 function ClusteredMarkers({
+  canSelect,
   labs,
   selectedLabId,
   onDirections,
   onSelect,
 }: {
+  canSelect: boolean;
   labs: LabCenter[];
   selectedLabId?: string;
   onDirections: (lab: LabCenter) => void;
@@ -329,7 +340,7 @@ function ClusteredMarkers({
                 className='h-8 rounded-full bg-gradient-to-r from-sky-700 to-cyan-700 px-3 text-white'
                 onClick={() => onSelect(activeLab)}
               >
-                Select
+                {canSelect ? "Select" : "Preview"}
               </Button>
               <Button
                 type='button'
@@ -659,10 +670,9 @@ function DirectionsPanel({
                   <div className='space-y-1'>
                     <p
                       className='text-sm leading-6 text-slate-800'
-                      dangerouslySetInnerHTML={{
-                        __html: step.instruction.replace(/<b>|<\/b>/g, ""),
-                      }}
-                    />
+                    >
+                      {stripHtml(step.instruction)}
+                    </p>
                     <p className='text-xs text-slate-500'>
                       {step.distance} {step.duration ? `• ${step.duration}` : ""}
                     </p>
@@ -746,7 +756,9 @@ function IdleMapOverlay() {
 }
 
 export function LabCenterMapV2({
+  assignedLab = null,
   center,
+  compact = false,
   confirmedLocation = null,
   filters,
   hasSearchAnchor = false,
@@ -755,12 +767,15 @@ export function LabCenterMapV2({
   onOpenFilters,
   onSelect,
   onFilterChange,
+  pageMode = "browse",
   routeOrigin = null,
   selectedLabId,
   showDirectionsForId,
   onCloseDirections,
 }: {
+  assignedLab?: AssignedLabCenter | null;
   center: { lat: number; lng: number };
+  compact?: boolean;
   confirmedLocation?: { lat: number; lng: number; label?: string } | null;
   filters: LabLocatorFilters;
   hasSearchAnchor?: boolean;
@@ -772,6 +787,7 @@ export function LabCenterMapV2({
     key: T,
     value: LabLocatorFilters[T],
   ) => void;
+  pageMode?: LabLocatorPageMode;
   routeOrigin?: { lat: number; lng: number } | null;
   selectedLabId?: string;
   showDirectionsForId?: string;
@@ -847,6 +863,7 @@ export function LabCenterMapV2({
           />
           <ClientLocationMarker location={confirmedLocation} />
           <ClusteredMarkers
+            canSelect={pageMode !== "access_assigned"}
             labs={labs}
             onDirections={handleDirectionsOpen}
             onSelect={onSelect}
@@ -863,7 +880,7 @@ export function LabCenterMapV2({
             />
           ) : null}
 
-          {!isIdle ? (
+          {!compact && !isIdle ? (
             <div className='pointer-events-none absolute inset-x-4 top-24 z-20 flex items-start justify-center sm:inset-x-6 sm:top-28'>
               <div className='flex flex-wrap items-center justify-center gap-2'>
                 <MapChip
@@ -907,11 +924,20 @@ export function LabCenterMapV2({
             </div>
           ) : null}
 
-          <div className='pointer-events-none absolute inset-x-4 top-4 flex items-start justify-between gap-3 sm:inset-x-6 sm:top-6'>
+          <div
+            className={`pointer-events-none absolute inset-x-4 z-20 flex items-start justify-between gap-3 sm:inset-x-6 ${
+              compact ? "top-4" : "top-4 sm:top-6"
+            }`}
+          >
             <div className='flex flex-col items-start gap-2'>
               {labs.length > 0 ? (
                 <div className='rounded-full border border-white/80 bg-white/88 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-[0_16px_32px_rgba(15,23,42,0.12)] backdrop-blur'>
                   {`${labs.length} nearby labs`}
+                </div>
+              ) : null}
+              {pageMode === "access_assigned" && assignedLab ? (
+                <div className='max-w-[280px] rounded-full border border-emerald-100 bg-white/92 px-4 py-2 text-sm font-medium text-slate-700 shadow-[0_16px_32px_rgba(15,23,42,0.12)] backdrop-blur'>
+                  Assigned: <span className='text-slate-900'>{assignedLab.name}</span>
                 </div>
               ) : null}
               {selectedLab && !directionsLab ? (

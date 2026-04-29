@@ -16,6 +16,8 @@ export type StorefrontLabCard = {
   retailPrice: number | null;
   turnaroundDays: number | null;
   labTestCode?: string;
+  cptCode?: string;
+  setUpSchedule?: string[];
   laboratory?: PublicLabSummary;
 };
 
@@ -104,6 +106,8 @@ export function buildStorefrontLabCards(test: PublicCatalogTest): StorefrontLabC
       retailPrice: option?.retailPrice ?? null,
       turnaroundDays: option?.turnaroundDays ?? getCatalogTurnaroundDays(test),
       labTestCode: option?.labTestCode,
+      cptCode: code === "ACCESS" ? test.cptCode : undefined,
+      setUpSchedule: code === "ACCESS" ? test.setUpSchedule : undefined,
       laboratory: option?.laboratory,
     };
   });

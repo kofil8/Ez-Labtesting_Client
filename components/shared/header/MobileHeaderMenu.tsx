@@ -97,7 +97,7 @@ export function MobileHeaderMenu({
               <div className='border-t border-border pt-4'>
                 {isAuthenticated ? (
                   <div className='space-y-2'>
-                    <Link href='/profile' onClick={onClose}>
+                    <Link href='/dashboard/customer/profile' onClick={onClose}>
                       <Button
                         variant='ghost'
                         className='w-full justify-start rounded-xl text-foreground hover:bg-muted'

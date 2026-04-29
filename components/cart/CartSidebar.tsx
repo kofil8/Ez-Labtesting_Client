@@ -3,11 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hook/use-toast";
-import { validatePromoCode } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import {
+  applyBackendPromoCode,
+  removeBackendPromoCode,
+} from "@/lib/services/promo-code.service";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatCurrency } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { ShoppingBag, Trash2, X } from "lucide-react";
+import { ShoppingBag, Tag, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -16,9 +20,12 @@ interface CartSidebarProps {
   onClose: () => void;
 }
 
+const NEW_USER_PROMO_CODE = "NEW10";
+
 export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
   const items = useCartStore((state) => state.items);
   const removeItem = useCartStore((state) => state.removeItem);
   const getTotal = useCartStore((state) => state.getTotal);
@@ -63,32 +70,41 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const subtotal = getSubtotal();
   const discountAmount = getDiscount();
   const total = getTotal();
+  const isNewVisitor = !isLoading && !isAuthenticated;
 
-  const handleApplyPromo = async () => {
-    if (!promoCodeInput.trim()) return;
+  const handleApplyPromo = async (code = promoCodeInput) => {
+    if (!code.trim()) return;
+
+    if (!isAuthenticated) {
+      setPromoCodeInput(code.toUpperCase());
+      toast({
+        title: "Sign in to apply this code",
+        description: "Promo codes are validated at checkout after sign-in.",
+      });
+      return;
+    }
 
     setValidating(true);
     try {
-      const result = await validatePromoCode(promoCodeInput);
-      if (result.valid) {
-        setStorePromoCode(promoCodeInput.toUpperCase(), result.discount);
-        setPromoCodeInput("");
-        toast({
-          title: "Promo code applied!",
-          description: `You saved ${Math.round(result.discount * 100)}%`,
-        });
-      } else {
-        toast({
-          title: "Invalid promo code",
-          description: "The promo code you entered is not valid.",
-          variant: "destructive",
-        });
-      }
+      const normalizedCode = code.toUpperCase();
+      const result = await applyBackendPromoCode(normalizedCode);
+
+      setStorePromoCode(result.code, result.discountRate);
+      setPromoCodeInput("");
+      toast({
+        title: "Promo code applied!",
+        description:
+          result.discountAmount > 0
+            ? `You saved ${formatCurrency(result.discountAmount)}`
+            : "Code accepted. Discount will update when eligible cart items are available.",
+      });
     } catch (error) {
       toast({
-        title: "Error",
+        title: "Promo code not applied",
         description:
-          "Unable to validate promo code. Please check the code and try again.",
+          error instanceof Error
+            ? error.message
+            : "Unable to validate promo code. Please check the code and try again.",
         variant: "destructive",
       });
     } finally {
@@ -98,6 +114,20 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
   const handleRemovePromo = () => {
     clearPromoCode();
+
+    if (isAuthenticated) {
+      void removeBackendPromoCode().catch((error) => {
+        toast({
+          title: "Promo removed locally",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Server promo state could not be refreshed.",
+          variant: "destructive",
+        });
+      });
+    }
+
     toast({
       title: "Promo code removed",
       description: "The discount has been removed from your order.",
@@ -272,31 +302,62 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                         </Button>
                       </div>
                     ) : (
-                      <div className='flex gap-2'>
-                        <Input
-                          value={promoCodeInput}
-                          onChange={(e) =>
-                            setPromoCodeInput(e.target.value.toUpperCase())
-                          }
-                          placeholder='Enter code'
-                          disabled={validating}
-                          className='text-xs sm:text-sm h-9 sm:h-10 flex-1'
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleApplyPromo();
+                      <>
+                        {isNewVisitor ? (
+                          <div className='rounded-lg border border-amber-200 bg-amber-50 px-3 py-2'>
+                            <div className='flex items-start gap-2'>
+                              <Tag className='mt-0.5 h-4 w-4 shrink-0 text-amber-700' />
+                              <button
+                                type='button'
+                                onClick={() =>
+                                  handleApplyPromo(NEW_USER_PROMO_CODE)
+                                }
+                                disabled={validating}
+                                className='text-left text-[11px] font-medium leading-5 text-amber-900 underline-offset-2 hover:underline disabled:opacity-60 sm:text-xs'
+                              >
+                                New customer? Use {NEW_USER_PROMO_CODE} for 10%
+                                off your first lab test.
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            type='button'
+                            onClick={() =>
+                              setPromoCodeInput(NEW_USER_PROMO_CODE)
                             }
-                          }}
-                        />
-                        <Button
-                          onClick={handleApplyPromo}
-                          disabled={!promoCodeInput.trim() || validating}
-                          variant='secondary'
-                          size='sm'
-                          className='text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 flex-shrink-0'
-                        >
-                          {validating ? "..." : "Apply"}
-                        </Button>
-                      </div>
+                            className='text-left text-[11px] font-medium text-blue-700 underline-offset-2 hover:underline sm:text-xs'
+                          >
+                            Check for available coupons
+                          </button>
+                        )}
+
+                        <div className='flex gap-2'>
+                          <Input
+                            value={promoCodeInput}
+                            onChange={(e) =>
+                              setPromoCodeInput(e.target.value.toUpperCase())
+                            }
+                            placeholder='Enter code'
+                            disabled={validating}
+                            className='text-xs sm:text-sm h-9 sm:h-10 flex-1'
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleApplyPromo();
+                              }
+                            }}
+                          />
+                          <Button
+                            onClick={() => handleApplyPromo()}
+                            disabled={!promoCodeInput.trim() || validating}
+                            variant='secondary'
+                            size='sm'
+                            className='text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 flex-shrink-0'
+                          >
+                            {validating ? "..." : "Apply"}
+                          </Button>
+                        </div>
+                      </>
                     )}
                   </div>
                 </>

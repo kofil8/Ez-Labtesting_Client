@@ -12,7 +12,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hook/use-toast";
-import { getAllPromoCodes } from "@/lib/api";
+import {
+  createPromoCode,
+  deletePromoCode,
+  getAllPromoCodes,
+  updatePromoCode,
+} from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { PromoCode } from "@/types/promo-code";
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -65,7 +70,7 @@ export function PromoCodeManagement() {
       confirm(`Are you sure you want to delete promo code "${promoCode.code}"?`)
     ) {
       try {
-        // In real app, would call API to delete
+        await deletePromoCode(promoCode.id);
         setPromoCodes(promoCodes.filter((pc) => pc.id !== promoCode.id));
         toast({
           title: "Promo code deleted",
@@ -84,17 +89,21 @@ export function PromoCodeManagement() {
   const handleSave = async (promoCode: PromoCode) => {
     try {
       if (editingPromoCode) {
-        // Update existing
+        const updatedPromoCode = await updatePromoCode(
+          editingPromoCode.id,
+          promoCode,
+        );
         setPromoCodes(
-          promoCodes.map((pc) => (pc.id === promoCode.id ? promoCode : pc))
+          promoCodes.map((pc) =>
+            pc.id === editingPromoCode.id ? updatedPromoCode : pc,
+          ),
         );
         toast({
           title: "Promo code updated",
-          description: `${promoCode.code} has been updated.`,
+          description: `${updatedPromoCode.code} has been updated.`,
         });
       } else {
-        // Add new
-        const newPromoCode = { ...promoCode, id: `promo-${Date.now()}` };
+        const newPromoCode = await createPromoCode(promoCode);
         setPromoCodes([...promoCodes, newPromoCode]);
         toast({
           title: "Promo code created",

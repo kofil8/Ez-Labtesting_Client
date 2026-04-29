@@ -11,6 +11,7 @@ import {
 import { useCheckout } from "@/lib/context/CheckoutContext";
 import {
   getOrderDetails,
+  getRequisitionDownloadUrl,
   getResumableOrder,
   retryOrderAccessPlacement,
 } from "@/lib/services/order.service";
@@ -73,6 +74,7 @@ export default function CheckoutVisitLabPage() {
   const [isPolling, setIsPolling] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const [isContinuing, setIsContinuing] = useState(false);
+  const [isRequisitionLoading, setIsRequisitionLoading] = useState(false);
   const [pollGeneration, setPollGeneration] = useState(0);
   const hasHydratedResume = useRef(false);
 
@@ -105,9 +107,9 @@ export default function CheckoutVisitLabPage() {
           setOrderId(resumable.id);
           setOrder({
             orderId: resumable.id,
-            subtotal: getTotal(),
-            processingFee: 2.5,
-            total: getTotal() + 2.5,
+            subtotal: resumable.subtotal ?? getTotal(),
+            processingFee: resumable.processingFee ?? 2.5,
+            total: resumable.total ?? getTotal() + 2.5,
           });
           setLastRecoveredAt(Date.now());
         }
@@ -212,9 +214,18 @@ export default function CheckoutVisitLabPage() {
     };
   }, [resolvedOrderId, isLoading, pollGeneration]);
 
-  const handleDownloadRequisition = () => {
-    if (!requisitionPdfUrl) return;
-    window.open(requisitionPdfUrl, "_blank", "noopener,noreferrer");
+  const handleDownloadRequisition = async () => {
+    if (!resolvedOrderId || !requisitionPdfUrl) return;
+
+    try {
+      setIsRequisitionLoading(true);
+      const { url } = await getRequisitionDownloadUrl(resolvedOrderId);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error: any) {
+      setStatusError(error?.message || "Unable to open the requisition.");
+    } finally {
+      setIsRequisitionLoading(false);
+    }
   };
 
   const handleRetryAccessPlacement = async () => {
@@ -378,9 +389,15 @@ export default function CheckoutVisitLabPage() {
             )}
 
             {requisitionPdfUrl && (
-              <Button variant='outline' onClick={handleDownloadRequisition}>
+              <Button
+                variant='outline'
+                onClick={handleDownloadRequisition}
+                disabled={isRequisitionLoading}
+              >
                 <Download className='mr-2 h-4 w-4' />
-                Download Requisition
+                {isRequisitionLoading
+                  ? "Preparing requisition..."
+                  : "Download Requisition"}
               </Button>
             )}
 
@@ -404,7 +421,7 @@ export default function CheckoutVisitLabPage() {
 
               <Button
                 variant='ghost'
-                onClick={() => router.push("/transactions")}
+                onClick={() => router.push("/dashboard/customer/transactions")}
               >
                 View Orders
               </Button>

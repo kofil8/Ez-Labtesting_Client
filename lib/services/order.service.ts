@@ -9,6 +9,7 @@ import { isRegionRestrictedError } from "@/lib/services/state-restriction.servic
 
 export interface OrderDetailsResponse {
   id: string;
+  orderNumber?: string;
   status:
     | "PENDING_PAYMENT"
     | "PAID"
@@ -28,6 +29,9 @@ export interface OrderDetailsResponse {
   labVisitInstructions?: string | null;
   manualReviewRequired?: boolean;
   accessOrderId?: string | null;
+  subtotal?: number;
+  processingFee?: number;
+  total?: number;
   patientAddress?: string | null;
   confirmedLabLocation?: {
     siteId?: string;
@@ -66,6 +70,10 @@ export interface OrderTrackingResponse {
   lastUpdated?: string;
 }
 
+export interface RequisitionDownloadResponse {
+  url: string;
+}
+
 export interface ManualReviewOrderSummary {
   id: string;
   status: string;
@@ -88,6 +96,7 @@ export interface ManualReviewOrderSummary {
 
 export interface UserOrderSummary {
   id: string;
+  orderNumber: string;
   status: string;
   subtotal: number;
   processingFee: number;
@@ -100,7 +109,8 @@ export interface UserOrderSummary {
   labVisitInstructions?: string | null;
   manualReviewRequired: boolean;
   accessOrderId?: string | null;
-  test?: {
+  itemsCount: number;
+  primaryTest?: {
     id: string;
     testName: string;
     price: number;
@@ -263,6 +273,29 @@ export async function getOrderTracking(
   return tracking as OrderTrackingResponse;
 }
 
+export async function getRequisitionDownloadUrl(
+  orderId: string,
+): Promise<RequisitionDownloadResponse> {
+  const res = await clientFetch(API_ENDPOINTS.ORDERS.GET_REQUISITION(orderId), {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to fetch requisition");
+  }
+
+  const data = await res.json();
+  const url = typeof data?.url === "string" ? data.url : null;
+
+  if (!url) {
+    throw new Error("Requisition download is not available yet");
+  }
+
+  return { url };
+}
+
 export async function getOrderDetails(
   orderId: string,
 ): Promise<OrderDetailsResponse> {
@@ -285,7 +318,11 @@ export async function getOrderDetails(
 
   return {
     id: order.id,
+    orderNumber: order.orderNumber || undefined,
     status: order.status,
+    subtotal: Number(order.subtotal || 0),
+    processingFee: Number(order.processingFee || 0),
+    total: Number(order.total || 0),
     requisitionPdfUrl: order.requisitionPdfUrl || null,
     labVisitInstructions: order.labVisitInstructions || null,
     manualReviewRequired: Boolean(order.manualReviewRequired),
@@ -336,7 +373,11 @@ export async function getResumableOrder(): Promise<OrderDetailsResponse | null> 
 
       return {
         id: order.id,
+        orderNumber: order.orderNumber || undefined,
         status: order.status,
+        subtotal: Number(order.subtotal || 0),
+        processingFee: Number(order.processingFee || 0),
+        total: Number(order.total || 0),
         requisitionPdfUrl: order.requisitionPdfUrl || null,
         labVisitInstructions: order.labVisitInstructions || null,
         manualReviewRequired: Boolean(order.manualReviewRequired),
@@ -412,6 +453,9 @@ export async function getOrdersByUserId(
 
   return orders.map((order: any) => ({
     id: String(order.id),
+    orderNumber:
+      String(order.orderNumber || "").trim() ||
+      `ORD-${String(order.id).slice(0, 8).toUpperCase()}`,
     status: String(order.status || "PENDING_PAYMENT"),
     subtotal: Number(order.subtotal || 0),
     processingFee: Number(order.processingFee || 0),
@@ -426,11 +470,14 @@ export async function getOrdersByUserId(
     labVisitInstructions: order.labVisitInstructions || null,
     manualReviewRequired: Boolean(order.manualReviewRequired),
     accessOrderId: order.accessOrderId || null,
-    test: order.test
+    itemsCount: Number(order.itemsCount || 0),
+    primaryTest: order.primaryTest || order.test
       ? {
-          id: String(order.test.id),
-          testName: String(order.test.testName || "Lab Test"),
-          price: Number(order.test.price || 0),
+          id: String((order.primaryTest || order.test).id),
+          testName: String(
+            (order.primaryTest || order.test).testName || "Lab Test",
+          ),
+          price: Number((order.primaryTest || order.test).price || 0),
         }
       : null,
   }));
