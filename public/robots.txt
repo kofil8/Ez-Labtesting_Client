@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /profile
+Disallow: /profile/
+Disallow: /transactions
+Disallow: /transactions/
+Disallow: /results
+Disallow: /results/
+Disallow: /api
+Disallow: /api/
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /auth
+Disallow: /auth/
+
+Sitemap: https://ezlabtesting.com/sitemap.xml

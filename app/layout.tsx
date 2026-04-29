@@ -14,7 +14,13 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+  "https://ezlabtesting.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Ez LabTesting - HIPAA-Secure Lab Tests Online",
     template: "%s | Ez LabTesting",
@@ -26,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://ezlabtesting.com",
+    url: siteUrl,
     title: "Ez LabTesting - Complete Lab Tests Without a Doctor's Visit",
     description:
       "Get comprehensive lab results from CLIA-certified facilities. Order online, visit your nearest collection center, and access secure reports.",
@@ -48,7 +54,7 @@ export const metadata: Metadata = {
     images: ["https://ezlabtesting.com/og-image.jpg"],
   },
   alternates: {
-    canonical: "https://ezlabtesting.com",
+    canonical: "/",
   },
 };
 
