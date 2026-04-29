@@ -67,4 +67,20 @@ describe("buildCreateOrderRequest", () => {
 
     expect(request.labCenterId).toBeUndefined();
   });
+
+  it("includes promoCode when one has been applied", () => {
+    const request = buildCreateOrderRequest({
+      accessOrderPayload,
+      getSubtotal: 99,
+      getTotal: 89.1,
+      labTestId: "test-1",
+      patientInfo,
+      processingFee: 2.5,
+      promoCode: "NEW10",
+      selectedLab,
+    });
+
+    expect(request.promoCode).toBe("NEW10");
+    expect(request.total).toBe(91.6);
+  });
 });

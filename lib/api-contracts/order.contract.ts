@@ -28,6 +28,7 @@ export interface CreateOrderRequest {
   subtotal: number;
   processingFee: number;
   total: number;
+  promoCode?: string;
   accessPayloadJson: any; // ACCESS Lab payload (patient info + test details)
   stripePaymentIntentId?: string;
 }

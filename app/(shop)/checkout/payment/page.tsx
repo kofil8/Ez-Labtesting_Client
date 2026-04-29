@@ -37,6 +37,7 @@ export default function CheckoutPaymentPage() {
   const items = useCartStore((state) => state.items);
   const getSubtotal = useCartStore((state) => state.getSubtotal);
   const getTotal = useCartStore((state) => state.getTotal);
+  const promoCode = useCartStore((state) => state.promoCode);
   const {
     patientInfo,
     order,
@@ -256,13 +257,14 @@ export default function CheckoutPaymentPage() {
           buildCreateOrderRequest({
             accessOrderPayload,
             getSubtotal: getSubtotal(),
-            getTotal: getTotal(),
-            labTestId: primaryLabTestId,
-            patientInfo,
-            processingFee,
-            selectedLab: selectedLab || null,
-          }),
-        );
+              getTotal: getTotal(),
+              labTestId: primaryLabTestId,
+              patientInfo,
+              processingFee,
+              promoCode,
+              selectedLab: selectedLab || null,
+            }),
+          );
 
         trackLocatorEvent("booking_started", {
           lab_id: selectedLab?.id || null,
@@ -340,9 +342,10 @@ export default function CheckoutPaymentPage() {
     isRestrictionLoading,
     items,
     order?.orderId,
-    patientInfo,
-    primaryLabTestId,
-    processingFee,
+      patientInfo,
+      primaryLabTestId,
+      promoCode,
+      processingFee,
     restrictionStatus?.canOrder,
     selectedLab,
     setOrder,

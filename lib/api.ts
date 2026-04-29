@@ -202,58 +202,67 @@ export async function deletePanel(id: string): Promise<void> {
 }
 
 // PromoCode CRUD functions
+async function parseApiData<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload?.message || fallbackMessage);
+  }
+
+  return (payload?.data ?? payload) as T;
+}
+
 export async function getAllPromoCodes(): Promise<PromoCode[]> {
-  await delay(300);
-  return promoCodesData as PromoCode[];
+  const response = await clientFetch("/promo-codes", {
+    method: "GET",
+  });
+
+  return parseApiData<PromoCode[]>(response, "Failed to load promo codes");
 }
 
 export async function getPromoCodeById(id: string): Promise<PromoCode | null> {
-  await delay(200);
-  const promoCodes = promoCodesData as PromoCode[];
-  return promoCodes.find((pc) => pc.id === id) || null;
+  const response = await clientFetch(`/promo-codes/${id}`, {
+    method: "GET",
+  });
+
+  return parseApiData<PromoCode>(response, "Failed to load promo code");
 }
 
 export async function createPromoCode(
   promoCodeData: Partial<PromoCode>,
 ): Promise<PromoCode> {
-  await delay(500);
-  const newPromoCode: PromoCode = {
-    id: `promo-${Date.now()}`,
-    code: promoCodeData.code || "",
-    description: promoCodeData.description,
-    discountType: promoCodeData.discountType || "percentage",
-    discountValue: promoCodeData.discountValue || 0,
-    minPurchaseAmount: promoCodeData.minPurchaseAmount,
-    maxDiscountAmount: promoCodeData.maxDiscountAmount,
-    validFrom: promoCodeData.validFrom || new Date().toISOString(),
-    validUntil: promoCodeData.validUntil || new Date().toISOString(),
-    usageLimit: promoCodeData.usageLimit,
-    usageCount: promoCodeData.usageCount || 0,
-    enabled: promoCodeData.enabled !== undefined ? promoCodeData.enabled : true,
-    applicableTo: promoCodeData.applicableTo || "all",
-    ...promoCodeData,
-  } as PromoCode;
+  const response = await clientFetch("/promo-codes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(promoCodeData),
+  });
 
-  return newPromoCode;
+  return parseApiData<PromoCode>(response, "Failed to create promo code");
 }
 
 export async function updatePromoCode(
   id: string,
   promoCodeData: Partial<PromoCode>,
 ): Promise<PromoCode> {
-  await delay(500);
-  const promoCodes = promoCodesData as PromoCode[];
-  const existingPromoCode = promoCodes.find((pc) => pc.id === id);
-  if (!existingPromoCode) {
-    throw new Error("Promo code not found");
-  }
+  const response = await clientFetch(`/promo-codes/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(promoCodeData),
+  });
 
-  return { ...existingPromoCode, ...promoCodeData } as PromoCode;
+  return parseApiData<PromoCode>(response, "Failed to update promo code");
 }
 
 export async function deletePromoCode(id: string): Promise<void> {
-  await delay(500);
-  // In real app, would call API to delete
+  const response = await clientFetch(`/promo-codes/${id}`, {
+    method: "DELETE",
+  });
+
+  await parseApiData(response, "Failed to delete promo code");
 }
 
 // Test CRUD functions (enhanced)

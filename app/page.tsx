@@ -5,6 +5,7 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { HowItWorksSection } from "@/components/home/HowItWorksSection";
 import { PopularCategoriesSection } from "@/components/home/PopularCategoriesSection";
 import { PopularTestsSection } from "@/components/home/PopularTestsSection";
+import { NewUserWelcomeOffer } from "@/components/promo/NewUserWelcomeOffer";
 import { TestimonialSection } from "@/components/home/TestimonialSection";
 import { WhyChooseUsSection } from "@/components/home/WhyChooseUsSection";
 import { LazyFooter } from "@/components/shared/LazyFooter";
@@ -161,6 +162,7 @@ export default function HomePage() {
         id='main-content-section'
         className='flex-1 min-w-0 overflow-x-hidden'
       >
+        <NewUserWelcomeOffer />
         <HeroSection />
         <HowItWorksSection />
         <PopularCategoriesSection />

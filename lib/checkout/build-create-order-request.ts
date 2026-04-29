@@ -10,6 +10,7 @@ type BuildCreateOrderRequestParams = {
   labTestId: string;
   patientInfo: PatientInfo;
   processingFee: number;
+  promoCode?: string | null;
   selectedLab: SelectedLabCenter | null;
 };
 
@@ -20,6 +21,7 @@ export function buildCreateOrderRequest({
   labTestId,
   patientInfo,
   processingFee,
+  promoCode,
   selectedLab,
 }: BuildCreateOrderRequestParams): CreateOrderRequest {
   return {
@@ -35,6 +37,7 @@ export function buildCreateOrderRequest({
     subtotal: getSubtotal,
     processingFee,
     total: getTotal + processingFee,
+    promoCode: promoCode || undefined,
     accessPayloadJson: accessOrderPayload,
   };
 }
