@@ -1,62 +1,154 @@
-name: Deploy to EC2
+name: Deploy Frontend
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-deploy-main
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  deploy:
-    name: Deploy
+  verify:
+    name: Verify build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
-      - name: Run remote deploy script on EC2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: verify
+
+    steps:
+      - name: Deploy over SSH with rollback
         id: deploy
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          APP_DIR: ${{ secrets.APP_DIR }}
+          DEPLOY_BRANCH: ${{ secrets.BRANCH }}
+          PM2_PROCESS: ${{ secrets.PM2_PROCESS }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
-          port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          timeout: 60s
+          port: ${{ secrets.PORT }}
+          envs: APP_DIR,DEPLOY_BRANCH,PM2_PROCESS
+          script_stop: true
           script: |
-            set -e
-            echo "===> Deploy started on $(date)"
+            set -euo pipefail
 
-            cd "${{ secrets.APP_DIR }}" || { echo "APP_DIR not found"; exit 1; }
+            echo "===> Frontend deploy started on $(date)"
 
-            git fetch origin "${{ secrets.BRANCH }}"
-            git reset --hard "origin/${{ secrets.BRANCH }}"
+            cd "$APP_DIR"
+
+            PREVIOUS_COMMIT=$(git rev-parse HEAD)
+
+            rollback() {
+              echo "Deployment failed. Rolling back to $PREVIOUS_COMMIT"
+
+              git reset --hard "$PREVIOUS_COMMIT"
+              git clean -fd -e .env.production -e ecosystem.config.js
+
+              corepack enable || true
+              yarn install --frozen-lockfile
+              yarn build
+
+              if pm2 describe "$PM2_PROCESS" >/dev/null 2>&1; then
+                pm2 reload "$PM2_PROCESS" --update-env
+              else
+                pm2 start ecosystem.config.js --env production --name "$PM2_PROCESS"
+              fi
+
+              pm2 save
+            }
+
+            trap rollback ERR
+
+            git fetch origin "$DEPLOY_BRANCH"
+            git checkout "$DEPLOY_BRANCH"
+            git reset --hard "origin/$DEPLOY_BRANCH"
             git clean -fd -e .env.production -e ecosystem.config.js
 
-            rm -rf .next && rm -rf node_modules
+            corepack enable || true
+            yarn install --frozen-lockfile
+            yarn build
 
-            export NODE_ENV=production
-
-            yarn install || { echo "Failed to install dependencies"; exit 1; }
-            yarn build || { echo "Failed to build application"; exit 1; }
-
-            if pm2 describe "${{ secrets.PM2_PROCESS }}" > /dev/null 2>&1; then
-              pm2 restart "${{ secrets.PM2_PROCESS }}"
+            if pm2 describe "$PM2_PROCESS" >/dev/null 2>&1; then
+              pm2 reload "$PM2_PROCESS" --update-env
             else
-              pm2 start ecosystem.config.js --env production --name "${{ secrets.PM2_PROCESS }}"
+              pm2 start ecosystem.config.js --env production --name "$PM2_PROCESS"
             fi
 
             pm2 save
-            echo "===> Deploy finished on $(date)"
 
-      - name: Deployment notification
-        if: always()
-        run: |
-          if [ "${{ steps.deploy.outcome }}" = "success" ]; then
-            echo "✅ Deployment successful"
-          else
-            echo "❌ Deployment failed"
-            exit 1
-          fi
+            trap - ERR
+            echo "===> Frontend deploy finished on $(date)"
+
+      # ✅ Success Email
+      - name: Send success email
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "✅ Frontend deployed successfully"
+          to: ${{ secrets.DEPLOY_NOTIFY_EMAIL }}
+          from: ${{ secrets.SMTP_FROM_EMAIL }}
+          body: |
+            Frontend deployed successfully 🚀
+
+            Repo: ${{ github.repository }}
+            Branch: ${{ secrets.BRANCH }}
+            Commit: ${{ github.sha }}
+
+            Logs:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      # ❌ Failure Email
+      - name: Send failure email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "❌ Frontend deploy failed"
+          to: ${{ secrets.DEPLOY_NOTIFY_EMAIL }}
+          from: ${{ secrets.SMTP_FROM_EMAIL }}
+          body: |
+            Frontend deployment failed ❌
+
+            Auto rollback executed.
+
+            Repo: ${{ github.repository }}
+            Branch: ${{ secrets.BRANCH }}
+            Commit: ${{ github.sha }}
+
+            Logs:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
