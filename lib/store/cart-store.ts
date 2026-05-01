@@ -45,10 +45,12 @@ interface CartState {
 
 const CART_DEVICE_ID_KEY = "cart-device-id";
 const CART_SYNC_MIN_INTERVAL_MS = 5000;
+const CART_SYNC_RATE_LIMIT_BACKOFF_MS = 60 * 1000;
 
 let activeSyncPromise: Promise<void> | null = null;
 let lastCompletedSyncSignature: string | null = null;
 let lastSyncStartedAt = 0;
+let syncBackoffUntil = 0;
 
 export function getCartDeviceId() {
   if (typeof window === "undefined") return "server";
@@ -224,6 +226,7 @@ export const useCartStore = create<CartState>()(
           isInitialized: true,
           pendingRemovalLabTestIds: [],
         });
+        lastCompletedSyncSignature = getCartSyncSignature(get());
       },
 
       setLockState: (locked: boolean, expiresAt?: string | Date | null) => {
@@ -273,6 +276,7 @@ export const useCartStore = create<CartState>()(
         const now = Date.now();
 
         if (activeSyncPromise) return activeSyncPromise;
+        if (now < syncBackoffUntil) return;
         if (!hasPendingRemovals && syncSignature === lastCompletedSyncSignature) return;
         if (
           !hasPendingRemovals &&
@@ -329,6 +333,9 @@ export const useCartStore = create<CartState>()(
             } else if (response.status === 401) {
               // User session expired
               console.warn("User session expired, unable to sync cart");
+            } else if (response.status === 429) {
+              syncBackoffUntil = Date.now() + CART_SYNC_RATE_LIMIT_BACKOFF_MS;
+              console.warn("Cart sync rate limited; using local cart temporarily");
             }
           } catch (error) {
             console.error("Failed to sync cart with server:", error);

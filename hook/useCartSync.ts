@@ -8,6 +8,9 @@ import { connectNotificationSocket } from "@/lib/services/notifications.socket";
 import { clientFetch } from "@/lib/api-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const CART_FOCUS_SYNC_COOLDOWN_MS = 30 * 1000;
+const CART_CROSS_TAB_SYNC_DELAY_MS = 1500;
+
 interface UseCartSyncOptions {
   /**
    * Auto-sync on mount (default: true)
@@ -198,11 +201,15 @@ export function useCartSyncStatus() {
 export function useCartSyncOnFocus() {
   const { syncWithServer, isInitialized } = useCartStore();
   const { user } = useAuth();
+  const lastFocusSyncRef = useRef(0);
 
   useEffect(() => {
     if (!user?.id || !isInitialized) return;
 
     const handleFocus = () => {
+      const now = Date.now();
+      if (now - lastFocusSyncRef.current < CART_FOCUS_SYNC_COOLDOWN_MS) return;
+      lastFocusSyncRef.current = now;
       syncWithServer();
     };
 
@@ -219,6 +226,9 @@ export function useCartSyncOnFocus() {
 export function useCartSyncCrossTab() {
   const { syncWithServer, isInitialized } = useCartStore();
   const { user } = useAuth();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (!user?.id || !isInitialized || !("BroadcastChannel" in globalThis)) {
@@ -231,11 +241,19 @@ export function useCartSyncCrossTab() {
       channel.onmessage = (event) => {
         if (event.data.type === "CART_UPDATED") {
           if (event.data.deviceId === getCartDeviceId()) return;
-          syncWithServer();
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          timeoutRef.current = setTimeout(() => {
+            syncWithServer();
+          }, CART_CROSS_TAB_SYNC_DELAY_MS);
         }
       };
 
       return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
         channel.close();
       };
     } catch (error) {

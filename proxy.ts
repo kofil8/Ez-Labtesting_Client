@@ -221,9 +221,11 @@ export function proxy(req: NextRequest) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       loginUrl.searchParams.set("from", `${pathname}${search || ""}`);
-      console.log(
-        `[PROXY] PROTECTED: Redirecting ${pathname} to login (from: ${pathname}${search})`,
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `[PROXY] PROTECTED: Redirecting ${pathname} to login (from: ${pathname}${search})`,
+        );
+      }
       return NextResponse.redirect(loginUrl);
     }
 
@@ -273,9 +275,11 @@ export function proxy(req: NextRequest) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       loginUrl.searchParams.set("from", `${pathname}${search}`);
-      console.log(
-        `[PROXY] NO SESSION: Redirecting ${pathname} to login (from: ${pathname}${search})`,
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `[PROXY] NO SESSION: Redirecting ${pathname} to login (from: ${pathname}${search})`,
+        );
+      }
       return NextResponse.redirect(loginUrl);
     }
 

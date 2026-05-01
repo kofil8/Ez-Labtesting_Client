@@ -16,7 +16,7 @@ export async function generateMetadata({
   params: Promise<{ testId: string }>;
 }) {
   const { testId } = await params;
-  const test = await getPublicTestById(testId);
+  const test = await getPublicTestById(testId).catch(() => null);
 
   if (!test) {
     return {
@@ -45,7 +45,31 @@ export default async function TestDetailPage({
   params: Promise<{ testId: string }>;
 }) {
   const { testId } = await params;
-  const test = await getPublicTestById(testId);
+  const test = await getPublicTestById(testId).catch((error) => {
+    console.warn("Unable to load public test detail", error);
+    return "unavailable" as const;
+  });
+
+  if (test === "unavailable") {
+    return (
+      <div className='flex min-h-screen flex-col bg-background'>
+        <main id='main-content-section' className='flex-1'>
+          <PageContainer>
+            <div className='py-16 text-center'>
+              <h1 className='text-2xl font-semibold text-slate-900 dark:text-slate-100'>
+                Test details are temporarily unavailable
+              </h1>
+              <p className='mt-3 text-sm text-slate-600 dark:text-slate-400'>
+                Please refresh the page in a moment.
+              </p>
+            </div>
+          </PageContainer>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
   const currentUser = await getCurrentUser();
   const currentUserId = currentUser?.id;
 
