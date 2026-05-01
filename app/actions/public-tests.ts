@@ -18,7 +18,7 @@ async function fetchJson(url: string) {
   try {
     response = await fetch(url, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: 300 },
     });
   } catch (error: any) {
     if (
