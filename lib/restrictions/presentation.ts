@@ -3,6 +3,12 @@ import { RestrictionStatus } from "@/types/restriction";
 const BLOCKED_COPY = "Ordering is unavailable in your region.";
 const REQUIRES_PHYSICIAN_COPY =
   "Orders from your region require physician review and are not available online.";
+export const RESTRICTED_LOCATION_TOAST =
+  "You are not allowed to order from this location.";
+export const RESTRICTED_LOCATION_BANNER =
+  "We’re coming soon to this location. Your IP location is currently restricted for online ordering.";
+export const RESTRICTED_LOCATION_CHECKOUT =
+  "We’re coming soon to this location. Your location is currently restricted for online ordering.";
 const US_STATE_LABELS: Record<string, string> = {
   AL: "Alabama",
   AK: "Alaska",
