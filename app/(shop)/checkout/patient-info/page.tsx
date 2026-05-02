@@ -25,6 +25,7 @@ import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
 import {
   RESTRICTED_LOCATION_CHECKOUT,
   RESTRICTED_LOCATION_TOAST,
+  isRestrictionBlocked,
 } from "@/lib/restrictions/presentation";
 import { getResumableOrder } from "@/lib/services";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -72,7 +73,11 @@ export default function CheckoutPatientInfoPage() {
     useState<RestrictionStatus | null>(null);
   const [isRestrictionLoading, setIsRestrictionLoading] = useState(false);
   const hasHydratedResume = useRef(false);
-  const { checkRestriction, publishStatus } = useRestrictionStatus();
+  const {
+    checkRestriction,
+    publishStatus,
+    status: globalRestrictionStatus,
+  } = useRestrictionStatus();
 
   const processingFee = 2.5;
 
@@ -95,8 +100,12 @@ export default function CheckoutPatientInfoPage() {
         ? primaryCartItem.testIds?.[0]
         : primaryCartItem?.testId;
   }, [items]);
-  const restrictionMessage =
-    restrictionStatus?.canOrder === false ? RESTRICTED_LOCATION_CHECKOUT : null;
+  const effectiveRestrictionStatus = isRestrictionBlocked(globalRestrictionStatus)
+    ? globalRestrictionStatus
+    : restrictionStatus;
+  const restrictionMessage = isRestrictionBlocked(effectiveRestrictionStatus)
+    ? RESTRICTED_LOCATION_CHECKOUT
+    : null;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -193,6 +202,16 @@ export default function CheckoutPatientInfoPage() {
       toast({
         title: "Incomplete Information",
         description: "Please complete all required patient information fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isRestrictionBlocked(globalRestrictionStatus)) {
+      publishStatus(globalRestrictionStatus, { showBanner: true });
+      toast({
+        title: "Location restricted",
+        description: RESTRICTED_LOCATION_TOAST,
         variant: "destructive",
       });
       return;
@@ -353,7 +372,7 @@ export default function CheckoutPatientInfoPage() {
                 disabled={
                   !isPatientValid ||
                   isRestrictionLoading ||
-                  restrictionStatus?.canOrder === false
+                  isRestrictionBlocked(effectiveRestrictionStatus)
                 }
                 className='h-12 px-8'
               >

@@ -23,6 +23,7 @@ import { confirmOrderPayment } from "@/lib/services/order.service";
 import {
   RESTRICTED_LOCATION_CHECKOUT,
   RESTRICTED_LOCATION_TOAST,
+  isRestrictionBlocked,
 } from "@/lib/restrictions/presentation";
 import { useCartStore } from "@/lib/store/cart-store";
 import { RestrictionStatus } from "@/types/restriction";
@@ -57,7 +58,11 @@ export default function CheckoutPaymentPage() {
   const [isRestrictionLoading, setIsRestrictionLoading] = useState(false);
   const hasHydratedResume = useRef(false);
   const hasShownRestrictionToast = useRef(false);
-  const { checkRestriction, publishStatus } = useRestrictionStatus();
+  const {
+    checkRestriction,
+    publishStatus,
+    status: globalRestrictionStatus,
+  } = useRestrictionStatus();
 
   const processingFee = 2.5;
   const paymentAmount = (order?.total ?? getTotal() + processingFee) || 0;
@@ -81,8 +86,12 @@ export default function CheckoutPaymentPage() {
         ? primaryCartItem.testIds?.[0]
         : primaryCartItem?.testId;
   }, [items]);
-  const restrictionMessage =
-    restrictionStatus?.canOrder === false ? RESTRICTED_LOCATION_CHECKOUT : null;
+  const effectiveRestrictionStatus = isRestrictionBlocked(globalRestrictionStatus)
+    ? globalRestrictionStatus
+    : restrictionStatus;
+  const restrictionMessage = isRestrictionBlocked(effectiveRestrictionStatus)
+    ? RESTRICTED_LOCATION_CHECKOUT
+    : null;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -178,9 +187,21 @@ export default function CheckoutPaymentPage() {
 
   useEffect(() => {
     if (isRecovering || !patientInfo.state || !primaryLabTestId) {
-      setRestrictionStatus(null);
-      setIsRestrictionLoading(false);
-      return;
+      const timeoutId = window.setTimeout(() => {
+        setRestrictionStatus(null);
+        setIsRestrictionLoading(false);
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    if (isRestrictionBlocked(globalRestrictionStatus)) {
+      const timeoutId = window.setTimeout(() => {
+        setRestrictionStatus(globalRestrictionStatus);
+        publishStatus(globalRestrictionStatus, { showBanner: true });
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
     }
 
     let cancelled = false;
@@ -226,7 +247,14 @@ export default function CheckoutPaymentPage() {
     return () => {
       cancelled = true;
     };
-  }, [checkRestriction, isRecovering, patientInfo.state, primaryLabTestId, publishStatus]);
+  }, [
+    checkRestriction,
+    globalRestrictionStatus,
+    isRecovering,
+    patientInfo.state,
+    primaryLabTestId,
+    publishStatus,
+  ]);
 
   useEffect(() => {
     if (
@@ -234,7 +262,7 @@ export default function CheckoutPaymentPage() {
       isPreparingOrder ||
       order?.orderId ||
       isRestrictionLoading ||
-      restrictionStatus?.canOrder === false
+      isRestrictionBlocked(effectiveRestrictionStatus)
     ) {
       return;
     }
@@ -346,10 +374,11 @@ export default function CheckoutPaymentPage() {
     items,
     order?.orderId,
       patientInfo,
-      primaryLabTestId,
-      promoCode,
-      processingFee,
-    restrictionStatus?.canOrder,
+    primaryLabTestId,
+    promoCode,
+    processingFee,
+    publishStatus,
+    effectiveRestrictionStatus,
     restrictionStatus,
     selectedLab,
     setOrder,
@@ -369,6 +398,16 @@ export default function CheckoutPaymentPage() {
   }
 
   const handlePaymentSuccess = async (paymentIntentId: string) => {
+    if (isRestrictionBlocked(effectiveRestrictionStatus)) {
+      publishStatus(effectiveRestrictionStatus, { showBanner: true });
+      toast({
+        title: "Location restricted",
+        description: RESTRICTED_LOCATION_TOAST,
+        variant: "destructive",
+      });
+      return;
+    }
+
     await finalizePaymentAfterStripe(
       {
         orderId: order?.orderId,
@@ -467,7 +506,7 @@ export default function CheckoutPaymentPage() {
                 isFinalizing ||
                 !order?.orderId ||
                 isRestrictionLoading ||
-                restrictionStatus?.canOrder === false
+                isRestrictionBlocked(effectiveRestrictionStatus)
               }
             />
           </StripeProvider>
