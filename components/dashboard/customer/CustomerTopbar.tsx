@@ -3,6 +3,8 @@
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { Button } from "@/components/ui/button";
 import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
+import { useCartSidebar } from "@/lib/cart-sidebar-context";
+import { useCartStore } from "@/lib/store/cart-store";
 import { cn } from "@/lib/utils";
 import {
   FlaskConical,
@@ -10,6 +12,7 @@ import {
   MapPinned,
   Menu,
   Search,
+  ShoppingCart,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -33,6 +36,8 @@ export function CustomerTopbar({
   onPreloadRoute: (href: string) => void;
 }) {
   const pathname = usePathname();
+  const { openCart } = useCartSidebar();
+  const cartCount = useCartStore((state) => state.getItemCount());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const activeNavItem =
     CUSTOMER_NAV_ITEMS.find(({ href }) => isCustomerNavActive(pathname, href)) ||
@@ -55,6 +60,11 @@ export function CustomerTopbar({
   const handleSignOut = () => {
     setIsMenuOpen(false);
     onSignOut();
+  };
+
+  const handleOpenCart = () => {
+    setIsMenuOpen(false);
+    openCart();
   };
 
   return (
@@ -98,6 +108,23 @@ export function CustomerTopbar({
 
           <div className='flex shrink-0 items-center gap-1.5 sm:gap-2'>
             <NotificationsBell />
+            <Button
+              type='button'
+              variant='ghost'
+              size='icon'
+              onClick={handleOpenCart}
+              className='group relative h-10 w-10 shrink-0 rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-950 sm:h-11 sm:w-11'
+              aria-label={
+                cartCount > 0 ? `Open cart, ${cartCount} items` : "Open cart"
+              }
+            >
+              <ShoppingCart className='h-5 w-5 transition-transform group-hover:scale-105' />
+              {cartCount > 0 && (
+                <span className='absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold leading-none text-white shadow-sm'>
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </Button>
             <Link
               href='/dashboard/customer/profile'
               aria-label='Open profile'
@@ -230,6 +257,20 @@ export function CustomerTopbar({
                 Quick actions
               </p>
               <div className='mt-3 grid gap-2'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleOpenCart}
+                  className='w-full justify-start border-blue-200 hover:bg-blue-50 hover:text-blue-700'
+                >
+                  <ShoppingCart className='h-4 w-4' />
+                  Cart
+                  {cartCount > 0 && (
+                    <span className='ml-auto rounded-full bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white'>
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
+                </Button>
                 <Button asChild className='w-full bg-blue-600 hover:bg-blue-700'>
                   <Link
                     href='/tests'
