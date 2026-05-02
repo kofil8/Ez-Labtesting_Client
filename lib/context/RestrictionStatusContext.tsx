@@ -64,8 +64,9 @@ export function RestrictionStatusProvider({
       options: { force?: boolean } = {},
     ) => {
       const cacheKey = buildCacheKey(params);
+      const canUseCache = Boolean(params.checkoutState || params.publicIp);
 
-      if (!options.force) {
+      if (canUseCache && !options.force) {
         const cachedStatus = cacheRef.current.get(cacheKey);
         if (cachedStatus) {
           setStatus(cachedStatus);
@@ -78,7 +79,9 @@ export function RestrictionStatusProvider({
 
       try {
         const nextStatus = await getRestrictionStatus(params);
-        cacheRef.current.set(cacheKey, nextStatus);
+        if (canUseCache) {
+          cacheRef.current.set(cacheKey, nextStatus);
+        }
         setStatus(nextStatus);
         setLastCheckedAt(nextStatus.lastCheckedAt ?? new Date().toISOString());
         return nextStatus;
@@ -98,8 +101,15 @@ export function RestrictionStatusProvider({
     setStatus(nextStatus);
     setLastCheckedAt(nextStatus?.lastCheckedAt ?? (nextStatus ? new Date().toISOString() : null));
 
-    if (options.showBanner ?? nextStatus?.canOrder === false) {
-      setShowRestrictionBanner(Boolean(nextStatus?.canOrder === false));
+    if (options.showBanner !== undefined) {
+      setShowRestrictionBanner(
+        Boolean(options.showBanner && nextStatus?.canOrder === false),
+      );
+      return;
+    }
+
+    if (nextStatus?.canOrder === false) {
+      setShowRestrictionBanner(true);
     }
   }, []);
 
