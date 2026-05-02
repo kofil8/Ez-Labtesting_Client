@@ -20,12 +20,14 @@ export function CustomerSidebar({
   isSigningOut,
   isPanelHidden,
   onTogglePanel,
+  onPreloadRoute,
 }: {
   viewer?: CustomerDashboardViewer | null;
   onSignOut: () => void;
   isSigningOut: boolean;
   isPanelHidden: boolean;
   onTogglePanel: () => void;
+  onPreloadRoute: (href: string) => void;
 }) {
   const pathname = usePathname();
 
@@ -45,6 +47,9 @@ export function CustomerSidebar({
         <Link
           href='/dashboard/customer'
           aria-label='Open customer dashboard'
+          onMouseEnter={() => onPreloadRoute("/dashboard/customer")}
+          onFocus={() => onPreloadRoute("/dashboard/customer")}
+          onTouchStart={() => onPreloadRoute("/dashboard/customer")}
           className={cn(
             "flex min-w-0 items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50",
             isPanelHidden && "justify-center",
@@ -100,6 +105,9 @@ export function CustomerSidebar({
               key={href}
               href={href}
               title={isPanelHidden ? label : undefined}
+              onMouseEnter={() => onPreloadRoute(href)}
+              onFocus={() => onPreloadRoute(href)}
+              onTouchStart={() => onPreloadRoute(href)}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
                 isPanelHidden && "justify-center px-0",

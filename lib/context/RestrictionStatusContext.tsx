@@ -27,7 +27,11 @@ type RestrictionStatusContextValue = {
     params?: RestrictionStatusParams,
     options?: { force?: boolean },
   ) => Promise<RestrictionStatus | null>;
-  publishStatus: (status: RestrictionStatus | null) => void;
+  publishStatus: (
+    status: RestrictionStatus | null,
+    options?: { showBanner?: boolean },
+  ) => void;
+  showRestrictionBanner: boolean;
 };
 
 const RestrictionStatusContext =
@@ -41,6 +45,7 @@ export function RestrictionStatusProvider({
   const [status, setStatus] = useState<RestrictionStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null);
+  const [showRestrictionBanner, setShowRestrictionBanner] = useState(false);
   const cacheRef = useRef(new Map<string, RestrictionStatus>());
 
   const buildCacheKey = useCallback((params: RestrictionStatusParams = {}) => {
@@ -63,11 +68,7 @@ export function RestrictionStatusProvider({
       if (!options.force) {
         const cachedStatus = cacheRef.current.get(cacheKey);
         if (cachedStatus) {
-          setStatus((current) =>
-            current?.canOrder === false && cachedStatus.canOrder !== false
-              ? current
-              : cachedStatus,
-          );
+          setStatus(cachedStatus);
           setLastCheckedAt(cachedStatus.lastCheckedAt ?? new Date().toISOString());
           return cachedStatus;
         }
@@ -78,11 +79,7 @@ export function RestrictionStatusProvider({
       try {
         const nextStatus = await getRestrictionStatus(params);
         cacheRef.current.set(cacheKey, nextStatus);
-        setStatus((current) =>
-          current?.canOrder === false && nextStatus.canOrder !== false
-            ? current
-            : nextStatus,
-        );
+        setStatus(nextStatus);
         setLastCheckedAt(nextStatus.lastCheckedAt ?? new Date().toISOString());
         return nextStatus;
       } catch {
@@ -94,13 +91,16 @@ export function RestrictionStatusProvider({
     [buildCacheKey],
   );
 
-  const publishStatus = useCallback((nextStatus: RestrictionStatus | null) => {
-    setStatus((current) =>
-      current?.canOrder === false && nextStatus?.canOrder !== false
-        ? current
-        : nextStatus,
-    );
+  const publishStatus = useCallback((
+    nextStatus: RestrictionStatus | null,
+    options: { showBanner?: boolean } = {},
+  ) => {
+    setStatus(nextStatus);
     setLastCheckedAt(nextStatus?.lastCheckedAt ?? (nextStatus ? new Date().toISOString() : null));
+
+    if (options.showBanner ?? nextStatus?.canOrder === false) {
+      setShowRestrictionBanner(Boolean(nextStatus?.canOrder === false));
+    }
   }, []);
 
   const value = useMemo(
@@ -111,8 +111,16 @@ export function RestrictionStatusProvider({
       refreshStatus,
       checkRestriction: refreshStatus,
       publishStatus,
+      showRestrictionBanner,
     }),
-    [status, isLoading, lastCheckedAt, refreshStatus, publishStatus],
+    [
+      status,
+      isLoading,
+      lastCheckedAt,
+      refreshStatus,
+      publishStatus,
+      showRestrictionBanner,
+    ],
   );
 
   return (

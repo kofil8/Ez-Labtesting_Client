@@ -10,12 +10,13 @@ import type { RestrictionStatusParams } from "@/lib/services/state-restriction.s
 
 export function useCartRestrictionGuard() {
   const { toast } = useToast();
-  const { checkRestriction } = useRestrictionStatus();
+  const { checkRestriction, publishStatus } = useRestrictionStatus();
 
   const ensureCanOrder = async (params: RestrictionStatusParams) => {
     const status = await checkRestriction(params);
 
     if (isRestrictionBlocked(status)) {
+      publishStatus(status, { showBanner: true });
       toast({
         title: "Location restricted",
         description: RESTRICTED_LOCATION_TOAST,

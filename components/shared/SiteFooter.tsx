@@ -1,13 +1,6 @@
 "use client";
 
-import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
-import {
-  getRestrictionAvailabilityLabel,
-  getRestrictionIpDisplay,
-  getRestrictionStateDisplay,
-  isRestrictionBlocked,
-} from "@/lib/restrictions/presentation";
-import { Mail, MapPin, Phone, Radar, ShieldAlert } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 
 const testsLinks = [
@@ -35,59 +28,11 @@ const legalLinks = [
   { href: "/accessibility", label: "Accessibility" },
 ];
 
-function formatLocationTimestamp(lastCheckedAt: string | null): string | null {
-  if (!lastCheckedAt) {
-    return null;
-  }
-
-  const date = new Date(lastCheckedAt);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    month: "short",
-    day: "numeric",
-  }).format(date);
-}
-
 export function SiteFooter({
   showDeveloperCredit = false,
 }: {
   showDeveloperCredit?: boolean;
 }) {
-  const {
-    status: restrictionStatus,
-    isLoading,
-    lastCheckedAt,
-  } = useRestrictionStatus();
-  const stateLabel = getRestrictionStateDisplay(restrictionStatus);
-  const ipLabel = getRestrictionIpDisplay(restrictionStatus);
-  const availabilityLabel = getRestrictionAvailabilityLabel(restrictionStatus);
-  const isRestricted = isRestrictionBlocked(restrictionStatus);
-  const lastCheckedLabel = formatLocationTimestamp(lastCheckedAt);
-  const locationSourceLabel =
-    restrictionStatus?.source === "ip_lookup"
-      ? "IP lookup"
-      : restrictionStatus?.source === "geo_header"
-        ? "Network region"
-        : restrictionStatus?.source === "checkout_state"
-          ? "Checkout state"
-          : "Pending signal";
-
-  const cardToneClasses = isRestricted
-    ? "border-amber-400/35 bg-amber-500/[0.08] text-amber-50"
-    : restrictionStatus
-      ? "border-emerald-400/30 bg-emerald-500/[0.08] text-emerald-50"
-      : "border-slate-700/80 bg-slate-950/70 text-slate-100";
-  const statusChipClasses = isRestricted
-    ? "border-amber-400/30 bg-amber-400/10 text-amber-100"
-    : restrictionStatus
-      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
-      : "border-slate-700 bg-slate-900/80 text-slate-200";
-
   return (
     <footer className='bg-slate-900 text-slate-300'>
       <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
@@ -176,50 +121,6 @@ export function SiteFooter({
                 </span>
               </li>
             </ul>
-          </div>
-        </div>
-
-        <div className='flex justify-center pb-6'>
-          <div
-            className={`w-full max-w-fit rounded-xl border px-3 py-2.5 shadow-md sm:px-4 ${cardToneClasses}`}
-          >
-            <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-              <div className='flex items-center gap-3'>
-                <div className='grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-slate-950/40'>
-                  {isRestricted ? (
-                    <ShieldAlert className='h-4 w-4' />
-                  ) : (
-                    <Radar className='h-4 w-4' />
-                  )}
-                </div>
-
-                <div className='flex-1'>
-                  <div className='flex flex-wrap items-center gap-2'>
-                    <p className='text-sm font-semibold leading-tight text-white'>
-                      {isLoading && !restrictionStatus
-                        ? "Refreshing signal..."
-                        : availabilityLabel}
-                    </p>
-                    <span
-                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.08em] ${statusChipClasses}`}
-                    >
-                      {locationSourceLabel}
-                    </span>
-                  </div>
-                  <div className='mt-0.5 flex flex-wrap items-center text-[11px] leading-tight text-slate-300'>
-                    <span>
-                      {stateLabel
-                        ? `Region: ${stateLabel}`
-                        : "Region unavailable"}
-                    </span>
-                    <span className='mx-2 opacity-40'>|</span>
-                    <span>IP: {ipLabel || "Unavailable"}</span>
-                    <span className='mx-2 opacity-40'>|</span>
-                    <span>Checked: {lastCheckedLabel || "Pending"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
