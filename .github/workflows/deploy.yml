@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: frontend-deploy-main
   cancel-in-progress: true
@@ -14,6 +17,7 @@ jobs:
   verify:
     name: Verify build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -24,12 +28,16 @@ jobs:
         with:
           node-version: 20
           cache: yarn
+          cache-dependency-path: yarn.lock
 
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Install Yarn v1
+        run: |
+          corepack disable || true
+          npm install -g yarn@1.22.22
+          yarn -v
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --non-interactive
 
       - name: Build
         run: yarn build
@@ -38,15 +46,15 @@ jobs:
     name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: verify
+    timeout-minutes: 20
 
     steps:
       - name: Deploy over SSH with rollback
-        id: deploy
         uses: appleboy/ssh-action@v1.2.0
         env:
           APP_DIR: ${{ secrets.APP_DIR }}
-          DEPLOY_BRANCH: ${{ secrets.BRANCH }}
-          PM2_PROCESS: ${{ secrets.PM2_PROCESS }}
+          DEPLOY_BRANCH: main
+          PM2_PROCESS: ezclient
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
@@ -55,48 +63,63 @@ jobs:
           envs: APP_DIR,DEPLOY_BRANCH,PM2_PROCESS
           script_stop: true
           script: |
-            set -euo pipefail
+            set -eu
+
+            : "${APP_DIR:?APP_DIR secret is required}"
+
+            export PATH="/usr/bin:/usr/local/bin:$PATH"
 
             echo "===> Frontend deploy started on $(date)"
 
             cd "$APP_DIR"
 
+            corepack disable || true
+            sudo npm install -g yarn@1.22.22 pm2
+            hash -r
+            yarn -v
+
             PREVIOUS_COMMIT=$(git rev-parse HEAD)
 
             rollback() {
+              trap - ERR
               echo "Deployment failed. Rolling back to $PREVIOUS_COMMIT"
 
               git reset --hard "$PREVIOUS_COMMIT"
               git clean -fd -e .env.production -e ecosystem.config.js
 
-              corepack enable || true
-              yarn install --frozen-lockfile
+              corepack disable || true
+              sudo npm install -g yarn@1.22.22 pm2
+              hash -r
+
+              rm -rf .yarn .pnp.cjs .pnp.loader.mjs .yarnrc.yml node_modules
+              yarn cache clean || true
+              rm -rf ~/.cache/yarn
+
+              yarn install --frozen-lockfile --non-interactive
               yarn build
 
-              if pm2 describe "$PM2_PROCESS" >/dev/null 2>&1; then
-                pm2 reload "$PM2_PROCESS" --update-env
-              else
-                pm2 start ecosystem.config.js --env production --name "$PM2_PROCESS"
-              fi
-
+              pm2 start ecosystem.config.js --env production
               pm2 save
             }
 
-            trap rollback ERR
+            trap 'rollback' ERR
 
-            git fetch origin "$DEPLOY_BRANCH"
-            git checkout "$DEPLOY_BRANCH"
-            git reset --hard "origin/$DEPLOY_BRANCH"
+            git fetch --prune origin main
+            git checkout -B main origin/main
+            git reset --hard origin/main
             git clean -fd -e .env.production -e ecosystem.config.js
 
-            corepack enable || true
-            yarn install --frozen-lockfile
+            rm -rf .yarn .pnp.cjs .pnp.loader.mjs .yarnrc.yml node_modules
+            yarn cache clean || true
+            rm -rf ~/.cache/yarn
+
+            yarn install --frozen-lockfile --non-interactive
             yarn build
 
             if pm2 describe "$PM2_PROCESS" >/dev/null 2>&1; then
               pm2 reload "$PM2_PROCESS" --update-env
             else
-              pm2 start ecosystem.config.js --env production --name "$PM2_PROCESS"
+              pm2 start ecosystem.config.js --env production
             fi
 
             pm2 save
@@ -104,48 +127,50 @@ jobs:
             trap - ERR
             echo "===> Frontend deploy finished on $(date)"
 
-      # ✅ Success Email
       - name: Send success email
         if: success()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER }}
           server_port: ${{ secrets.SMTP_PORT }}
+          secure: true
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "✅ Frontend deployed successfully"
+          subject: Frontend deployed successfully
           to: ${{ secrets.DEPLOY_NOTIFY_EMAIL }}
           from: ${{ secrets.SMTP_FROM_EMAIL }}
           body: |
-            Frontend deployed successfully 🚀
+            Frontend deployed successfully.
 
-            Repo: ${{ github.repository }}
-            Branch: ${{ secrets.BRANCH }}
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
 
             Logs:
             https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      # ❌ Failure Email
       - name: Send failure email
         if: failure()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER }}
           server_port: ${{ secrets.SMTP_PORT }}
+          secure: true
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "❌ Frontend deploy failed"
+          subject: Frontend deploy failed
           to: ${{ secrets.DEPLOY_NOTIFY_EMAIL }}
           from: ${{ secrets.SMTP_FROM_EMAIL }}
           body: |
-            Frontend deployment failed ❌
+            Frontend deployment failed.
 
-            Auto rollback executed.
+            Auto rollback was attempted on EC2.
 
-            Repo: ${{ github.repository }}
-            Branch: ${{ secrets.BRANCH }}
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
 
             Logs:
             https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
