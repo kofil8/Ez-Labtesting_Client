@@ -5,8 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCartSidebar } from "@/lib/cart-sidebar-context";
 import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
 import {
-  getRestrictionMessage,
-  getRestrictionStateLabel,
+  RESTRICTED_LOCATION_BANNER,
   isRestrictionBlocked,
 } from "@/lib/restrictions/presentation";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -114,18 +113,12 @@ export function SiteHeader() {
     setIsMobileMenuOpen(false);
   };
 
-  const restrictionMessage = getRestrictionMessage(restrictionStatus);
-  const restrictionState = getRestrictionStateLabel(restrictionStatus);
-  const showRestrictionBanner =
-    isRestrictionBlocked(restrictionStatus) && Boolean(restrictionMessage);
+  const showRestrictionBanner = isRestrictionBlocked(restrictionStatus);
   const restrictionBanner = showRestrictionBanner ? (
-    <div className='border-b border-amber-200 bg-amber-50/95 text-amber-950 backdrop-blur'>
+    <div className='border-b border-red-200 bg-red-50/95 text-red-950 backdrop-blur'>
       <div className='container mx-auto flex items-center gap-3 px-4 py-2 text-sm min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
-        <AlertTriangle className='h-4 w-4 shrink-0 text-amber-700' />
-        <p className='font-medium'>
-          {restrictionMessage}
-          {restrictionState ? ` State: ${restrictionState}.` : ""}
-        </p>
+        <AlertTriangle className='h-4 w-4 shrink-0 text-red-700' />
+        <p className='font-medium'>{RESTRICTED_LOCATION_BANNER}</p>
       </div>
     </div>
   ) : null;

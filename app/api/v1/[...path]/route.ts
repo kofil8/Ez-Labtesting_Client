@@ -22,6 +22,13 @@ const CLIENT_SUPPLIED_PROXY_HEADERS = [
   "x-real-ip",
 ];
 
+const CLIENT_IP_HEADERS = [
+  "cf-connecting-ip",
+  "x-vercel-forwarded-for",
+  "x-forwarded-for",
+  "x-real-ip",
+];
+
 function getBackendBaseUrl() {
   return (
     process.env.API_BASE_URL ||
@@ -43,8 +50,24 @@ function buildTargetUrl(request: NextRequest, path: string[]) {
   return targetUrl;
 }
 
+function getFirstHeaderValue(value: string | null) {
+  return value?.split(",")[0]?.trim() || null;
+}
+
+function resolveForwardedClientIp(request: NextRequest) {
+  for (const header of CLIENT_IP_HEADERS) {
+    const ip = getFirstHeaderValue(request.headers.get(header));
+    if (ip) {
+      return ip;
+    }
+  }
+
+  return null;
+}
+
 function buildProxyHeaders(request: NextRequest) {
   const headers = new Headers(request.headers);
+  const clientIp = resolveForwardedClientIp(request);
 
   HOP_BY_HOP_HEADERS.forEach((header) => {
     headers.delete(header);
@@ -56,6 +79,11 @@ function buildProxyHeaders(request: NextRequest) {
 
   headers.set("x-forwarded-host", request.headers.get("host") || request.nextUrl.host);
   headers.set("x-forwarded-proto", request.nextUrl.protocol.replace(":", ""));
+
+  if (clientIp) {
+    headers.set("x-real-ip", clientIp);
+    headers.set("x-forwarded-for", clientIp);
+  }
 
   return headers;
 }

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hook/use-toast";
+import { useCartRestrictionGuard } from "@/hook/useCartRestrictionGuard";
 import { useCartSync } from "@/hook/useCartSync";
 import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -34,6 +35,7 @@ interface TestPurchaseCardProps {
 
 export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
   const { toast } = useToast();
+  const { ensureCanOrder } = useCartRestrictionGuard();
   const { manualSync } = useCartSync({ autoSync: false });
   const { isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
@@ -83,6 +85,15 @@ export function TestPurchaseCard({ test }: TestPurchaseCardProps) {
         title: "Already in cart",
         description: `${test.testName} is already in your cart.`,
       });
+      return;
+    }
+
+    const canOrder = await ensureCanOrder({
+      laboratoryCode: "ACCESS",
+      testId: test.id,
+    });
+
+    if (!canOrder) {
       return;
     }
 

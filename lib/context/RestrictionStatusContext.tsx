@@ -5,8 +5,8 @@ import {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -21,7 +21,13 @@ type RestrictionStatusContextValue = {
   lastCheckedAt: string | null;
   refreshStatus: (
     params?: RestrictionStatusParams,
+    options?: { force?: boolean },
   ) => Promise<RestrictionStatus | null>;
+  checkRestriction: (
+    params?: RestrictionStatusParams,
+    options?: { force?: boolean },
+  ) => Promise<RestrictionStatus | null>;
+  publishStatus: (status: RestrictionStatus | null) => void;
 };
 
 const RestrictionStatusContext =
@@ -33,16 +39,50 @@ export function RestrictionStatusProvider({
   children: ReactNode;
 }) {
   const [status, setStatus] = useState<RestrictionStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null);
+  const cacheRef = useRef(new Map<string, RestrictionStatus>());
+
+  const buildCacheKey = useCallback((params: RestrictionStatusParams = {}) => {
+    return JSON.stringify({
+      checkoutState: params.checkoutState || "",
+      laboratoryCode: params.laboratoryCode || "",
+      laboratoryId: params.laboratoryId || "",
+      publicIp: params.publicIp || "",
+      testId: params.testId || "",
+    });
+  }, []);
 
   const refreshStatus = useCallback(
-    async (params: RestrictionStatusParams = {}) => {
+    async (
+      params: RestrictionStatusParams = {},
+      options: { force?: boolean } = {},
+    ) => {
+      const cacheKey = buildCacheKey(params);
+
+      if (!options.force) {
+        const cachedStatus = cacheRef.current.get(cacheKey);
+        if (cachedStatus) {
+          setStatus((current) =>
+            current?.canOrder === false && cachedStatus.canOrder !== false
+              ? current
+              : cachedStatus,
+          );
+          setLastCheckedAt(cachedStatus.lastCheckedAt ?? new Date().toISOString());
+          return cachedStatus;
+        }
+      }
+
       setIsLoading(true);
 
       try {
         const nextStatus = await getRestrictionStatus(params);
-        setStatus(nextStatus);
+        cacheRef.current.set(cacheKey, nextStatus);
+        setStatus((current) =>
+          current?.canOrder === false && nextStatus.canOrder !== false
+            ? current
+            : nextStatus,
+        );
         setLastCheckedAt(nextStatus.lastCheckedAt ?? new Date().toISOString());
         return nextStatus;
       } catch {
@@ -51,23 +91,17 @@ export function RestrictionStatusProvider({
         setIsLoading(false);
       }
     },
-    [],
+    [buildCacheKey],
   );
 
-  useEffect(() => {
-    void refreshStatus();
-  }, [refreshStatus]);
-
-  useEffect(() => {
-    const handleFocus = () => {
-      void refreshStatus();
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => {
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [refreshStatus]);
+  const publishStatus = useCallback((nextStatus: RestrictionStatus | null) => {
+    setStatus((current) =>
+      current?.canOrder === false && nextStatus?.canOrder !== false
+        ? current
+        : nextStatus,
+    );
+    setLastCheckedAt(nextStatus?.lastCheckedAt ?? (nextStatus ? new Date().toISOString() : null));
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -75,8 +109,10 @@ export function RestrictionStatusProvider({
       isLoading,
       lastCheckedAt,
       refreshStatus,
+      checkRestriction: refreshStatus,
+      publishStatus,
     }),
-    [status, isLoading, lastCheckedAt, refreshStatus],
+    [status, isLoading, lastCheckedAt, refreshStatus, publishStatus],
   );
 
   return (

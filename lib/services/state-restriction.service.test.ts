@@ -101,6 +101,9 @@ describe("state restriction service", () => {
       "https://api.ipify.org?format=json",
       { cache: "no-store" },
     );
+    expect(String(fetchMock.mock.calls[2][0])).toContain(
+      "publicIp=203.0.113.24",
+    );
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 

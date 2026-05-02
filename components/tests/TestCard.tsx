@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hook/use-toast";
+import { useCartRestrictionGuard } from "@/hook/useCartRestrictionGuard";
 import { useAuth } from "@/lib/auth-context";
 import {
   buildCartItemFromPublicTest,
@@ -42,6 +43,7 @@ export function TestCard({
   index = 0,
 }: TestCardProps) {
   const { toast } = useToast();
+  const { ensureCanOrder } = useCartRestrictionGuard();
   const { isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -62,7 +64,7 @@ export function TestCard({
   const canAddToCart = canAddCatalogTestToCart(test) && !!cartItem;
   const isAlreadyInCart = items.some((item) => item.id === `test-${test.id}`);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (isLoading) return;
 
     if (!isAuthenticated) {
@@ -86,6 +88,15 @@ export function TestCard({
         title: "Already in cart",
         description: `${test.testName} is already in your cart.`,
       });
+      return;
+    }
+
+    const canOrder = await ensureCanOrder({
+      laboratoryCode: "ACCESS",
+      testId: test.id,
+    });
+
+    if (!canOrder) {
       return;
     }
 

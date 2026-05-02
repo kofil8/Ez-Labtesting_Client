@@ -16,14 +16,14 @@ import { shouldRouteToVisitLab } from "@/lib/checkout/flow-guards";
 import { buildCreateOrderRequest } from "@/lib/checkout/build-create-order-request";
 import { finalizePaymentAfterStripe } from "@/lib/checkout/payment-finalization";
 import { useCheckout } from "@/lib/context/CheckoutContext";
+import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
 import { trackLocatorEvent } from "@/lib/locator/analytics";
 import { createOrder, getResumableOrder } from "@/lib/services";
 import { confirmOrderPayment } from "@/lib/services/order.service";
-import { getRestrictionMessage } from "@/lib/restrictions/presentation";
 import {
-  getRestrictionStatus,
-  type RestrictionStatusParams,
-} from "@/lib/services/state-restriction.service";
+  RESTRICTED_LOCATION_CHECKOUT,
+  RESTRICTED_LOCATION_TOAST,
+} from "@/lib/restrictions/presentation";
 import { useCartStore } from "@/lib/store/cart-store";
 import { RestrictionStatus } from "@/types/restriction";
 import { AlertTriangle, CreditCard, Loader2, Shield } from "lucide-react";
@@ -57,6 +57,7 @@ export default function CheckoutPaymentPage() {
   const [isRestrictionLoading, setIsRestrictionLoading] = useState(false);
   const hasHydratedResume = useRef(false);
   const hasShownRestrictionToast = useRef(false);
+  const { checkRestriction, publishStatus } = useRestrictionStatus();
 
   const processingFee = 2.5;
   const paymentAmount = (order?.total ?? getTotal() + processingFee) || 0;
@@ -80,7 +81,8 @@ export default function CheckoutPaymentPage() {
         ? primaryCartItem.testIds?.[0]
         : primaryCartItem?.testId;
   }, [items]);
-  const restrictionMessage = getRestrictionMessage(restrictionStatus);
+  const restrictionMessage =
+    restrictionStatus?.canOrder === false ? RESTRICTED_LOCATION_CHECKOUT : null;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -182,31 +184,29 @@ export default function CheckoutPaymentPage() {
     }
 
     let cancelled = false;
-    const params: RestrictionStatusParams = {
-      checkoutState: patientInfo.state,
-      testId: primaryLabTestId,
-    };
-
     const loadRestrictionStatus = async () => {
       setIsRestrictionLoading(true);
 
       try {
-        const nextStatus = await getRestrictionStatus(params);
+        const nextStatus = await checkRestriction({
+          checkoutState: patientInfo.state,
+          testId: primaryLabTestId,
+        });
         if (cancelled) {
           return;
         }
 
         setRestrictionStatus(nextStatus);
 
-        if (
-          nextStatus.canOrder === false &&
-          !hasShownRestrictionToast.current &&
-          nextStatus.reason
-        ) {
+        if (nextStatus?.canOrder === false) {
+          publishStatus(nextStatus);
+        }
+
+        if (nextStatus?.canOrder === false && !hasShownRestrictionToast.current) {
           hasShownRestrictionToast.current = true;
           toast({
-            title: "Checkout restricted",
-            description: nextStatus.reason,
+            title: "Location restricted",
+            description: RESTRICTED_LOCATION_TOAST,
             variant: "destructive",
           });
         }
@@ -226,7 +226,7 @@ export default function CheckoutPaymentPage() {
     return () => {
       cancelled = true;
     };
-  }, [isRecovering, patientInfo.state, primaryLabTestId]);
+  }, [checkRestriction, isRecovering, patientInfo.state, primaryLabTestId, publishStatus]);
 
   useEffect(() => {
     if (
@@ -283,19 +283,19 @@ export default function CheckoutPaymentPage() {
         if (cancelled) return;
 
         if (error?.code === "REGION_RESTRICTED") {
-          setRestrictionStatus((current) => ({
-            ip: current?.ip ?? null,
-            maskedIp: current?.maskedIp ?? null,
+          const blockedStatus = {
+            ip: restrictionStatus?.ip ?? null,
+            maskedIp: restrictionStatus?.maskedIp ?? null,
             detectedStateCode:
-              current?.detectedStateCode ?? patientInfo.state ?? null,
+              restrictionStatus?.detectedStateCode ?? patientInfo.state ?? null,
             effectiveStateCode:
               (error?.details?.stateCode as string | undefined) ??
-              current?.effectiveStateCode ??
+              restrictionStatus?.effectiveStateCode ??
               patientInfo.state ??
               null,
             laboratoryRoute:
               (error?.details?.laboratoryRoute as string | undefined) ??
-              current?.laboratoryRoute ??
+              restrictionStatus?.laboratoryRoute ??
               "ACCESS",
             restrictionType:
               (error?.details?.restrictionType as
@@ -303,15 +303,18 @@ export default function CheckoutPaymentPage() {
                 | "REQUIRES_PHYSICIAN"
                 | null
                 | undefined) ??
-              current?.restrictionType ??
+              restrictionStatus?.restrictionType ??
               null,
             canOrder: false,
             reason:
               error?.message ||
-              current?.reason ||
+              restrictionStatus?.reason ||
               "Ordering is unavailable in your region.",
-            source: current?.source ?? "checkout_state",
-          }));
+            source: restrictionStatus?.source ?? "checkout_state",
+          } as RestrictionStatus;
+
+          setRestrictionStatus(blockedStatus);
+          publishStatus(blockedStatus);
         }
 
         toast({
@@ -347,6 +350,7 @@ export default function CheckoutPaymentPage() {
       promoCode,
       processingFee,
     restrictionStatus?.canOrder,
+    restrictionStatus,
     selectedLab,
     setOrder,
     validatePatientInfo,
@@ -442,9 +446,9 @@ export default function CheckoutPaymentPage() {
           )}
 
           {restrictionMessage ? (
-            <Alert className='border-amber-200 bg-amber-50 text-amber-950 [&>svg]:text-amber-700'>
+            <Alert className='border-red-200 bg-red-50 text-red-950 [&>svg]:text-red-700'>
               <AlertTriangle className='h-4 w-4' />
-              <AlertTitle>Online ordering restricted</AlertTitle>
+              <AlertTitle>Online ordering unavailable</AlertTitle>
               <AlertDescription>{restrictionMessage}</AlertDescription>
             </Alert>
           ) : null}

@@ -21,11 +21,11 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { shouldRouteToVisitLab } from "@/lib/checkout/flow-guards";
 import { useCheckout } from "@/lib/context/CheckoutContext";
+import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
 import {
-  getRestrictionStatus,
-  type RestrictionStatusParams,
-} from "@/lib/services/state-restriction.service";
-import { getRestrictionMessage } from "@/lib/restrictions/presentation";
+  RESTRICTED_LOCATION_CHECKOUT,
+  RESTRICTED_LOCATION_TOAST,
+} from "@/lib/restrictions/presentation";
 import { getResumableOrder } from "@/lib/services";
 import { useCartStore } from "@/lib/store/cart-store";
 import { RestrictionStatus } from "@/types/restriction";
@@ -72,6 +72,7 @@ export default function CheckoutPatientInfoPage() {
     useState<RestrictionStatus | null>(null);
   const [isRestrictionLoading, setIsRestrictionLoading] = useState(false);
   const hasHydratedResume = useRef(false);
+  const { checkRestriction, publishStatus } = useRestrictionStatus();
 
   const processingFee = 2.5;
 
@@ -94,7 +95,8 @@ export default function CheckoutPatientInfoPage() {
         ? primaryCartItem.testIds?.[0]
         : primaryCartItem?.testId;
   }, [items]);
-  const restrictionMessage = getRestrictionMessage(restrictionStatus);
+  const restrictionMessage =
+    restrictionStatus?.canOrder === false ? RESTRICTED_LOCATION_CHECKOUT : null;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -174,49 +176,6 @@ export default function CheckoutPatientInfoPage() {
     setOrder,
   ]);
 
-  useEffect(() => {
-    if (
-      !localPatientData?.state ||
-      !/^[A-Za-z]{2}$/.test(localPatientData.state.trim()) ||
-      !primaryLabTestId
-    ) {
-      setRestrictionStatus(null);
-      setIsRestrictionLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    const params: RestrictionStatusParams = {
-      checkoutState: localPatientData.state.trim().toUpperCase(),
-      testId: primaryLabTestId,
-    };
-
-    const loadRestrictionStatus = async () => {
-      setIsRestrictionLoading(true);
-
-      try {
-        const nextStatus = await getRestrictionStatus(params);
-        if (!cancelled) {
-          setRestrictionStatus(nextStatus);
-        }
-      } catch {
-        if (!cancelled) {
-          setRestrictionStatus(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsRestrictionLoading(false);
-        }
-      }
-    };
-
-    void loadRestrictionStatus();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [localPatientData?.state, primaryLabTestId]);
-
   if (isLoading || !isAuthenticated || !isCustomer || items.length === 0) {
     return null;
   }
@@ -281,6 +240,29 @@ export default function CheckoutPatientInfoPage() {
         toast({
           title: "Unsupported cart item",
           description: "Please select a lab test to continue checkout.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let nextRestrictionStatus: RestrictionStatus | null = null;
+      try {
+        setIsRestrictionLoading(true);
+        nextRestrictionStatus = await checkRestriction({
+          checkoutState: localPatientData.state.trim().toUpperCase(),
+          testId: primaryLabTestId,
+        });
+      } finally {
+        setIsRestrictionLoading(false);
+      }
+
+      setRestrictionStatus(nextRestrictionStatus);
+
+      if (nextRestrictionStatus?.canOrder === false) {
+        publishStatus(nextRestrictionStatus);
+        toast({
+          title: "Location restricted",
+          description: RESTRICTED_LOCATION_TOAST,
           variant: "destructive",
         });
         return;
@@ -358,9 +340,9 @@ export default function CheckoutPatientInfoPage() {
             />
 
             {restrictionMessage ? (
-              <Alert className='border-amber-200 bg-amber-50 text-amber-950 [&>svg]:text-amber-700'>
+              <Alert className='border-red-200 bg-red-50 text-red-950 [&>svg]:text-red-700'>
                 <AlertTriangle className='h-4 w-4' />
-                <AlertTitle>Online ordering restricted</AlertTitle>
+                <AlertTitle>Online ordering unavailable</AlertTitle>
                 <AlertDescription>{restrictionMessage}</AlertDescription>
               </Alert>
             ) : null}
