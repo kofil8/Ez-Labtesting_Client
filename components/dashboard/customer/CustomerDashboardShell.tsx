@@ -1,10 +1,16 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import {
+  preloadCustomerRoute,
+  preloadCustomerRouteData,
+  useCustomerDashboardPreloader,
+} from "@/lib/dashboard/customer-preload.client";
 import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
+import { CUSTOMER_NAV_ITEMS } from "./customer-navigation";
 import { CustomerSidebar } from "./CustomerSidebar";
 import { CustomerTopbar } from "./CustomerTopbar";
 
@@ -20,6 +26,24 @@ export function CustomerDashboardShell({
   const [isSigningOut, startSignOutTransition] = useTransition();
   const [isPanelHidden, setIsPanelHidden] = useState(false);
   const displayUser = viewer ?? user ?? null;
+  const preloadUserId = displayUser?.id;
+  const preloadRoutes = useMemo(
+    () => CUSTOMER_NAV_ITEMS.map(({ href }) => href),
+    [],
+  );
+
+  useCustomerDashboardPreloader({
+    userId: preloadUserId,
+    routes: preloadRoutes,
+  });
+
+  const handlePreloadRoute = useCallback(
+    (href: string) => {
+      preloadCustomerRoute(router, href);
+      preloadCustomerRouteData(preloadUserId, href);
+    },
+    [preloadUserId, router],
+  );
 
   const handleLogout = () => {
     startSignOutTransition(() => {
@@ -39,6 +63,7 @@ export function CustomerDashboardShell({
           isSigningOut={isSigningOut}
           isPanelHidden={isPanelHidden}
           onTogglePanel={() => setIsPanelHidden((current) => !current)}
+          onPreloadRoute={handlePreloadRoute}
         />
 
         <div
@@ -54,6 +79,7 @@ export function CustomerDashboardShell({
             viewer={displayUser}
             onSignOut={handleLogout}
             isSigningOut={isSigningOut}
+            onPreloadRoute={handlePreloadRoute}
           />
 
           <main className='mx-auto min-w-0 w-full max-w-[1360px] flex-1 px-3 py-4 sm:px-4 sm:py-5 md:px-5 lg:px-6 lg:py-6 xl:px-7 xl:py-7'>

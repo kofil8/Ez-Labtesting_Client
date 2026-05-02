@@ -8,10 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
-import {
-  getOrdersByUserId,
-  UserOrderSummary,
-} from "@/lib/services/order.service";
+import { getCustomerOrdersPreloaded } from "@/lib/dashboard/customer-preload.client";
+import { UserOrderSummary } from "@/lib/services/order.service";
 import { AlertCircle, Loader2, Receipt } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -69,7 +67,7 @@ export function CustomerTransactionHistory() {
       setError(null);
 
       try {
-        const result = await getOrdersByUserId(user.id);
+        const result = await getCustomerOrdersPreloaded(user.id);
         setOrders(result);
       } catch (loadError) {
         setError(

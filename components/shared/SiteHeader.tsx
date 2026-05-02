@@ -4,10 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useCartSidebar } from "@/lib/cart-sidebar-context";
 import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
-import {
-  RESTRICTED_LOCATION_BANNER,
-  isRestrictionBlocked,
-} from "@/lib/restrictions/presentation";
+import { RESTRICTED_LOCATION_BANNER } from "@/lib/restrictions/presentation";
 import { useCartStore } from "@/lib/store/cart-store";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
@@ -44,7 +41,7 @@ const ADMIN_NAV_LINKS: NavLink[] = [
 
 export function SiteHeader() {
   const { isAuthenticated, user, logout } = useAuth();
-  const { status: restrictionStatus } = useRestrictionStatus();
+  const { showRestrictionBanner } = useRestrictionStatus();
   const pathname = usePathname();
   const router = useRouter();
   const itemCount = useCartStore((state) => state.getItemCount());
@@ -113,7 +110,6 @@ export function SiteHeader() {
     setIsMobileMenuOpen(false);
   };
 
-  const showRestrictionBanner = isRestrictionBlocked(restrictionStatus);
   const restrictionBanner = showRestrictionBanner ? (
     <div className='border-b border-red-200 bg-red-50/95 text-red-950 backdrop-blur'>
       <div className='container mx-auto flex items-center gap-3 px-4 py-2 text-sm min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>

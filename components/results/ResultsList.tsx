@@ -7,7 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
 import {
-  getOrdersByUserId,
+  getCustomerOrdersPreloaded,
+  invalidateCustomerOrders,
+} from "@/lib/dashboard/customer-preload.client";
+import {
   retryOrderAccessPlacement,
   UserOrderSummary,
 } from "@/lib/services/order.service";
@@ -150,7 +153,7 @@ export function ResultsList() {
     setError(null);
 
     try {
-      const data = await getOrdersByUserId(user.id);
+      const data = await getCustomerOrdersPreloaded(user.id);
       setOrders(data);
     } catch (loadError) {
       console.error("Error loading orders:", loadError);
@@ -166,7 +169,11 @@ export function ResultsList() {
 
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated && user?.id) {
-      loadOrders();
+      const timeoutId = window.setTimeout(() => {
+        void loadOrders();
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
     }
   }, [isAuthLoading, isAuthenticated, user, loadOrders]);
 
@@ -449,6 +456,7 @@ export function ResultsList() {
                     setRetryingOrderId(order.id);
                     try {
                       await retryOrderAccessPlacement(order.id);
+                      invalidateCustomerOrders(user.id);
                       await loadOrders();
                     } finally {
                       setRetryingOrderId(null);

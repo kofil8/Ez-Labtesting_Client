@@ -25,10 +25,12 @@ export function CustomerTopbar({
   viewer,
   onSignOut,
   isSigningOut,
+  onPreloadRoute,
 }: {
   viewer?: CustomerDashboardViewer | null;
   onSignOut: () => void;
   isSigningOut: boolean;
+  onPreloadRoute: (href: string) => void;
 }) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -78,6 +80,9 @@ export function CustomerTopbar({
 
           <Link
             href='/dashboard/customer'
+            onMouseEnter={() => onPreloadRoute("/dashboard/customer")}
+            onFocus={() => onPreloadRoute("/dashboard/customer")}
+            onTouchStart={() => onPreloadRoute("/dashboard/customer")}
             className='flex min-w-0 flex-1 items-center gap-2'
           >
             <span className='flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 text-white shadow-sm'>
@@ -96,6 +101,9 @@ export function CustomerTopbar({
             <Link
               href='/dashboard/customer/profile'
               aria-label='Open profile'
+              onMouseEnter={() => onPreloadRoute("/dashboard/customer/profile")}
+              onFocus={() => onPreloadRoute("/dashboard/customer/profile")}
+              onTouchStart={() => onPreloadRoute("/dashboard/customer/profile")}
               className='block h-9 w-9 shrink-0'
             >
               <CustomerAvatar viewer={viewer} className='h-9 w-9 rounded-lg' />
@@ -106,6 +114,9 @@ export function CustomerTopbar({
         <button
           type='button'
           onClick={() => setIsMenuOpen(true)}
+          onMouseEnter={() => onPreloadRoute(activeNavItem.href)}
+          onFocus={() => onPreloadRoute(activeNavItem.href)}
+          onTouchStart={() => onPreloadRoute(activeNavItem.href)}
           className='flex w-full items-center justify-between border-t border-blue-50 px-3 py-2 text-left sm:px-4'
         >
           <span className='inline-flex min-w-0 items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'>
@@ -137,6 +148,9 @@ export function CustomerTopbar({
               <Link
                 href='/dashboard/customer'
                 className='flex min-w-0 items-center gap-3'
+                onMouseEnter={() => onPreloadRoute("/dashboard/customer")}
+                onFocus={() => onPreloadRoute("/dashboard/customer")}
+                onTouchStart={() => onPreloadRoute("/dashboard/customer")}
                 onClick={() => setIsMenuOpen(false)}
               >
                 <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 text-white shadow-md shadow-blue-100'>
@@ -165,6 +179,9 @@ export function CustomerTopbar({
               <Link
                 href='/dashboard/customer/profile'
                 className='flex items-center gap-3 rounded-xl bg-white/80 p-3 shadow-sm'
+                onMouseEnter={() => onPreloadRoute("/dashboard/customer/profile")}
+                onFocus={() => onPreloadRoute("/dashboard/customer/profile")}
+                onTouchStart={() => onPreloadRoute("/dashboard/customer/profile")}
                 onClick={() => setIsMenuOpen(false)}
               >
                 <CustomerAvatar viewer={viewer} className='h-11 w-11 rounded-xl' />
@@ -191,6 +208,9 @@ export function CustomerTopbar({
                     <Link
                       key={href}
                       href={href}
+                      onMouseEnter={() => onPreloadRoute(href)}
+                      onFocus={() => onPreloadRoute(href)}
+                      onTouchStart={() => onPreloadRoute(href)}
                       onClick={() => setIsMenuOpen(false)}
                       className={cn(
                         "flex items-center gap-3 rounded-xl border px-3 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
@@ -211,7 +231,13 @@ export function CustomerTopbar({
               </p>
               <div className='mt-3 grid gap-2'>
                 <Button asChild className='w-full bg-blue-600 hover:bg-blue-700'>
-                  <Link href='/tests' onClick={() => setIsMenuOpen(false)}>
+                  <Link
+                    href='/tests'
+                    onMouseEnter={() => onPreloadRoute("/tests")}
+                    onFocus={() => onPreloadRoute("/tests")}
+                    onTouchStart={() => onPreloadRoute("/tests")}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     <Search className='h-4 w-4' />
                     Browse Tests
                   </Link>
@@ -223,6 +249,9 @@ export function CustomerTopbar({
                 >
                   <Link
                     href='/find-lab-center'
+                    onMouseEnter={() => onPreloadRoute("/find-lab-center")}
+                    onFocus={() => onPreloadRoute("/find-lab-center")}
+                    onTouchStart={() => onPreloadRoute("/find-lab-center")}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <MapPinned className='h-4 w-4' />
