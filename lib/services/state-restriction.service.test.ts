@@ -38,6 +38,9 @@ describe("state restriction service", () => {
         lastCheckedAt: expect.any(String),
       }),
     );
+    expect(String((fetch as any).mock.calls[0][0])).toContain(
+      "/location/restriction-status",
+    );
   });
 
   it("retries the status lookup with a browser-discovered public ip", async () => {
@@ -107,12 +110,18 @@ describe("state restriction service", () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
-  it("detects REGION_RESTRICTED error payloads", () => {
+  it("detects restricted-state error payloads", () => {
     vi.restoreAllMocks();
     expect(
       isRegionRestrictedError({
         code: "REGION_RESTRICTED",
         details: { stateCode: "NY" },
+      }),
+    ).toBe(true);
+    expect(
+      isRegionRestrictedError({
+        code: "RESTRICTED_STATE",
+        stateCode: "NY",
       }),
     ).toBe(true);
     expect(isRegionRestrictedError({ code: "OTHER_ERROR" })).toBe(false);

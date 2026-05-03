@@ -1,15 +1,47 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/shared/SiteHeader";
 import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
-import { RESTRICTED_LOCATION_BANNER } from "@/lib/restrictions/presentation";
+import {
+  isRestrictionBlocked,
+  RESTRICTED_LOCATION_BANNER,
+} from "@/lib/restrictions/presentation";
 import { AlertTriangle } from "lucide-react";
+import { useEffect } from "react";
+
+const RESTRICTED_ORDERING_PATHS = [
+  "/cart",
+  "/checkout",
+  "/checkout/patient-info",
+  "/checkout/payment",
+  "/checkout/confirmation",
+];
+
+function isRestrictedOrderingPath(pathname?: string | null) {
+  if (!pathname) {
+    return false;
+  }
+
+  return RESTRICTED_ORDERING_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+}
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const hideSiteHeader = pathname?.startsWith("/dashboard/customer");
-  const { showRestrictionBanner } = useRestrictionStatus();
+  const { publishStatus, showRestrictionBanner, status } = useRestrictionStatus();
+
+  useEffect(() => {
+    if (!isRestrictionBlocked(status) || !isRestrictedOrderingPath(pathname)) {
+      return;
+    }
+
+    publishStatus(status, { showBanner: true });
+    router.replace("/tests");
+  }, [pathname, publishStatus, router, status]);
 
   return (
     <>

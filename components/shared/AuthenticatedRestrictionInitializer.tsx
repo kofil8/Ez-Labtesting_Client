@@ -21,7 +21,6 @@ export function AuthenticatedRestrictionInitializer() {
 
     if (!isAuthenticated || !isCustomerRole(user?.role)) {
       checkedUserIdRef.current = null;
-      publishStatus(null, { showBanner: true });
       return;
     }
 
