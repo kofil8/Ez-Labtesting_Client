@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hook/use-toast";
+import { useCartRestrictionGuard } from "@/hook/useCartRestrictionGuard";
 import { useAuth } from "@/lib/auth-context";
 import {
   applyBackendPromoCode,
@@ -37,6 +38,7 @@ const CART_EXIT_OFFER_KEY = "ez-cart-exit-offer-seen";
 export function CartView() {
   const router = useRouter();
   const { toast } = useToast();
+  const { ensureCanOrder } = useCartRestrictionGuard();
   const { isAuthenticated, isLoading } = useAuth();
   const items = useCartStore((state) => state.items);
   const removeItem = useCartStore((state) => state.removeItem);
@@ -133,6 +135,15 @@ export function CartView() {
       title: "Promo code removed",
       description: "The discount has been removed from your order.",
     });
+  };
+
+  const handleProceedToCheckout = async () => {
+    const canOrder = await ensureCanOrder({ laboratoryCode: "ACCESS" });
+    if (!canOrder) {
+      return;
+    }
+
+    router.push("/checkout");
   };
 
   if (items.length === 0) {
@@ -340,7 +351,7 @@ export function CartView() {
 
           <CardFooter className='flex flex-col gap-2 px-5 sm:px-6 pb-5'>
             <Button
-              onClick={() => router.push("/checkout")}
+              onClick={handleProceedToCheckout}
               className='w-full h-11 font-semibold'
               size='lg'
             >

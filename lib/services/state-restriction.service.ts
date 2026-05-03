@@ -29,7 +29,9 @@ export function isRegionRestrictedError(payload: unknown): payload is {
     payload &&
       typeof payload === "object" &&
       "code" in payload &&
-      (payload as { code?: string }).code === "REGION_RESTRICTED",
+      ["REGION_RESTRICTED", "RESTRICTED_STATE"].includes(
+        String((payload as { code?: string }).code),
+      ),
   );
 }
 

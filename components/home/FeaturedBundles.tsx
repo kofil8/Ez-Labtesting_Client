@@ -7,7 +7,7 @@ import panelsData from "@/data/panels.json";
 // TODO: Replace with real API call
 // import testsData from "@/data/tests.json";
 import { useToast } from "@/hook/use-toast";
-import { useCartStore } from "@/lib/store/cart-store";
+import { useCartRestrictionGuard } from "@/hook/useCartRestrictionGuard";
 import { formatCurrency } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -38,8 +38,8 @@ export function FeaturedBundles() {
   const [isMounted, setIsMounted] = useState(false);
   const autoplayRef = useRef<number | null>(null);
   const pauseRef = useRef(false);
-  const addItem = useCartStore((state) => state.addItem);
   const { toast } = useToast();
+  const { ensureCanOrder } = useCartRestrictionGuard();
 
   // Responsive items per slide
   const itemsPerSlide = useMemo(() => {
@@ -89,7 +89,16 @@ export function FeaturedBundles() {
     currentIndex * itemsPerSlide + itemsPerSlide,
   );
 
-  const handleAddBundle = (panel: Panel) => {
+  const handleAddBundle = async (panel: Panel) => {
+    const canOrder = await ensureCanOrder({
+      laboratoryCode: "ACCESS",
+      testId: panel.testIds[0],
+    });
+
+    if (!canOrder) {
+      return;
+    }
+
     // Mock finding tests logic
     panel.testIds.forEach((testId) => {
       // In a real app we'd fetch these.

@@ -99,6 +99,13 @@ export const API_ENDPOINTS = {
       laboratoryId?: string;
       publicIp?: string;
       laboratoryCode?: string;
+    }) => toApiUrl(`/location/restriction-status${buildLocationStatusQuery(params)}`),
+    LEGACY_LOCATION_STATUS: (params?: {
+      checkoutState?: string;
+      testId?: string;
+      laboratoryId?: string;
+      publicIp?: string;
+      laboratoryCode?: string;
     }) => toApiUrl(`/state-restrictions/location-status${buildLocationStatusQuery(params)}`),
   },
 };

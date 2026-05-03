@@ -8,11 +8,16 @@ export type RestrictionSource =
   | "geo_header"
   | "ip_lookup"
   | "checkout_state"
+  | "test_override"
   | "unknown";
 
 export interface RestrictionStatus {
   ip: string | null;
   maskedIp: string | null;
+  countryCode?: string | null;
+  regionCode?: string | null;
+  regionName?: string | null;
+  city?: string | null;
   detectedStateCode: string | null;
   effectiveStateCode: string | null;
   laboratoryRoute: string | null;
