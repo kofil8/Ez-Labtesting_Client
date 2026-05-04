@@ -52,7 +52,9 @@ function OrderProgress({ order }: { order?: CustomerDashboardOrder }) {
             <div
               className={cn(
                 "h-1.5 rounded-full",
-                complete ? "bg-gradient-to-r from-blue-600 to-cyan-500" : "bg-blue-100",
+                complete
+                  ? "bg-gradient-to-r from-blue-600 to-cyan-500"
+                  : "bg-blue-100",
               )}
             />
             <p
@@ -107,14 +109,21 @@ export function NextActionCard({
         </div>
 
         <div className='flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col'>
-          <Button asChild className='w-full bg-blue-600 shadow-md shadow-blue-100 hover:bg-blue-700 sm:w-auto lg:w-44'>
+          <Button
+            asChild
+            className='w-full bg-blue-600 shadow-md shadow-blue-100 hover:bg-blue-700 sm:w-auto lg:w-44'
+          >
             <Link href={action.primaryHref}>
               {action.primaryLabel}
               <ArrowRight className='h-4 w-4' />
             </Link>
           </Button>
           {action.externalHref && action.externalLabel ? (
-            <Button asChild variant='outline' className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto lg:w-44'>
+            <Button
+              asChild
+              variant='outline'
+              className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto lg:w-44'
+            >
               <a href={action.externalHref} target='_blank' rel='noreferrer'>
                 <Download className='h-4 w-4' />
                 {action.externalLabel}
@@ -122,7 +131,11 @@ export function NextActionCard({
             </Button>
           ) : null}
           {action.secondaryHref && action.secondaryLabel ? (
-            <Button asChild variant='ghost' className='w-full hover:bg-blue-50 hover:text-blue-700 sm:w-auto lg:w-44'>
+            <Button
+              asChild
+              variant='ghost'
+              className='w-full hover:bg-blue-50 hover:text-blue-700 sm:w-auto lg:w-44'
+            >
               <Link href={action.secondaryHref}>{action.secondaryLabel}</Link>
             </Button>
           ) : null}

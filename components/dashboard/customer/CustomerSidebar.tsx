@@ -10,9 +10,7 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { CUSTOMER_NAV_ITEMS, isCustomerNavActive } from "./customer-navigation";
-import { CustomerAvatar } from "./CustomerAvatar";
+import { CustomerNavLinks } from "./CustomerNavLinks";
 
 export function CustomerSidebar({
   viewer,
@@ -29,12 +27,10 @@ export function CustomerSidebar({
   onTogglePanel: () => void;
   onPreloadRoute: (href: string) => void;
 }) {
-  const pathname = usePathname();
-
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-40 hidden h-screen shrink-0 overflow-hidden border-r border-blue-100 bg-white px-3 py-4 shadow-sm lg:flex lg:flex-col xl:px-4 xl:py-5 min-[1680px]:left-[calc((100vw-1680px)/2)]",
+        "fixed inset-y-0 left-0 z-40 hidden h-screen shrink-0 overflow-hidden border-r border-slate-200 bg-white px-3 py-4 shadow-sm lg:flex lg:flex-col xl:px-4 xl:py-5 min-[1680px]:left-[calc((100vw-1680px)/2)]",
         isPanelHidden ? "w-[76px] xl:w-[84px]" : "w-[244px] xl:w-[268px]",
       )}
     >
@@ -95,43 +91,13 @@ export function CustomerSidebar({
         </button>
       )}
 
-      <nav className={cn("space-y-1", isPanelHidden ? "mt-5" : "mt-6")}>
-        {CUSTOMER_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = isCustomerNavActive(pathname, href);
-          const isProfileItem = href === "/dashboard/customer/profile";
-
-          return (
-            <Link
-              key={href}
-              href={href}
-              title={isPanelHidden ? label : undefined}
-              onMouseEnter={() => onPreloadRoute(href)}
-              onFocus={() => onPreloadRoute(href)}
-              onTouchStart={() => onPreloadRoute(href)}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-                isPanelHidden && "justify-center px-0",
-                active
-                  ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-100"
-                  : "text-slate-600 hover:bg-blue-50 hover:text-blue-700",
-              )}
-            >
-              {isProfileItem ? (
-                <CustomerAvatar
-                  viewer={viewer}
-                  className={cn(
-                    "h-5 w-5 rounded-md border-current/20",
-                    isPanelHidden && "h-10 w-10 rounded-lg",
-                  )}
-                />
-              ) : (
-                <Icon className='h-4 w-4' />
-              )}
-              {!isPanelHidden && label}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className={cn("mt-5", !isPanelHidden && "mt-6")}>
+        <CustomerNavLinks
+          collapsed={isPanelHidden}
+          onPreloadRoute={onPreloadRoute}
+          viewer={viewer}
+        />
+      </div>
 
       <div className='mt-auto pt-6'>
         <Button

@@ -7,7 +7,7 @@ const genderSchema = z
 export const loginSchema = z.object({
   email: z
     .string()
-    .min(1, "Email or phone number is required")
+    .min(1, "Enter your email or mobile number.")
     .refine(
       (value) => {
         const input = value.trim();
@@ -16,9 +16,9 @@ export const loginSchema = z.object({
           /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
         return emailRegex.test(input) || phoneRegex.test(input);
       },
-      { message: "Enter a valid email address or phone number" },
+      { message: "Enter a valid email or mobile number." },
     ),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(1, "Enter your password."),
 });
 
 const signupBaseSchema = z.object({

@@ -2,26 +2,21 @@
 
 import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { Button } from "@/components/ui/button";
-import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
 import { useCartSidebar } from "@/lib/cart-sidebar-context";
+import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
 import { useCartStore } from "@/lib/store/cart-store";
-import { cn } from "@/lib/utils";
 import {
   FlaskConical,
   LogOut,
-  MapPinned,
   Menu,
-  Search,
   ShoppingCart,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  CUSTOMER_NAV_ITEMS,
-  isCustomerNavActive,
-} from "./customer-navigation";
+import { CustomerNavLinks } from "./CustomerNavLinks";
+import { CUSTOMER_NAV_ITEMS, isCustomerNavActive } from "./customer-navigation";
 import { CustomerAvatar } from "./CustomerAvatar";
 
 export function CustomerTopbar({
@@ -40,8 +35,9 @@ export function CustomerTopbar({
   const cartCount = useCartStore((state) => state.getItemCount());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const activeNavItem =
-    CUSTOMER_NAV_ITEMS.find(({ href }) => isCustomerNavActive(pathname, href)) ||
-    CUSTOMER_NAV_ITEMS[0];
+    CUSTOMER_NAV_ITEMS.find(({ href }) =>
+      isCustomerNavActive(pathname, href),
+    ) || CUSTOMER_NAV_ITEMS[0];
   const ActiveIcon = activeNavItem.icon;
 
   useEffect(() => {
@@ -69,7 +65,7 @@ export function CustomerTopbar({
 
   return (
     <>
-      <header className='sticky top-0 z-40 border-b border-blue-100 bg-white/95 backdrop-blur lg:hidden'>
+      <header className='sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur lg:hidden'>
         <div className='flex items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-4'>
           <button
             type='button'
@@ -79,7 +75,7 @@ export function CustomerTopbar({
             }
             aria-controls='customer-mobile-dashboard-menu'
             aria-expanded={isMenuOpen}
-            className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-700 transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+            className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
           >
             {isMenuOpen ? (
               <X className='h-5 w-5' />
@@ -102,7 +98,7 @@ export function CustomerTopbar({
               <span className='block truncate text-sm font-semibold text-slate-950'>
                 Ez LabTesting
               </span>
-              <span className='block text-xs text-slate-500'>Records</span>
+              <span className='block text-xs text-slate-500'>Dashboard</span>
             </span>
           </Link>
 
@@ -144,7 +140,7 @@ export function CustomerTopbar({
           onMouseEnter={() => onPreloadRoute(activeNavItem.href)}
           onFocus={() => onPreloadRoute(activeNavItem.href)}
           onTouchStart={() => onPreloadRoute(activeNavItem.href)}
-          className='flex w-full items-center justify-between border-t border-blue-50 px-3 py-2 text-left sm:px-4'
+          className='flex w-full items-center justify-between border-t border-slate-200 px-3 py-2 text-left sm:px-4'
         >
           <span className='inline-flex min-w-0 items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'>
             <ActiveIcon className='h-4 w-4 shrink-0' />
@@ -161,7 +157,7 @@ export function CustomerTopbar({
           <button
             type='button'
             aria-label='Close dashboard menu'
-            className='fixed inset-0 z-[90] bg-slate-950/40 backdrop-blur-sm'
+            className='fixed inset-0 z-[90] bg-slate-950/40 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in'
             onClick={() => setIsMenuOpen(false)}
           />
           <aside
@@ -169,9 +165,9 @@ export function CustomerTopbar({
             role='dialog'
             aria-modal='true'
             aria-label='Dashboard menu'
-            className='fixed inset-y-0 left-0 z-[100] flex w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-y-auto border-r border-blue-100 bg-white shadow-2xl shadow-slate-900/20'
+            className='fixed inset-y-0 left-0 z-[100] flex w-[min(22rem,calc(100vw-1.5rem))] flex-col overflow-y-auto border-r border-slate-200 bg-white shadow-2xl shadow-slate-900/20 motion-safe:animate-in motion-safe:slide-in-from-left-4'
           >
-            <div className='flex items-center justify-between gap-3 border-b border-blue-100 px-4 py-4'>
+            <div className='flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-4'>
               <Link
                 href='/dashboard/customer'
                 className='flex min-w-0 items-center gap-3'
@@ -202,16 +198,23 @@ export function CustomerTopbar({
               </button>
             </div>
 
-            <div className='border-b border-blue-100 bg-gradient-to-br from-blue-50 via-white to-cyan-50 px-4 py-4'>
+            <div className='border-b border-slate-200 bg-gradient-to-br from-blue-50 via-white to-cyan-50 px-4 py-4'>
               <Link
                 href='/dashboard/customer/profile'
                 className='flex items-center gap-3 rounded-xl bg-white/80 p-3 shadow-sm'
-                onMouseEnter={() => onPreloadRoute("/dashboard/customer/profile")}
+                onMouseEnter={() =>
+                  onPreloadRoute("/dashboard/customer/profile")
+                }
                 onFocus={() => onPreloadRoute("/dashboard/customer/profile")}
-                onTouchStart={() => onPreloadRoute("/dashboard/customer/profile")}
+                onTouchStart={() =>
+                  onPreloadRoute("/dashboard/customer/profile")
+                }
                 onClick={() => setIsMenuOpen(false)}
               >
-                <CustomerAvatar viewer={viewer} className='h-11 w-11 rounded-xl' />
+                <CustomerAvatar
+                  viewer={viewer}
+                  className='h-11 w-11 rounded-xl'
+                />
                 <span className='min-w-0'>
                   <span className='block truncate text-sm font-semibold text-slate-950'>
                     {viewer?.firstName || "Customer"} {viewer?.lastName || ""}
@@ -225,33 +228,16 @@ export function CustomerTopbar({
 
             <div className='flex-1 px-4 py-4'>
               <p className='px-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500'>
-                Dashboard
+                Navigation
               </p>
-              <nav className='mt-3 grid gap-2'>
-                {CUSTOMER_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-                  const active = isCustomerNavActive(pathname, href);
-
-                  return (
-                    <Link
-                      key={href}
-                      href={href}
-                      onMouseEnter={() => onPreloadRoute(href)}
-                      onFocus={() => onPreloadRoute(href)}
-                      onTouchStart={() => onPreloadRoute(href)}
-                      onClick={() => setIsMenuOpen(false)}
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl border px-3 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                        active
-                          ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-100"
-                          : "border-blue-100 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-700",
-                      )}
-                    >
-                      <Icon className='h-4 w-4' />
-                      {label}
-                    </Link>
-                  );
-                })}
-              </nav>
+              <div className='mt-3'>
+                <CustomerNavLinks
+                  mobile
+                  onNavigate={() => setIsMenuOpen(false)}
+                  onPreloadRoute={onPreloadRoute}
+                  viewer={viewer}
+                />
+              </div>
 
               <p className='mt-6 px-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500'>
                 Quick actions
@@ -273,36 +259,19 @@ export function CustomerTopbar({
                 </Button>
                 <Button asChild className='w-full bg-blue-600 hover:bg-blue-700'>
                   <Link
-                    href='/tests'
-                    onMouseEnter={() => onPreloadRoute("/tests")}
-                    onFocus={() => onPreloadRoute("/tests")}
-                    onTouchStart={() => onPreloadRoute("/tests")}
+                    href='/dashboard/customer/orders'
+                    onMouseEnter={() => onPreloadRoute("/dashboard/customer/orders")}
+                    onFocus={() => onPreloadRoute("/dashboard/customer/orders")}
+                    onTouchStart={() => onPreloadRoute("/dashboard/customer/orders")}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <Search className='h-4 w-4' />
-                    Browse Tests
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant='outline'
-                  className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700'
-                >
-                  <Link
-                    href='/find-lab-center'
-                    onMouseEnter={() => onPreloadRoute("/find-lab-center")}
-                    onFocus={() => onPreloadRoute("/find-lab-center")}
-                    onTouchStart={() => onPreloadRoute("/find-lab-center")}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <MapPinned className='h-4 w-4' />
-                    Find Lab Center
+                    View Orders
                   </Link>
                 </Button>
               </div>
             </div>
 
-            <div className='border-t border-blue-100 p-4'>
+            <div className='border-t border-slate-200 p-4'>
               <Button
                 type='button'
                 variant='ghost'

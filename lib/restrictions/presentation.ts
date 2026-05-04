@@ -132,3 +132,15 @@ export function getRestrictionIpDisplay(
 
   return status.ip || status.maskedIp || null;
 }
+
+export function getRestrictedLocationBannerMessage(
+  status?: RestrictionStatus | null,
+): string {
+  const ip = getRestrictionIpDisplay(status);
+
+  if (!ip) {
+    return RESTRICTED_LOCATION_BANNER;
+  }
+
+  return `We're coming soon to this location. Your IP ${ip} is currently restricted for online ordering.`;
+}

@@ -5,7 +5,6 @@ import {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -133,23 +132,6 @@ export function RestrictionStatusProvider({
       showRestrictionBanner,
     ],
   );
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const checkVisitorRestriction = async () => {
-      const nextStatus = await refreshStatus({}, { force: true });
-      if (!cancelled) {
-        publishStatus(nextStatus, { showBanner: nextStatus?.canOrder === false });
-      }
-    };
-
-    void checkVisitorRestriction();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [publishStatus, refreshStatus]);
 
   return (
     <RestrictionStatusContext.Provider value={value}>

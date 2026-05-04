@@ -222,6 +222,10 @@ export function PublicRouteAssistant() {
     [pathname],
   );
 
+  if (matchesPath(pathname, "/login")) {
+    return null;
+  }
+
   if (isLoading || isAuthenticated || !assistantConfig) {
     return null;
   }

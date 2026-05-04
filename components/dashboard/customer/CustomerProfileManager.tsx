@@ -46,7 +46,15 @@ import {
   UserRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState, useTransition, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
 type ProfileFormState = {
   firstName: string;
@@ -154,6 +162,7 @@ export function CustomerProfileManager({ profile }: { profile: Profile }) {
   const [isImagePending, setIsImagePending] = useState(false);
   const [removeProfileImage, setRemoveProfileImage] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [publicIp, setPublicIp] = useState("Loading...");
   const [form, setForm] = useState<ProfileFormState>(() => getFormState(profile));
 
   const avatarUrl = useMemo(() => {
@@ -174,6 +183,34 @@ export function CustomerProfileManager({ profile }: { profile: Profile }) {
     ];
     return Math.round((checks.filter(Boolean).length / checks.length) * 100);
   }, [profile]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3500);
+
+    void fetch("https://api.ipify.org?format=json", {
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Unable to fetch IP");
+        }
+        const data = (await response.json()) as { ip?: string };
+        setPublicIp(data.ip || "Unavailable");
+      })
+      .catch(() => {
+        setPublicIp("Unavailable");
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
+      });
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, []);
 
   function updateField(field: keyof ProfileFormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -436,6 +473,7 @@ export function CustomerProfileManager({ profile }: { profile: Profile }) {
                   value={profile.isVerified ? "Verified" : "Not verified"}
                 />
                 <DetailRow label='Last Updated' value={formatDate(profile.updatedAt)} />
+                <DetailRow label='Current IP' value={publicIp} />
               </dl>
             </section>
           </div>
