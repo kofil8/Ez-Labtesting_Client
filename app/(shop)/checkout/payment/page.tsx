@@ -310,7 +310,10 @@ export default function CheckoutPaymentPage() {
       } catch (error: any) {
         if (cancelled) return;
 
-        if (error?.code === "REGION_RESTRICTED") {
+        if (
+          error?.code === "REGION_RESTRICTED" ||
+          error?.code === "RESTRICTED_STATE"
+        ) {
           const blockedStatus = {
             ip: restrictionStatus?.ip ?? null,
             maskedIp: restrictionStatus?.maskedIp ?? null,

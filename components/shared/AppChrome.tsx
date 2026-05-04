@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/shared/SiteHeader";
+import { useAuth } from "@/lib/auth-context";
 import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
 import { isRestrictionBlocked } from "@/lib/restrictions/presentation";
 import { useEffect } from "react";
@@ -29,7 +30,29 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const hideSiteHeader =
     pathname?.startsWith("/dashboard/customer") || pathname === "/login";
-  const { publishStatus, status } = useRestrictionStatus();
+  const { isAuthenticated, isLoading } = useAuth();
+  const { publishStatus, refreshStatus, status } = useRestrictionStatus();
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !isRestrictedOrderingPath(pathname)) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const refreshOrderingRestriction = async () => {
+      const nextStatus = await refreshStatus({ laboratoryCode: "ACCESS" }, { force: true });
+      if (!cancelled && isRestrictionBlocked(nextStatus)) {
+        publishStatus(nextStatus, { showBanner: true });
+      }
+    };
+
+    void refreshOrderingRestriction();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, isLoading, pathname, publishStatus, refreshStatus]);
 
   useEffect(() => {
     if (!isRestrictionBlocked(status) || !isRestrictedOrderingPath(pathname)) {
