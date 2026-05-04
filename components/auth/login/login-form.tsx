@@ -1,9 +1,7 @@
 "use client";
 
-import { FieldError } from "@/components/shared/FieldError";
 import { LoadingButton } from "@/components/shared/LoadingButton";
 import { PasswordInput } from "@/components/shared/PasswordInput";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hook/use-toast";
 import { useAuth } from "@/lib/auth-context";
@@ -11,12 +9,13 @@ import { loginUser, resendOtp } from "@/lib/auth/client";
 import { getDashboardRouteForRole } from "@/lib/auth/shared";
 import { LoginFormData, loginSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 
+import { FormInput } from "./form-input";
 import { LOGIN_COPY } from "./constants";
 import { LoginHelp } from "./login-help";
 
@@ -212,9 +211,10 @@ export function LoginForm() {
   };
 
   const isVerified = searchParams.get("verified") === "true";
+  const [rememberMeChecked, setRememberMeChecked] = useState(false);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
       {isVerified ? (
         <StatusMessage
           variant='success'
@@ -231,55 +231,64 @@ export function LoginForm() {
         />
       ) : null}
 
-      <div className='space-y-2.5'>
-        <Label htmlFor='email' className='text-sm font-medium text-slate-700'>
-          {LOGIN_COPY.emailLabel}
-        </Label>
-        <Input
-          id='email'
-          type='text'
-          autoComplete='email'
-          inputMode='email'
-          placeholder={LOGIN_COPY.emailPlaceholder}
-          className='h-11 rounded-xl border-slate-200 bg-white text-sm text-slate-900 shadow-sm shadow-slate-950/[0.03] placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 sm:h-12'
-          aria-required='true'
-          aria-invalid={errors.email ? "true" : "false"}
-          aria-describedby={emailDescriptionId}
-          disabled={isPending}
-          {...register("email")}
-        />
-        <p id='login-email-help' className='sr-only'>
-          Use the email address or mobile number associated with your account.
-        </p>
-        <FieldError error={errors.email?.message} id='login-email-error' />
-      </div>
+      <FormInput
+        id='email'
+        label={LOGIN_COPY.emailLabel}
+        icon={Mail}
+        type='text'
+        autoComplete='email'
+        inputMode='email'
+        placeholder={LOGIN_COPY.emailPlaceholder}
+        aria-required='true'
+        aria-describedby={emailDescriptionId}
+        disabled={isPending}
+        error={errors.email?.message}
+        {...register("email")}
+      />
+      <p id='login-email-help' className='sr-only'>
+        Use the email address or mobile number associated with your account.
+      </p>
 
-      <div className='space-y-2.5'>
-        <div className='flex items-center justify-between gap-3'>
-          <Label
-            htmlFor='password'
-            className='text-sm font-medium text-slate-700'
-          >
-            {LOGIN_COPY.passwordLabel}
-          </Label>
-          <Link
-            href='/forgot-password'
-            className='text-sm font-medium text-primary transition-colors hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2'
-          >
-            {LOGIN_COPY.forgotPassword}
-          </Link>
-        </div>
+      <div className='space-y-2'>
+        <Label
+          htmlFor='password'
+          className='text-[13px] font-medium text-slate-700'
+        >
+          {LOGIN_COPY.passwordLabel}
+        </Label>
         <PasswordInput
           id='password'
           autoComplete='current-password'
           placeholder={LOGIN_COPY.passwordPlaceholder}
           required
           disabled={isPending}
-          showIcon={false}
+          showIcon
           error={errors.password?.message}
-          className='h-11 rounded-xl border-slate-200 bg-white text-sm text-slate-900 shadow-sm shadow-slate-950/[0.03] placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 sm:h-12'
+          className='h-12 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 shadow-sm shadow-slate-900/[0.03] placeholder:text-slate-400 hover:border-slate-400 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-cyan-300/50'
           {...register("password")}
         />
+      </div>
+
+      <div className='flex items-center justify-between gap-3'>
+        <label
+          htmlFor='remember-me'
+          className='inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600'
+        >
+          <input
+            id='remember-me'
+            type='checkbox'
+            checked={rememberMeChecked}
+            onChange={(event) => setRememberMeChecked(event.target.checked)}
+            className='h-4 w-4 rounded border-slate-300 text-blue-600 focus-visible:ring-2 focus-visible:ring-blue-300'
+          />
+          {LOGIN_COPY.rememberMe}
+        </label>
+        <Link
+          href='/forgot-password'
+          className='text-sm font-medium text-blue-600 transition-colors hover:text-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2'
+        >
+          {LOGIN_COPY.forgotPassword}
+        </Link>
       </div>
 
       <LoadingButton
@@ -287,8 +296,9 @@ export function LoginForm() {
         disabled={isPending}
         loading={isPending}
         loadingText={LOGIN_COPY.submitPending}
-        className='h-11 w-full rounded-xl bg-primary-700 text-sm font-semibold text-white shadow-md shadow-primary-900/20 transition-all hover:bg-primary-800 hover:shadow-lg hover:shadow-primary-900/25 sm:h-12'
+        className='h-[52px] w-full rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-500 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5 hover:brightness-105 hover:shadow-blue-600/30 active:translate-y-0'
       >
+        <ShieldCheck className='mr-2 h-4 w-4' aria-hidden='true' />
         {LOGIN_COPY.submit}
       </LoadingButton>
 

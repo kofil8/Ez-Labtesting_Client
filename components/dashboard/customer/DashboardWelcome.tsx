@@ -81,7 +81,10 @@ export function DashboardWelcome({
               aria-label='Open profile'
               className='relative block h-14 w-14 shrink-0 self-start shadow-lg shadow-blue-100/60'
             >
-              <CustomerAvatar viewer={viewer} className='h-14 w-14 rounded-xl' />
+              <CustomerAvatar
+                viewer={viewer}
+                className='h-14 w-14 rounded-xl'
+              />
             </Link>
           </div>
 
@@ -151,19 +154,30 @@ export function DashboardWelcome({
           </div>
 
           <div className='mt-5 grid gap-4 sm:grid-cols-3 lg:grid-cols-1'>
-            <Button asChild className='h-11 w-full justify-start bg-blue-600 shadow-md shadow-blue-100 hover:bg-blue-700'>
+            <Button
+              asChild
+              className='h-11 w-full justify-start bg-blue-600 shadow-md shadow-blue-100 hover:bg-blue-700'
+            >
               <Link href='/tests'>
                 <Search className='h-4 w-4' />
                 Browse Tests
               </Link>
             </Button>
-            <Button asChild variant='outline' className='h-11 w-full justify-start border-blue-200 hover:bg-blue-50 hover:text-blue-700'>
+            <Button
+              asChild
+              variant='outline'
+              className='h-11 w-full justify-start border-blue-200 hover:bg-blue-50 hover:text-blue-700'
+            >
               <Link href='/find-lab-center'>
                 <MapPinned className='h-4 w-4' />
                 Find Lab Center
               </Link>
             </Button>
-            <Button asChild variant='ghost' className='h-11 w-full justify-start hover:bg-blue-50 hover:text-blue-700 sm:col-span-3 lg:col-span-1'>
+            <Button
+              asChild
+              variant='ghost'
+              className='h-11 w-full justify-start hover:bg-blue-50 hover:text-blue-700 sm:col-span-3 lg:col-span-1'
+            >
               <Link href='/dashboard/customer/orders'>
                 <ClipboardList className='h-4 w-4' />
                 View Orders

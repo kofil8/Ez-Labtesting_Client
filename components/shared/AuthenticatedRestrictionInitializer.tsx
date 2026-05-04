@@ -5,10 +5,6 @@ import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
 import { isRestrictionBlocked } from "@/lib/restrictions/presentation";
 import { useEffect, useRef } from "react";
 
-function isCustomerRole(role: unknown) {
-  return String(role || "").toLowerCase() === "customer";
-}
-
 export function AuthenticatedRestrictionInitializer() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const { publishStatus, refreshStatus } = useRestrictionStatus();
@@ -19,8 +15,9 @@ export function AuthenticatedRestrictionInitializer() {
       return;
     }
 
-    if (!isAuthenticated || !isCustomerRole(user?.role)) {
+    if (!isAuthenticated) {
       checkedUserIdRef.current = null;
+      publishStatus(null, { showBanner: true });
       return;
     }
 
@@ -54,7 +51,6 @@ export function AuthenticatedRestrictionInitializer() {
     publishStatus,
     refreshStatus,
     user?.id,
-    user?.role,
   ]);
 
   return null;

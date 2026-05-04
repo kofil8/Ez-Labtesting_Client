@@ -91,7 +91,9 @@ export function DashboardStats({
                 {value}
               </p>
             </div>
-            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md border ${tone}`}>
+            <span
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md border ${tone}`}
+            >
               <Icon className='h-4 w-4' />
             </span>
           </div>

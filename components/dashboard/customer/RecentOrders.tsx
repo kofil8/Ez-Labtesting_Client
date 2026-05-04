@@ -3,8 +3,8 @@ import type { CustomerDashboardOrder } from "@/lib/dashboard/customer.server";
 import { formatCurrency } from "@/lib/utils";
 import { AlertCircle, ClipboardList, Eye } from "lucide-react";
 import Link from "next/link";
-import { EmptyState } from "./EmptyState";
 import { formatSafeDate, getOrderHref } from "./dashboard-helpers";
+import { EmptyState } from "./EmptyState";
 import { StatusBadge } from "./StatusBadge";
 
 export function RecentOrders({
@@ -27,13 +27,18 @@ export function RecentOrders({
             Recent Orders
           </h2>
         </div>
-        <Button asChild variant='outline' size='sm' className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto'>
+        <Button
+          asChild
+          variant='outline'
+          size='sm'
+          className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto'
+        >
           <Link href='/dashboard/customer/orders'>View All Orders</Link>
         </Button>
       </div>
 
       {ordersError ? (
-          <div className='m-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 sm:m-6'>
+        <div className='m-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 sm:m-6'>
           <div className='flex gap-3'>
             <AlertCircle className='mt-0.5 h-4 w-4 shrink-0' />
             <p>{ordersError}</p>
@@ -98,7 +103,12 @@ export function RecentOrders({
                   </p>
                 </div>
 
-                <Button asChild variant='outline' size='sm' className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700'>
+                <Button
+                  asChild
+                  variant='outline'
+                  size='sm'
+                  className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700'
+                >
                   <Link href={getOrderHref(order)}>
                     <Eye className='h-4 w-4' />
                     View

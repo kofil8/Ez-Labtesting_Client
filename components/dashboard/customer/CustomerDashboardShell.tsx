@@ -1,18 +1,31 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
+import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
 import {
   preloadCustomerRoute,
   preloadCustomerRouteData,
   useCustomerDashboardPreloader,
 } from "@/lib/dashboard/customer-preload.client";
 import type { CustomerDashboardViewer } from "@/lib/dashboard/customer.server";
+import { getRestrictedLocationBannerMessage } from "@/lib/restrictions/presentation";
 import { cn } from "@/lib/utils";
+import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { CUSTOMER_NAV_ITEMS } from "./customer-navigation";
 import { CustomerSidebar } from "./CustomerSidebar";
 import { CustomerTopbar } from "./CustomerTopbar";
+
+const CUSTOMER_PANEL_STORAGE_KEY = "customer-dashboard-panel-hidden";
+
+function getInitialPanelState() {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem(CUSTOMER_PANEL_STORAGE_KEY) === "true";
+}
 
 export function CustomerDashboardShell({
   children,
@@ -23,8 +36,9 @@ export function CustomerDashboardShell({
 }) {
   const router = useRouter();
   const { logout, user } = useAuth();
+  const { showRestrictionBanner, status } = useRestrictionStatus();
   const [isSigningOut, startSignOutTransition] = useTransition();
-  const [isPanelHidden, setIsPanelHidden] = useState(false);
+  const [isPanelHidden, setIsPanelHidden] = useState(getInitialPanelState);
   const displayUser = viewer ?? user ?? null;
   const preloadUserId = displayUser?.id;
   const preloadRoutes = useMemo(
@@ -54,8 +68,18 @@ export function CustomerDashboardShell({
     });
   };
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.setItem(
+      CUSTOMER_PANEL_STORAGE_KEY,
+      String(isPanelHidden),
+    );
+  }, [isPanelHidden]);
+
   return (
-    <div className='min-h-screen overflow-x-hidden bg-gradient-to-b from-slate-50 via-white to-blue-50/30 text-slate-950'>
+    <div className='min-h-screen overflow-x-hidden bg-gradient-to-b from-slate-50 via-white to-blue-50/20 text-slate-950'>
       <div className='mx-auto flex min-h-screen w-full max-w-[1680px]'>
         <CustomerSidebar
           viewer={displayUser}
@@ -82,7 +106,18 @@ export function CustomerDashboardShell({
             onPreloadRoute={handlePreloadRoute}
           />
 
-          <main className='mx-auto min-w-0 w-full max-w-[1360px] flex-1 px-3 py-4 sm:px-4 sm:py-5 md:px-5 lg:px-6 lg:py-6 xl:px-7 xl:py-7'>
+          {showRestrictionBanner ? (
+            <div className='border-y border-red-200 bg-red-50/95 text-red-950 backdrop-blur'>
+              <div className='mx-auto flex w-full max-w-[1320px] items-start gap-3 px-3 py-2 text-sm sm:px-4 md:px-5 lg:px-6 xl:px-7'>
+                <AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-red-700' />
+                <p className='min-w-0 break-words font-medium leading-snug'>
+                  {getRestrictedLocationBannerMessage(status)}
+                </p>
+              </div>
+            </div>
+          ) : null}
+
+          <main className='mx-auto w-full min-w-0 max-w-[1320px] flex-1 px-3 py-3 sm:px-4 sm:py-4 md:px-5 lg:px-6 lg:py-5 xl:px-7 xl:py-6'>
             {children}
           </main>
         </div>

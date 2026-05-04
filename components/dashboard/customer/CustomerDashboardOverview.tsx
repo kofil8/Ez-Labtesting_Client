@@ -4,10 +4,10 @@ import type {
   CustomerDashboardOrder,
   CustomerDashboardViewer,
 } from "@/lib/dashboard/customer.server";
+import { sortOrdersByNewest } from "./dashboard-helpers";
 import { DashboardStats } from "./DashboardStats";
 import { DashboardVisuals } from "./DashboardVisuals";
 import { DashboardWelcome } from "./DashboardWelcome";
-import { sortOrdersByNewest } from "./dashboard-helpers";
 import { HealthInsightsPlaceholder } from "./HealthInsightsPlaceholder";
 import { NextActionCard } from "./NextActionCard";
 import { ProfileReadiness } from "./ProfileReadiness";

@@ -8,12 +8,12 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { EmptyState } from "./EmptyState";
 import {
   formatSafeDate,
   getOrderHref,
   isResultsReady,
 } from "./dashboard-helpers";
+import { EmptyState } from "./EmptyState";
 import { StatusBadge } from "./StatusBadge";
 
 export function RecentResults({
@@ -34,7 +34,12 @@ export function RecentResults({
             Recent Results
           </h2>
         </div>
-        <Button asChild variant='outline' size='sm' className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto'>
+        <Button
+          asChild
+          variant='outline'
+          size='sm'
+          className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto'
+        >
           <Link href='/dashboard/customer/results'>View All Results</Link>
         </Button>
       </div>
@@ -71,7 +76,8 @@ export function RecentResults({
                     <StatusBadge order={order} />
                   </div>
                   <p className='mt-2 text-sm text-slate-600'>
-                    {order.orderNumber} - completed {formatSafeDate(order.updatedAt)}
+                    {order.orderNumber} - completed{" "}
+                    {formatSafeDate(order.updatedAt)}
                   </p>
                   <div className='mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-medium text-slate-600'>
                     <LockKeyhole className='h-3.5 w-3.5 text-slate-500' />
@@ -80,11 +86,20 @@ export function RecentResults({
                 </div>
 
                 <div className='flex flex-col gap-2 sm:flex-row lg:shrink-0'>
-                  <Button asChild size='sm' className='w-full bg-blue-600 hover:bg-blue-700 sm:w-auto'>
+                  <Button
+                    asChild
+                    size='sm'
+                    className='w-full bg-blue-600 hover:bg-blue-700 sm:w-auto'
+                  >
                     <Link href={getOrderHref(order)}>View Result</Link>
                   </Button>
                   {order.requisitionPdfUrl ? (
-                    <Button asChild variant='outline' size='sm' className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto'>
+                    <Button
+                      asChild
+                      variant='outline'
+                      size='sm'
+                      className='w-full border-blue-200 hover:bg-blue-50 hover:text-blue-700 sm:w-auto'
+                    >
                       <a
                         href={order.requisitionPdfUrl}
                         target='_blank'

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useCartSidebar } from "@/lib/cart-sidebar-context";
 import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
-import { RESTRICTED_LOCATION_BANNER } from "@/lib/restrictions/presentation";
+import { getRestrictedLocationBannerMessage } from "@/lib/restrictions/presentation";
 import { useCartStore } from "@/lib/store/cart-store";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
@@ -41,7 +41,7 @@ const ADMIN_NAV_LINKS: NavLink[] = [
 
 export function SiteHeader() {
   const { isAuthenticated, user, logout } = useAuth();
-  const { showRestrictionBanner } = useRestrictionStatus();
+  const { showRestrictionBanner, status } = useRestrictionStatus();
   const pathname = usePathname();
   const router = useRouter();
   const itemCount = useCartStore((state) => state.getItemCount());
@@ -112,9 +112,11 @@ export function SiteHeader() {
 
   const restrictionBanner = showRestrictionBanner ? (
     <div className='border-b border-red-200 bg-red-50/95 text-red-950 backdrop-blur'>
-      <div className='container mx-auto flex items-center gap-3 px-4 py-2 text-sm min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
+      <div className='container mx-auto flex items-start gap-3 px-4 py-2 text-sm min-[600px]:items-center min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
         <AlertTriangle className='h-4 w-4 shrink-0 text-red-700' />
-        <p className='font-medium'>{RESTRICTED_LOCATION_BANNER}</p>
+        <p className='min-w-0 break-words font-medium leading-snug'>
+          {getRestrictedLocationBannerMessage(status)}
+        </p>
       </div>
     </div>
   ) : null;
