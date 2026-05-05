@@ -67,8 +67,7 @@ export async function getRestrictionStatus(
   if (
     initialStatus.canOrder === false ||
     params.publicIp ||
-    initialStatus.detectedStateCode ||
-    initialStatus.effectiveStateCode
+    params.checkoutState
   ) {
     return {
       ...initialStatus,

@@ -158,6 +158,70 @@ describe("state restriction service", () => {
 
     vi.stubGlobal("fetch", fetchMock);
 
+    await expect(
+      getRestrictionStatus({ laboratoryCode: "ACCESS" }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        ip: "169.197.141.249",
+        effectiveStateCode: "NY",
+        canOrder: false,
+        lastCheckedAt: expect.any(String),
+      }),
+    );
+
+    expect(String(fetchMock.mock.calls[2][0])).toContain(
+      "publicIp=169.197.141.249",
+    );
+  });
+
+  it("retries with browser public ip when the proxy path resolves to an allowed state", async () => {
+    vi.restoreAllMocks();
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            ip: "54.80.10.20",
+            maskedIp: "54.xxx.xxx.20",
+            countryCode: "US",
+            detectedStateCode: "VA",
+            effectiveStateCode: "VA",
+            laboratoryRoute: "ACCESS",
+            restrictionType: null,
+            canOrder: true,
+            reason: null,
+            source: "ip_lookup",
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ip: "169.197.141.249",
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            ip: "169.197.141.249",
+            maskedIp: "169.xxx.xxx.249",
+            countryCode: "US",
+            detectedStateCode: "NY",
+            effectiveStateCode: "NY",
+            laboratoryRoute: "ACCESS",
+            restrictionType: "BLOCKED",
+            canOrder: false,
+            reason: "Ordering is unavailable in your region.",
+            source: "ip_lookup",
+          },
+        }),
+      });
+
+    vi.stubGlobal("fetch", fetchMock);
+
     await expect(getRestrictionStatus({ laboratoryCode: "ACCESS" })).resolves.toEqual(
       expect.objectContaining({
         ip: "169.197.141.249",
