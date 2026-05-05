@@ -29,7 +29,10 @@ export function AuthenticatedRestrictionInitializer() {
     checkedUserIdRef.current = user.id;
 
     const checkAuthenticatedIpRestriction = async () => {
-      const status = await refreshStatus({}, { force: true });
+      const status = await refreshStatus(
+        { laboratoryCode: "ACCESS" },
+        { force: true },
+      );
 
       if (cancelled) {
         return;
