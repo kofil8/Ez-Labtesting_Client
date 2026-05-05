@@ -17,7 +17,9 @@ export function useCartRestrictionGuard() {
   } = useRestrictionStatus();
 
   const ensureCanOrder = async (params: RestrictionStatusParams) => {
-    if (isRestrictionBlocked(globalRestrictionStatus)) {
+    const status = await checkRestriction(params, { force: true });
+
+    if (!status && isRestrictionBlocked(globalRestrictionStatus)) {
       publishStatus(globalRestrictionStatus, { showBanner: true });
       toast({
         title: "Location restricted",
@@ -27,8 +29,6 @@ export function useCartRestrictionGuard() {
       return false;
     }
 
-    const status = await checkRestriction(params);
-
     if (isRestrictionBlocked(status)) {
       publishStatus(status, { showBanner: true });
       toast({
@@ -37,6 +37,10 @@ export function useCartRestrictionGuard() {
         variant: "destructive",
       });
       return false;
+    }
+
+    if (globalRestrictionStatus?.canOrder === false && status?.canOrder) {
+      publishStatus(status, { showBanner: false });
     }
 
     return true;
