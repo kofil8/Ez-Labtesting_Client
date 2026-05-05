@@ -64,11 +64,7 @@ export async function getRestrictionStatus(
 
   const initialStatus = await fetchLocationStatus(params);
 
-  if (
-    initialStatus.canOrder === false ||
-    params.publicIp ||
-    params.checkoutState
-  ) {
+  if (params.publicIp || params.checkoutState) {
     return {
       ...initialStatus,
       lastCheckedAt: new Date().toISOString(),

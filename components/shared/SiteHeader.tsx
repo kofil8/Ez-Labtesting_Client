@@ -112,7 +112,7 @@ export function SiteHeader() {
 
   const restrictionBanner = showRestrictionBanner ? (
     <div className='border-b border-red-200 bg-red-50/95 text-red-950 backdrop-blur'>
-      <div className='container mx-auto flex items-start gap-3 px-4 py-2 text-sm min-[600px]:items-center min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
+      <div className='container mx-auto flex items-start justify-center gap-3 px-4 py-2 text-center text-sm min-[600px]:items-center min-[600px]:px-6 lg:px-8 xl:px-10 min-[1536px]:px-12'>
         <AlertTriangle className='h-4 w-4 shrink-0 text-red-700' />
         <p className='min-w-0 break-words font-medium leading-snug'>
           {getRestrictedLocationBannerMessage(status)}

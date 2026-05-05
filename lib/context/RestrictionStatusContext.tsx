@@ -71,6 +71,7 @@ export function RestrictionStatusProvider({
         if (cachedStatus) {
           setStatus(cachedStatus);
           setLastCheckedAt(cachedStatus.lastCheckedAt ?? new Date().toISOString());
+          setShowRestrictionBanner(cachedStatus.canOrder === false);
           return cachedStatus;
         }
       }
@@ -84,6 +85,7 @@ export function RestrictionStatusProvider({
         }
         setStatus(nextStatus);
         setLastCheckedAt(nextStatus.lastCheckedAt ?? new Date().toISOString());
+        setShowRestrictionBanner(nextStatus.canOrder === false);
         return nextStatus;
       } catch {
         return null;

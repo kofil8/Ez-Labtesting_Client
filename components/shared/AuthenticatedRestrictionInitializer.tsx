@@ -3,12 +3,11 @@
 import { useAuth } from "@/lib/auth-context";
 import { useRestrictionStatus } from "@/lib/context/RestrictionStatusContext";
 import { isRestrictionBlocked } from "@/lib/restrictions/presentation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function AuthenticatedRestrictionInitializer() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const { publishStatus, refreshStatus } = useRestrictionStatus();
-  const checkedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isLoading) {
@@ -16,17 +15,16 @@ export function AuthenticatedRestrictionInitializer() {
     }
 
     if (!isAuthenticated) {
-      checkedUserIdRef.current = null;
       publishStatus(null, { showBanner: true });
-      return;
     }
+  }, [isAuthenticated, isLoading, publishStatus]);
 
-    if (!user?.id || checkedUserIdRef.current === user.id) {
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !user?.id) {
       return;
     }
 
     let cancelled = false;
-    checkedUserIdRef.current = user.id;
 
     const checkAuthenticatedIpRestriction = async () => {
       const status = await refreshStatus(
@@ -45,8 +43,21 @@ export function AuthenticatedRestrictionInitializer() {
 
     void checkAuthenticatedIpRestriction();
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void checkAuthenticatedIpRestriction();
+      }
+    };
+
+    window.addEventListener("focus", checkAuthenticatedIpRestriction);
+    window.addEventListener("online", checkAuthenticatedIpRestriction);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", checkAuthenticatedIpRestriction);
+      window.removeEventListener("online", checkAuthenticatedIpRestriction);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [
     isAuthenticated,

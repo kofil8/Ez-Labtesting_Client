@@ -108,8 +108,8 @@ export function CustomerDashboardShell({
 
           {showRestrictionBanner ? (
             <div className='border-y border-red-200 bg-red-50/95 text-red-950 backdrop-blur'>
-              <div className='mx-auto flex w-full max-w-[1320px] items-start gap-3 px-3 py-2 text-sm sm:px-4 md:px-5 lg:px-6 xl:px-7'>
-                <AlertTriangle className='mt-0.5 h-4 w-4 shrink-0 text-red-700' />
+              <div className='mx-auto flex w-full max-w-[1320px] items-start justify-center gap-3 px-3 py-2 text-center text-sm sm:items-center sm:px-4 md:px-5 lg:px-6 xl:px-7'>
+                <AlertTriangle className='h-4 w-4 shrink-0 text-red-700' />
                 <p className='min-w-0 break-words font-medium leading-snug'>
                   {getRestrictedLocationBannerMessage(status)}
                 </p>
