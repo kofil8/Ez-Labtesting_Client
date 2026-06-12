@@ -22,40 +22,140 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hook/use-toast";
-import { normalizeTurnaround, parseTurnaroundInput } from "@/lib/test-utils";
-import { Upload, X } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { TestDetailInput, TestDetailsForm } from "./TestDetailsForm";
+import { ImagePlus, Trash2, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+function toSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function emptyForm(): TestFormData {
+  return {
+    name: "",
+    slug: "",
+    categoryId: "",
+    shortDescription: "",
+    description: "",
+    specimenType: "",
+    cptCode: "",
+    baseTurnaroundDays: "",
+    isPanel: false,
+    isActive: true,
+    isPopular: false,
+    requiresFasting: false,
+    minAge: "",
+    maxAge: "",
+    preparationInstructions: "",
+    internalNotes: "",
+    seoTitle: "",
+    seoDescription: "",
+    searchKeywords: "",
+  };
+}
+
+function testToForm(test: TestItem | null): TestFormData {
+  if (!test) return emptyForm();
+  return {
+    name: test.name || "",
+    slug: test.slug || "",
+    categoryId: test.categoryId || test.category?.id || "",
+    shortDescription: test.shortDescription || "",
+    description: test.description || "",
+    specimenType: test.specimenType || "",
+    cptCode: (test.cptCode || []).join(", "),
+    baseTurnaroundDays:
+      test.baseTurnaroundDays != null ? String(test.baseTurnaroundDays) : "",
+    isPanel: test.isPanel ?? false,
+    isActive: test.isActive ?? true,
+    isPopular: test.isPopular ?? false,
+    requiresFasting: test.requiresFasting ?? false,
+    minAge: test.minAge != null ? String(test.minAge) : "",
+    maxAge: test.maxAge != null ? String(test.maxAge) : "",
+    preparationInstructions: test.preparationInstructions || "",
+    internalNotes: test.internalNotes || "",
+    seoTitle: test.seoTitle || "",
+    seoDescription: test.seoDescription || "",
+    searchKeywords: (test.searchKeywords || []).join(", "),
+    testImageUrl: test.testImageUrl || undefined,
+  };
+}
 
 type TestFormData = {
-  testCode: string;
-  testName: string;
+  name: string;
+  slug: string;
   categoryId: string;
-  price: number | string;
-  turnaround?: number | string;
-  specimenType?: string;
-  description?: string;
-  testImage?: string;
-  testDetails: TestDetailInput[];
-  isPublished: boolean;
+  shortDescription: string;
+  description: string;
+  specimenType: string;
+  cptCode: string; // comma-separated UI string
+  baseTurnaroundDays: string; // number-like input
+  isPanel: boolean;
   isActive: boolean;
+  isPopular: boolean;
+  requiresFasting: boolean;
+  minAge: string;
+  maxAge: string;
+  preparationInstructions: string;
+  internalNotes: string;
+  seoTitle: string;
+  seoDescription: string;
+  searchKeywords: string; // comma-separated UI string
+  testImageUrl?: string;
+};
+
+// Matches the payload accepted by `createTest`/`updateTest` server actions.
+// Inlined here because re-exporting types from a `"use server"` module is unreliable.
+type TestPayload = {
+  name?: string;
+  slug?: string;
+  description?: string | null;
+  shortDescription?: string | null;
+  categoryId?: string;
+  specimenType?: string | null;
+  cptCode?: string[] | string;
+  baseTurnaroundDays?: number | string;
+  isPanel?: boolean;
+  preparationInstructions?: string | null;
+  internalNotes?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  searchKeywords?: string[] | string;
+  requiresFasting?: boolean;
+  minAge?: number;
+  maxAge?: number;
+  isActive?: boolean;
+  isPopular?: boolean;
+  removeTestImage?: boolean;
+  componentTestIds?: string[];
 };
 
 type TestItem = {
   id?: string;
-  testCode?: string;
-  testName?: string;
+  name?: string;
+  slug?: string;
   categoryId?: string;
-  price?: number;
-  turnaround?: number;
-  specimenType?: string;
-  description?: string;
-  testImage?: string;
-  testDetails?: TestDetailInput[];
-  isPublished?: boolean;
+  shortDescription?: string | null;
+  description?: string | null;
+  specimenType?: string | null;
+  cptCode?: string[];
+  baseTurnaroundDays?: number | null;
+  isPanel?: boolean;
   isActive?: boolean;
-  category?: Category;
+  isPopular?: boolean;
+  requiresFasting?: boolean;
+  minAge?: number | null;
+  maxAge?: number | null;
+  preparationInstructions?: string | null;
+  internalNotes?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  searchKeywords?: string[];
+  testImageUrl?: string | null;
+  category?: Pick<Category, "id" | "name"> | Category | null;
 };
 
 interface TestEditDialogProps {
@@ -63,6 +163,7 @@ interface TestEditDialogProps {
   onOpenChange: (open: boolean) => void;
   test: TestItem | null;
   onSave: (testData: any, imageFile?: File) => void;
+  allowPanels?: boolean;
 }
 
 export function TestEditDialog({
@@ -70,24 +171,19 @@ export function TestEditDialog({
   onOpenChange,
   test,
   onSave,
+  allowPanels = true,
 }: TestEditDialogProps) {
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeTestImage, setRemoveTestImage] = useState(false);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState<TestFormData>({
-    testCode: "",
-    testName: "",
-    categoryId: "",
-    price: 0,
-    description: "",
-    testImage: "",
-    testDetails: [],
-    isPublished: false,
-    isActive: true,
-  });
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [formData, setFormData] = useState<TestFormData>(emptyForm());
 
   // Load categories on mount
   useEffect(() => {
@@ -112,43 +208,16 @@ export function TestEditDialog({
 
   // Reset form when test changes
   useEffect(() => {
-    if (test) {
-      setFormData({
-        testCode: test.testCode || "",
-        testName: test.testName || "",
-        categoryId: test.categoryId || "",
-        price: test.price || 0,
-        turnaround: test.turnaround || 0,
-        specimenType: test.specimenType || "",
-        description: test.description || "",
-        testImage: test.testImage || "",
-        testDetails: test.testDetails || [],
-        isPublished: test.isPublished ?? false,
-        isActive: test.isActive ?? true,
-      });
-      if (test.testImage) {
-        setImagePreview(test.testImage);
-      } else {
-        setImagePreview(null);
-      }
-    } else {
-      setFormData({
-        testCode: "",
-        testName: "",
-        categoryId: "",
-        price: 0,
-        turnaround: 0,
-        specimenType: "",
-        description: "",
-        testImage: "",
-        testDetails: [],
-        isPublished: false,
-        isActive: true,
-      });
-      setImagePreview(null);
-    }
+    const nextForm = testToForm(test);
+    if (!allowPanels) nextForm.isPanel = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFormData(nextForm);
+    setSlugTouched(Boolean(test?.slug));
+    setImagePreview(test?.testImageUrl || null);
     setSelectedImageFile(null);
-  }, [test]);
+    setRemoveTestImage(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [allowPanels, test]);
 
   // Clean up preview URL
   useEffect(() => {
@@ -181,6 +250,10 @@ export function TestEditDialog({
       }
 
       setSelectedImageFile(file);
+      setRemoveTestImage(false);
+      if (imagePreview && imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
     }
@@ -192,26 +265,29 @@ export function TestEditDialog({
     }
     setSelectedImageFile(null);
     setImagePreview(null);
-    setFormData({ ...formData, testImage: "" });
+    setRemoveTestImage(Boolean(test?.testImageUrl));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
-    if (!formData.testCode.trim()) {
+    const name = formData.name.trim();
+    const slug = (formData.slug || toSlug(name)).trim();
+
+    if (!name) {
       toast({
         title: "Validation Error",
-        description: "Test code is required",
+        description: "Test name is required",
         variant: "destructive",
       });
       return;
     }
 
-    if (!formData.testName.trim()) {
+    if (!slug) {
       toast({
         title: "Validation Error",
-        description: "Test name is required",
+        description: "Test slug is required",
         variant: "destructive",
       });
       return;
@@ -226,80 +302,79 @@ export function TestEditDialog({
       return;
     }
 
-    const priceNum = Number(formData.price);
-    if (!priceNum || priceNum <= 0) {
+    // baseTurnaroundDays: optional but if present must parse as positive int.
+    // Backend normalizer treats a bare number as HOURS, so explicitly suffix
+    // " days" to keep this dialog's semantic (the label says "days").
+    let baseTurnaroundDays: string | undefined;
+    if (formData.baseTurnaroundDays.trim() !== "") {
+      const parsed = Number(formData.baseTurnaroundDays);
+      if (!Number.isFinite(parsed) || parsed < 0 || !Number.isInteger(parsed)) {
+        toast({
+          title: "Validation Error",
+          description: "Turnaround days must be a non-negative whole number",
+          variant: "destructive",
+        });
+        return;
+      }
+      baseTurnaroundDays = `${parsed} days`;
+    }
+
+    const parseAge = (value: string): number | undefined => {
+      if (value.trim() === "") return undefined;
+      const n = Number(value);
+      if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n))
+        return NaN as any;
+      return n;
+    };
+
+    const minAge = parseAge(formData.minAge);
+    const maxAge = parseAge(formData.maxAge);
+
+    if (Number.isNaN(minAge as any) || Number.isNaN(maxAge as any)) {
       toast({
         title: "Validation Error",
-        description: "Price must be greater than 0",
+        description: "Ages must be non-negative whole numbers",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate image is required for new tests
-    if (!test && !imagePreview && !selectedImageFile) {
+    if (minAge !== undefined && maxAge !== undefined && minAge > maxAge) {
       toast({
         title: "Validation Error",
-        description: "Test image is required",
+        description: "Min age cannot be greater than max age",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate turnaround
-    if (!formData.turnaround) {
-      toast({
-        title: "Validation Error",
-        description: "Turnaround time is required",
-        variant: "destructive",
-      });
-      return;
-    }
+    const splitCsv = (value: string): string[] =>
+      value
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
 
-    try {
-      normalizeTurnaround(formData.turnaround);
-    } catch (error) {
-      toast({
-        title: "Validation Error",
-        description: `Invalid turnaround time: ${(error as Error).message}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate specimen type
-    if (!formData.specimenType?.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Specimen type is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Filter valid test details (optional)
-    const validDetails = formData.testDetails.filter((d) => {
-      // Only include details with all required fields filled
-      return (
-        d.component?.trim() &&
-        d.method?.trim() &&
-        d.cptCode?.trim() &&
-        d.testingLocatiion?.trim()
-      );
-    });
-
-    // Build payload
-    const payload = {
-      testCode: formData.testCode.trim(),
-      testName: formData.testName.trim(),
+    const payload: TestPayload = {
+      name,
+      slug,
       categoryId: formData.categoryId,
-      price: priceNum,
-      turnaround: formData.turnaround, // Send as-is, backend will normalize
-      specimenType: formData.specimenType?.trim() || "",
-      description: formData.description?.trim() || null,
-      testDetails: validDetails.length > 0 ? validDetails : undefined,
-      isPublished: formData.isPublished,
+      shortDescription: formData.shortDescription.trim() || null,
+      description: formData.description.trim() || null,
+      specimenType: formData.specimenType.trim() || null,
+      cptCode: splitCsv(formData.cptCode),
+      baseTurnaroundDays,
+      isPanel: allowPanels ? formData.isPanel : false,
       isActive: formData.isActive,
+      isPopular: formData.isPopular,
+      requiresFasting: formData.requiresFasting,
+      minAge,
+      maxAge,
+      preparationInstructions: formData.preparationInstructions.trim() || null,
+      internalNotes: formData.internalNotes.trim() || null,
+      seoTitle: formData.seoTitle.trim() || null,
+      seoDescription: formData.seoDescription.trim() || null,
+      searchKeywords: splitCsv(formData.searchKeywords),
+      ...(removeTestImage ? { removeTestImage: true } : {}),
     };
 
     onSave(payload, selectedImageFile || undefined);
@@ -324,33 +399,42 @@ export function TestEditDialog({
 
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
-                <Label htmlFor='testCode'>
-                  Test Code <span className='text-destructive'>*</span>
+                <Label htmlFor='name'>
+                  Test Name <span className='text-destructive'>*</span>
                 </Label>
                 <Input
-                  id='testCode'
-                  value={formData.testCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, testCode: e.target.value })
-                  }
-                  placeholder='e.g., CBC-001'
+                  id='name'
+                  value={formData.name}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      name: value,
+                      slug: slugTouched ? prev.slug : toSlug(value),
+                    }));
+                  }}
+                  placeholder='e.g., Complete Blood Count'
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor='testName'>
-                  Test Name <span className='text-destructive'>*</span>
+                <Label htmlFor='slug'>
+                  Slug <span className='text-destructive'>*</span>
                 </Label>
                 <Input
-                  id='testName'
-                  value={formData.testName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, testName: e.target.value })
-                  }
-                  placeholder='e.g., Complete Blood Count'
+                  id='slug'
+                  value={formData.slug}
+                  onChange={(e) => {
+                    setSlugTouched(true);
+                    setFormData({ ...formData, slug: e.target.value });
+                  }}
+                  placeholder='complete-blood-count'
                   required
                 />
+                <p className='text-xs text-muted-foreground mt-1'>
+                  Used in URLs. Must be unique. Auto-generated from name.
+                </p>
               </div>
 
               <div>
@@ -378,63 +462,7 @@ export function TestEditDialog({
               </div>
 
               <div>
-                <Label htmlFor='price'>
-                  Price ($) <span className='text-destructive'>*</span>
-                </Label>
-                <Input
-                  id='price'
-                  type='number'
-                  step='0.01'
-                  min='0'
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
-                  }
-                  placeholder='0.00'
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor='turnaround'>
-                  Turnaround Time <span className='text-destructive'>*</span>
-                </Label>
-                <Input
-                  id='turnaround'
-                  type='text'
-                  value={formData.turnaround}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData({ ...formData, turnaround: value });
-                  }}
-                  placeholder='e.g., 24h, 3-4 days, 48-72h'
-                  required
-                />
-                {formData.turnaround &&
-                  (() => {
-                    const parsed = parseTurnaroundInput(formData.turnaround);
-                    if (parsed) {
-                      return (
-                        <p className='text-xs text-muted-foreground mt-1'>
-                          Will be stored as: {parsed.hours}h (
-                          {parsed.displayFormat})
-                        </p>
-                      );
-                    } else if (formData.turnaround) {
-                      return (
-                        <p className='text-xs text-destructive mt-1'>
-                          Invalid format. Use: 24h, 3 days, 24-48 hours, 3-5d
-                        </p>
-                      );
-                    }
-                    return null;
-                  })()}
-              </div>
-
-              <div>
-                <Label htmlFor='specimenType'>
-                  Specimen Type <span className='text-destructive'>*</span>
-                </Label>
+                <Label htmlFor='specimenType'>Specimen Type</Label>
                 <Input
                   id='specimenType'
                   value={formData.specimenType}
@@ -442,9 +470,83 @@ export function TestEditDialog({
                     setFormData({ ...formData, specimenType: e.target.value })
                   }
                   placeholder='e.g., Blood, Urine, Saliva'
-                  required
                 />
               </div>
+
+              <div>
+                <Label htmlFor='cptCode'>CPT Codes</Label>
+                <Input
+                  id='cptCode'
+                  value={formData.cptCode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, cptCode: e.target.value })
+                  }
+                  placeholder='Comma separated, e.g. 80053, 85025'
+                />
+              </div>
+
+              <div>
+                <Label htmlFor='baseTurnaroundDays'>Turnaround (days)</Label>
+                <Input
+                  id='baseTurnaroundDays'
+                  type='number'
+                  min='0'
+                  step='1'
+                  value={formData.baseTurnaroundDays}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      baseTurnaroundDays: e.target.value,
+                    })
+                  }
+                  placeholder='e.g. 3'
+                />
+              </div>
+
+              <div>
+                <Label htmlFor='minAge'>Minimum age</Label>
+                <Input
+                  id='minAge'
+                  type='number'
+                  min='0'
+                  step='1'
+                  value={formData.minAge}
+                  onChange={(e) =>
+                    setFormData({ ...formData, minAge: e.target.value })
+                  }
+                  placeholder='e.g. 18'
+                />
+              </div>
+
+              <div>
+                <Label htmlFor='maxAge'>Maximum age</Label>
+                <Input
+                  id='maxAge'
+                  type='number'
+                  min='0'
+                  step='1'
+                  value={formData.maxAge}
+                  onChange={(e) =>
+                    setFormData({ ...formData, maxAge: e.target.value })
+                  }
+                  placeholder='e.g. 99'
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor='shortDescription'>Short description</Label>
+              <Input
+                id='shortDescription'
+                value={formData.shortDescription}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    shortDescription: e.target.value,
+                  })
+                }
+                placeholder='One-line summary for catalog cards'
+              />
             </div>
 
             <div>
@@ -459,102 +561,191 @@ export function TestEditDialog({
                 rows={3}
               />
             </div>
+
+            <div>
+              <Label htmlFor='preparationInstructions'>
+                Preparation instructions
+              </Label>
+              <Textarea
+                id='preparationInstructions'
+                value={formData.preparationInstructions}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    preparationInstructions: e.target.value,
+                  })
+                }
+                placeholder='Fasting, hydration, medication notes for patients'
+                rows={2}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor='internalNotes'>Internal notes</Label>
+              <Textarea
+                id='internalNotes'
+                value={formData.internalNotes}
+                onChange={(e) =>
+                  setFormData({ ...formData, internalNotes: e.target.value })
+                }
+                placeholder='Notes for staff (not shown to customers)'
+                rows={2}
+              />
+            </div>
+          </div>
+
+          {/* SEO */}
+          <div className='space-y-4'>
+            <h3 className='text-lg font-semibold'>SEO</h3>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+              <div>
+                <Label htmlFor='seoTitle'>SEO title</Label>
+                <Input
+                  id='seoTitle'
+                  value={formData.seoTitle}
+                  onChange={(e) =>
+                    setFormData({ ...formData, seoTitle: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor='searchKeywords'>Search keywords</Label>
+                <Input
+                  id='searchKeywords'
+                  value={formData.searchKeywords}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      searchKeywords: e.target.value,
+                    })
+                  }
+                  placeholder='Comma separated keywords'
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor='seoDescription'>SEO description</Label>
+              <Textarea
+                id='seoDescription'
+                value={formData.seoDescription}
+                onChange={(e) =>
+                  setFormData({ ...formData, seoDescription: e.target.value })
+                }
+                rows={2}
+              />
+            </div>
           </div>
 
           {/* Test Image */}
           <div className='space-y-4'>
             <h3 className='text-lg font-semibold'>Test Image</h3>
 
-            <div>
-              <Label htmlFor='testImage'>
-                Upload Image <span className='text-destructive'>*</span>
-              </Label>
-              <div className='mt-2'>
-                {imagePreview ? (
-                  <div className='relative inline-block'>
-                    <Image
+            <div className='space-y-2'>
+              <Label htmlFor='testImage'>Catalog image</Label>
+              <Input
+                ref={fileInputRef}
+                id='testImage'
+                type='file'
+                accept='image/png,image/jpeg,image/webp,image/gif'
+                onChange={handleImageChange}
+                className='hidden'
+              />
+
+              {imagePreview ? (
+                <div className='overflow-hidden rounded-lg border bg-muted/20'>
+                  <div className='relative aspect-[16/9] max-h-64 w-full bg-muted'>
+                    {/* Plain img avoids next/image domain restrictions for admin S3 previews. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={imagePreview}
                       alt='Test preview'
-                      width={200}
-                      height={200}
-                      className='rounded-lg border object-cover'
+                      className='h-full w-full object-cover'
+                      onError={() => setImagePreview(null)}
                     />
-                    <Button
-                      type='button'
-                      variant='destructive'
-                      size='sm'
-                      className='absolute right-2 top-2'
-                      onClick={handleRemoveImage}
-                    >
-                      <X className='h-4 w-4' />
-                    </Button>
                   </div>
-                ) : (
-                  <label
-                    htmlFor='testImage'
-                    className='flex h-32 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400'
-                  >
-                    <div className='text-center'>
-                      <Upload className='mx-auto h-8 w-8 text-gray-400' />
-                      <p className='mt-2 text-sm text-gray-600'>
-                        Click to upload image{" "}
-                        <span className='text-destructive'>*</span>
+                  <div className='flex flex-wrap items-center justify-between gap-3 p-3'>
+                    <div className='min-w-0'>
+                      <p className='text-sm font-medium'>
+                        {selectedImageFile?.name || "Current test image"}
                       </p>
-                      <p className='text-xs text-gray-500'>
-                        PNG, JPG up to 5MB (Required)
+                      <p className='text-xs text-muted-foreground'>
+                        PNG, JPG, WebP or GIF up to 5MB.
                       </p>
                     </div>
-                    <Input
-                      id='testImage'
-                      type='file'
-                      accept='image/*'
-                      onChange={handleImageChange}
-                      className='hidden'
-                    />
-                  </label>
-                )}
-              </div>
+                    <div className='flex items-center gap-2'>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        size='sm'
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Upload className='mr-2 h-4 w-4' />
+                        Change
+                      </Button>
+                      <Button
+                        type='button'
+                        variant='destructive'
+                        size='sm'
+                        onClick={handleRemoveImage}
+                      >
+                        <Trash2 className='mr-2 h-4 w-4' />
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type='button'
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingImage(true);
+                  }}
+                  onDragLeave={() => setIsDraggingImage(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingImage(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (!file) return;
+                    const input = fileInputRef.current;
+                    if (input) {
+                      const dataTransfer = new DataTransfer();
+                      dataTransfer.items.add(file);
+                      input.files = dataTransfer.files;
+                    }
+                    handleImageChange({
+                      target: { files: [file] },
+                    } as unknown as React.ChangeEvent<HTMLInputElement>);
+                  }}
+                  className={`flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
+                    isDraggingImage
+                      ? "border-primary bg-primary/5"
+                      : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30"
+                  }`}
+                >
+                  <ImagePlus className='h-9 w-9 text-muted-foreground' />
+                  <span className='mt-2 text-sm font-medium'>
+                    Upload test image
+                  </span>
+                  <span className='text-xs text-muted-foreground'>
+                    Click or drag an image here. Max 5MB.
+                  </span>
+                  {removeTestImage && (
+                    <span className='mt-2 text-xs text-destructive'>
+                      Current image will be removed on save.
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
-          </div>
-
-          {/* Test Details - Optional */}
-          <div className='space-y-4'>
-            <div>
-              <h3 className='text-lg font-semibold'>Test Details (Optional)</h3>
-              <p className='text-sm text-muted-foreground mt-1'>
-                Add detailed specifications for this test. You can skip this
-                section if not needed.
-              </p>
-            </div>
-            <TestDetailsForm
-              value={formData.testDetails}
-              onChange={(details) =>
-                setFormData({ ...formData, testDetails: details })
-              }
-            />
           </div>
 
           {/* Status Toggles */}
           <div className='space-y-4'>
-            <h3 className='text-lg font-semibold'>Status</h3>
+            <h3 className='text-lg font-semibold'>Flags</h3>
 
-            <div className='flex items-center space-x-6'>
-              <div className='flex items-center space-x-2'>
-                <Checkbox
-                  id='isPublished'
-                  checked={formData.isPublished}
-                  onCheckedChange={(checked) =>
-                    setFormData({
-                      ...formData,
-                      isPublished: checked === true,
-                    })
-                  }
-                />
-                <Label htmlFor='isPublished' className='cursor-pointer'>
-                  Published (visible to customers)
-                </Label>
-              </div>
-
+            <div className='flex flex-wrap items-center gap-x-6 gap-y-3'>
               <div className='flex items-center space-x-2'>
                 <Checkbox
                   id='isActive'
@@ -564,10 +755,61 @@ export function TestEditDialog({
                   }
                 />
                 <Label htmlFor='isActive' className='cursor-pointer'>
-                  Active
+                  Active (visible in catalog)
                 </Label>
               </div>
+
+              <div className='flex items-center space-x-2'>
+                <Checkbox
+                  id='isPopular'
+                  checked={formData.isPopular}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isPopular: checked === true })
+                  }
+                />
+                <Label htmlFor='isPopular' className='cursor-pointer'>
+                  Popular
+                </Label>
+              </div>
+
+              <div className='flex items-center space-x-2'>
+                <Checkbox
+                  id='requiresFasting'
+                  checked={formData.requiresFasting}
+                  onCheckedChange={(checked) =>
+                    setFormData({
+                      ...formData,
+                      requiresFasting: checked === true,
+                    })
+                  }
+                />
+                <Label htmlFor='requiresFasting' className='cursor-pointer'>
+                  Requires fasting
+                </Label>
+              </div>
+
+              {allowPanels && (
+                <div className='flex items-center space-x-2'>
+                  <Checkbox
+                    id='isPanel'
+                    checked={formData.isPanel}
+                    disabled={Boolean(test?.id)}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, isPanel: checked === true })
+                    }
+                  />
+                  <Label htmlFor='isPanel' className='cursor-pointer'>
+                    Panel test
+                  </Label>
+                </div>
+              )}
             </div>
+            {allowPanels && formData.isPanel && (
+              <p className='text-xs text-muted-foreground'>
+                Use the panel components manager (separate screen) to attach
+                component tests.
+              </p>
+            )}
           </div>
 
           <DialogFooter>

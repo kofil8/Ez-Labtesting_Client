@@ -114,12 +114,33 @@ export function PanelManagement() {
       const result = await getTests({
         page: 1,
         limit: 200,
-        sortBy: "testName",
+        sortBy: "name",
         sortOrder: "asc",
-        isActive: true,
-        adminView: true,
+        isActive: "true",
       });
-      setTests((result.data as Test[]) || []);
+
+      const mapped: Test[] = (result.data || []).map((row: any) => ({
+        id: String(row.id),
+        testName: String(row.name ?? row.testName ?? ""),
+        description: String(row.shortDescription ?? row.description ?? ""),
+        category: row.category ?? row.categoryId ?? "",
+        categoryId: row.categoryId,
+        price: Number(row.startingPrice ?? 0),
+        cptCodes: Array.isArray(row.cptCode) ? row.cptCode : undefined,
+        labCode: row.startingLab?.code,
+        labName: row.startingLab?.name,
+        turnaround:
+          Number(row.turnaroundDays ?? row.baseTurnaroundDays ?? 0) * 24,
+        specimenType: String(row.specimenType ?? ""),
+        preparation: row.preparationInstructions ?? undefined,
+        keywords: Array.isArray(row.searchKeywords)
+          ? row.searchKeywords
+          : undefined,
+        enabled: Boolean(row.isActive ?? true),
+        testImage: row.testImageUrl ?? undefined,
+      }));
+
+      setTests(mapped);
     } catch (error) {
       setTests([]);
     }
@@ -440,16 +461,16 @@ export function PanelManagement() {
             </div>
             <div className='flex flex-wrap items-center gap-2'>
               <Select
-              value={String(limit)}
-              onValueChange={(value) => {
-                setPage(1);
-                setLimit(Number(value) as (typeof PAGE_SIZE_OPTIONS)[number]);
-              }}
-            >
-              <SelectTrigger className='h-9 w-28 sm:w-32'>
-                <SelectValue placeholder='Rows' />
-              </SelectTrigger>
-              <SelectContent>
+                value={String(limit)}
+                onValueChange={(value) => {
+                  setPage(1);
+                  setLimit(Number(value) as (typeof PAGE_SIZE_OPTIONS)[number]);
+                }}
+              >
+                <SelectTrigger className='h-9 w-28 sm:w-32'>
+                  <SelectValue placeholder='Rows' />
+                </SelectTrigger>
+                <SelectContent>
                   {PAGE_SIZE_OPTIONS.map((size) => (
                     <SelectItem key={size} value={String(size)}>
                       {size} / page
@@ -486,7 +507,12 @@ export function PanelManagement() {
                 <p className='text-sm text-muted-foreground'>
                   No panels match the current filters.
                 </p>
-                <Button type='button' size='sm' variant='outline' onClick={clearFilters}>
+                <Button
+                  type='button'
+                  size='sm'
+                  variant='outline'
+                  onClick={clearFilters}
+                >
                   <RotateCcw className='mr-2 h-4 w-4' />
                   Reset filters
                 </Button>
@@ -508,13 +534,19 @@ export function PanelManagement() {
                     <div className='min-w-0 flex-1'>
                       <p className='truncate font-medium'>{panel.name}</p>
                       <p className='truncate text-xs text-muted-foreground'>
-                        {panel.description?.trim() || "No description provided."}
+                        {panel.description?.trim() ||
+                          "No description provided."}
                       </p>
                     </div>
                     {panel.isActive ? (
-                      <Badge className='bg-emerald-500 hover:bg-emerald-500'>Active</Badge>
+                      <Badge className='bg-emerald-500 hover:bg-emerald-500'>
+                        Active
+                      </Badge>
                     ) : (
-                      <Badge variant='outline' className='text-muted-foreground'>
+                      <Badge
+                        variant='outline'
+                        className='text-muted-foreground'
+                      >
                         Inactive
                       </Badge>
                     )}
@@ -524,7 +556,8 @@ export function PanelManagement() {
                     <div className='rounded-md bg-muted/40 p-2'>
                       <p className='text-muted-foreground'>Tests</p>
                       <p className='font-medium'>
-                        {panel.testsCount} test{panel.testsCount !== 1 ? "s" : ""}
+                        {panel.testsCount} test
+                        {panel.testsCount !== 1 ? "s" : ""}
                       </p>
                     </div>
                     <div className='rounded-md bg-muted/40 p-2'>
@@ -535,16 +568,21 @@ export function PanelManagement() {
                     </div>
                     <div className='rounded-md bg-muted/40 p-2'>
                       <p className='text-muted-foreground'>Base</p>
-                      <p className='font-medium'>{formatCurrency(panel.basePrice)}</p>
+                      <p className='font-medium'>
+                        {formatCurrency(panel.basePrice)}
+                      </p>
                     </div>
                     <div className='rounded-md bg-muted/40 p-2'>
                       <p className='text-muted-foreground'>Bundle</p>
-                      <p className='font-medium'>{formatCurrency(panel.bundlePrice)}</p>
+                      <p className='font-medium'>
+                        {formatCurrency(panel.bundlePrice)}
+                      </p>
                     </div>
                   </div>
 
                   <p className='mt-2 text-xs text-muted-foreground'>
-                    Updated: {formatPanelDate(panel.updatedAt || panel.createdAt)}
+                    Updated:{" "}
+                    {formatPanelDate(panel.updatedAt || panel.createdAt)}
                   </p>
 
                   <div className='mt-3 grid grid-cols-2 gap-2'>
@@ -580,7 +618,9 @@ export function PanelManagement() {
                   <TableHead>Included Tests</TableHead>
                   <TableHead>Pricing</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className='hidden lg:table-cell'>Updated</TableHead>
+                  <TableHead className='hidden lg:table-cell'>
+                    Updated
+                  </TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -669,7 +709,10 @@ export function PanelManagement() {
                             Active
                           </Badge>
                         ) : (
-                          <Badge variant='outline' className='text-muted-foreground'>
+                          <Badge
+                            variant='outline'
+                            className='text-muted-foreground'
+                          >
                             <XCircle className='mr-1 h-3 w-3' />
                             Inactive
                           </Badge>

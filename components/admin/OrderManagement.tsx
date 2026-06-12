@@ -20,29 +20,47 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hook/use-toast";
-import { deleteOrder, getAllOrders, updateOrder } from "@/lib/api";
+import {
+  getAllOrders,
+  retryOrderAccessPlacement,
+} from "@/lib/services/order.service";
+import { subscribeToManualReviewQueueUpdates } from "@/lib/services/notifications.socket";
 import { formatCurrency } from "@/lib/utils";
 import { Order } from "@/types/order";
-import { Eye, Search, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Eye, RefreshCw, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { OrderDetailDialog } from "./OrderDetailDialog";
+
+const REVIEW_STATUSES = new Set([
+  "LAB_SUBMISSION_FAILED",
+  "MANUAL_REVIEW_REQUIRED",
+]);
+
+function formatStatusLabel(status: string) {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
 
 export function OrderManagement() {
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [requeueingOrderId, setRequeueingOrderId] = useState<string | null>(
+    null,
+  );
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const ordersData = await getAllOrders();
       setOrders(ordersData);
-      setFilteredOrders(ordersData);
     } catch (error) {
       console.error("Error loading orders:", error);
       toast({
@@ -56,16 +74,29 @@ export function OrderManagement() {
   }, [toast]);
 
   useEffect(() => {
-    loadData();
+    void Promise.resolve().then(loadData);
   }, [loadData]);
 
-  // Filter orders based on search query and status
   useEffect(() => {
+    const unsubscribe = subscribeToManualReviewQueueUpdates(() => {
+      void loadData();
+    });
+
+    return unsubscribe;
+  }, [loadData]);
+
+  const statusOptions = useMemo(() => {
+    return Array.from(new Set(orders.map((order) => order.status))).sort();
+  }, [orders]);
+
+  const filteredOrders = useMemo(() => {
     let filtered = orders;
 
     // Filter by status
     if (statusFilter !== "all") {
-      filtered = filtered.filter((order) => order.status === statusFilter);
+      filtered = filtered.filter(
+        (order) => String(order.status) === statusFilter,
+      );
     }
 
     // Filter by search query
@@ -74,6 +105,7 @@ export function OrderManagement() {
       filtered = filtered.filter(
         (order) =>
           order.id.toLowerCase().includes(query) ||
+          (order.orderNumber || "").toLowerCase().includes(query) ||
           order.customerInfo.email.toLowerCase().includes(query) ||
           order.customerInfo.firstName.toLowerCase().includes(query) ||
           order.customerInfo.lastName.toLowerCase().includes(query) ||
@@ -84,7 +116,7 @@ export function OrderManagement() {
       );
     }
 
-    setFilteredOrders(filtered);
+    return filtered;
   }, [searchQuery, statusFilter, orders]);
 
   const handleView = (order: Order) => {
@@ -92,57 +124,63 @@ export function OrderManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (order: Order) => {
-    if (
-      confirm(
-        `Are you sure you want to delete order "${order.id}"? This action cannot be undone.`
-      )
-    ) {
-      try {
-        await deleteOrder(order.id);
-        setOrders(orders.filter((o) => o.id !== order.id));
-        toast({
-          title: "Order deleted",
-          description: `Order ${order.id} has been removed.`,
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Unable to delete order. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
+  const handleSave = async (order: Order) => {
+    setOrders(orders.map((o) => (o.id === order.id ? order : o)));
+    toast({
+      title: "Order updated",
+      description: `Order ${order.id} has been updated in this view.`,
+    });
+    setIsDialogOpen(false);
   };
 
-  const handleSave = async (order: Order) => {
+  const handleRequeue = async (orderId: string) => {
     try {
-      const updatedOrder = await updateOrder(order.id, order);
-      setOrders(orders.map((o) => (o.id === order.id ? updatedOrder : o)));
+      setRequeueingOrderId(orderId);
+      await retryOrderAccessPlacement(orderId);
+      await loadData();
       toast({
-        title: "Order updated",
-        description: `Order ${order.id} has been updated.`,
+        title: "Lab submission requeued",
+        description: `Order ${orderId} is back in the lab submission queue.`,
       });
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Unable to update order. Please try again.",
+        title: "Requeue failed",
+        description: error?.message || "Unable to requeue this order.",
         variant: "destructive",
       });
+    } finally {
+      setRequeueingOrderId(null);
     }
   };
 
-  const getStatusBadge = (status: Order["status"]) => {
-    const variants = {
+  const getStatusBadge = (
+    status: Order["status"],
+    manualReviewRequired?: boolean,
+  ) => {
+    const normalizedStatus = String(status);
+    const variants: Record<string, string> = {
+      PENDING_PAYMENT: "bg-yellow-500",
+      PAYMENT_FAILED: "bg-red-500",
+      AWAITING_USER_CONFIRMATION: "bg-yellow-500",
+      READY_FOR_LAB_SUBMISSION: "bg-blue-500",
+      LAB_SUBMISSION_IN_PROGRESS: "bg-blue-500",
+      LAB_SUBMISSION_FAILED: "bg-red-500",
+      MANUAL_REVIEW_REQUIRED: "bg-amber-600",
+      SUBMITTED_TO_LAB: "bg-blue-500",
+      REQUISITION_READY: "bg-green-500",
+      COMPLETED: "bg-green-500",
+      CANCELLED: "bg-red-500",
       pending: "bg-yellow-500",
       processing: "bg-blue-500",
       completed: "bg-green-500",
       cancelled: "bg-red-500",
     };
     return (
-      <Badge className={variants[status] || "bg-gray-500"}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <Badge className={variants[normalizedStatus] || "bg-gray-500"}>
+        {manualReviewRequired
+          ? "Manual Review"
+          : formatStatusLabel(normalizedStatus)}
       </Badge>
     );
   };
@@ -190,12 +228,16 @@ export function OrderManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>All Statuses</SelectItem>
-                <SelectItem value='pending'>Pending</SelectItem>
-                <SelectItem value='processing'>Processing</SelectItem>
-                <SelectItem value='completed'>Completed</SelectItem>
-                <SelectItem value='cancelled'>Cancelled</SelectItem>
+                {statusOptions.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {formatStatusLabel(status)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+            <Button variant='outline' size='icon' onClick={loadData}>
+              <RefreshCw className='h-4 w-4' />
+            </Button>
           </div>
         </CardContent>
         <CardContent className='p-0 pb-0'>
@@ -228,6 +270,11 @@ export function OrderManagement() {
                   <TableRow key={order.id}>
                     <TableCell>
                       <span className='font-mono text-sm'>{order.id}</span>
+                      {order.orderNumber && (
+                        <p className='text-xs text-muted-foreground'>
+                          {order.orderNumber}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div>
@@ -242,8 +289,10 @@ export function OrderManagement() {
                     </TableCell>
                     <TableCell>
                       <span className='text-sm'>
-                        {order.tests.length} test
-                        {order.tests.length !== 1 ? "s" : ""}
+                        {order.itemCount ?? order.tests.length} test
+                        {(order.itemCount ?? order.tests.length) !== 1
+                          ? "s"
+                          : ""}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -256,10 +305,20 @@ export function OrderManagement() {
                         </p>
                       )}
                     </TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>
+                      <div className='flex flex-wrap gap-2'>
+                        {getStatusBadge(
+                          order.status,
+                          order.manualReviewRequired,
+                        )}
+                        {REVIEW_STATUSES.has(String(order.status)) && (
+                          <Badge variant='outline'>Needs action</Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant='outline'>
-                        {order.paymentMethod.toUpperCase()}
+                        {(order.paymentStatus || order.paymentMethod).toUpperCase()}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -276,13 +335,6 @@ export function OrderManagement() {
                         >
                           <Eye className='h-4 w-4' />
                         </Button>
-                        <Button
-                          variant='ghost'
-                          size='icon'
-                          onClick={() => handleDelete(order)}
-                        >
-                          <Trash2 className='h-4 w-4 text-destructive' />
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -298,6 +350,8 @@ export function OrderManagement() {
         onOpenChange={setIsDialogOpen}
         order={selectedOrder}
         onSave={handleSave}
+        onRequeue={handleRequeue}
+        isRequeueing={selectedOrder?.id === requeueingOrderId}
       />
     </div>
   );

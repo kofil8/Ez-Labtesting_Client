@@ -12,7 +12,7 @@ export default function TestsPage() {
         <h1 className='text-3xl font-bold tracking-tight'>Tests</h1>
         <p className='text-muted-foreground mt-2'>Manage all lab tests</p>
       </div>
-      <TestManagement />
+      <TestManagement singleTestsOnly />
     </div>
   );
 }

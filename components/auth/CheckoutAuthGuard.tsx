@@ -43,7 +43,7 @@ export function CheckoutAuthGuard({ children }: CheckoutAuthGuardProps) {
                 <Link href='/login'>Login</Link>
               </Button>
               <Button asChild variant='outline' className='sm:flex-1'>
-                <Link href='/signup'>Register</Link>
+                <Link href='/register'>Register</Link>
               </Button>
             </div>
           </div>

@@ -328,7 +328,6 @@ export function UserEditDialog({
                       setValue("phoneNumber", phone);
                     }}
                     defaultCountry='us'
-                    showIcon={false}
                   />
 
                   <PhoneInputField
@@ -340,7 +339,6 @@ export function UserEditDialog({
                       setValue("emergencyContactPhone", phone);
                     }}
                     defaultCountry='us'
-                    showIcon={false}
                   />
 
                   <div className='space-y-2'>

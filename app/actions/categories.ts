@@ -9,7 +9,6 @@ export type Category = {
   id: string;
   name: string;
   slug?: string;
-  icon?: string | null;
   isActive?: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -20,6 +19,12 @@ export type Category = {
 
 export type GetCategoriesOptions = {
   includeInactive?: boolean;
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+  sortBy?: "name" | "createdAt" | "updatedAt" | "sortOrder";
+  sortOrder?: "asc" | "desc";
 };
 
 export type CategoriesListResponse = {
@@ -28,6 +33,7 @@ export type CategoriesListResponse = {
     page: number;
     limit: number;
     total: number;
+    totalPage?: number;
   };
 };
 
@@ -36,7 +42,17 @@ export async function getCategories(
 ): Promise<CategoriesListResponse> {
   let res;
   try {
-    const query = options.includeInactive ? "?includeInactive=true" : "";
+    const params = new URLSearchParams();
+    if (options.page) params.set("page", String(options.page));
+    if (options.limit) params.set("limit", String(options.limit));
+    if (options.search) params.set("search", options.search);
+    if (options.isActive !== undefined) {
+      params.set("isActive", String(options.isActive));
+    }
+    if (options.sortBy) params.set("sortBy", options.sortBy);
+    if (options.sortOrder) params.set("sortOrder", options.sortOrder);
+    if (options.includeInactive) params.set("includeInactive", "true");
+    const query = params.toString() ? `?${params.toString()}` : "";
 
     res = await fetch(`${API_BASE_URL}/categories/all${query}`, {
       method: "GET",
@@ -110,6 +126,8 @@ export async function getCategoryById(categoryId: string): Promise<Category> {
 
 export type CategoryPayload = {
   name: string;
+  slug: string;
+  isActive?: boolean;
 };
 
 export async function createCategory(

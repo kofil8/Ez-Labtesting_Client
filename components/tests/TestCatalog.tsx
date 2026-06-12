@@ -1,105 +1,114 @@
 "use client";
 
 import { getCategories } from "@/app/actions/get-categories";
+import {
+  buildPublicTestsQueryString,
+  DEFAULT_PUBLIC_TESTS_LIMIT,
+  normalizePublicTestsResponse,
+  parsePublicCatalogSearchParams,
+  type PublicTestPanelMode,
+  type PublicTestCatalogQueryState,
+  type PublicTestSortKey,
+} from "@/lib/tests/public-tests";
+import type { PublicCatalogTest, PublicTestsListResponse } from "@/types/public-test";
 import { CatalogHeader, SortOption } from "@/components/shared/CatalogHeader";
 import { CategoryScroll } from "@/components/shared/CategoryScroll";
 import { Pagination } from "@/components/shared/Pagination";
 import { Button } from "@/components/ui/button";
-import { getApiUrl, publicFetch } from "@/lib/api-client";
+import { publicFetch } from "@/lib/api-client";
+import { AlertTriangle, Beaker, SearchX, ShieldCheck } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TestGrid } from "./TestGrid";
 
-const DEFAULT_LIMIT = 9;
-
-type TestsResponse = {
-  data: any[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-  };
+type CategoryItem = {
+  id: string;
+  name: string;
+  testCount?: number;
 };
 
-type SortKey = "name" | "price-asc" | "price-desc" | "turnaround";
-
-type QueryState = {
-  page: number;
-  limit: number;
-  searchTerm: string;
-  category: string;
-  sort: SortKey;
-};
-
-const parseSearchParams = (sp: URLSearchParams): QueryState => {
-  const page = Number(sp.get("page") || "1") || 1;
-  const limit = DEFAULT_LIMIT;
-  const searchTerm = sp.get("searchTerm") || "";
-  const category = sp.get("category") || "all";
-  const sort = (sp.get("sort") as SortKey) || "name";
-  return { page, limit, searchTerm, category, sort };
-};
+interface TestCatalogProps {
+  initialResults?: PublicTestsListResponse;
+  initialQuery?: PublicTestCatalogQueryState;
+  mode?: PublicTestPanelMode;
+}
 
 const SORT_OPTIONS: SortOption[] = [
-  { value: "name", label: "📝 Name A-Z" },
-  { value: "price-asc", label: "💰 Price: Low to High" },
-  { value: "price-desc", label: "💎 Price: High to Low" },
-  { value: "turnaround", label: "⚡ Newest Tests" },
+  { value: "name", label: "Name A-Z" },
+  { value: "popular", label: "Most Popular" },
+  { value: "newest", label: "Newest" },
+  { value: "turnaround", label: "Fastest Turnaround" },
 ];
 
 const SEARCH_SUGGESTIONS = [
-  "Complete Health Panel",
-  "STD Screening",
-  "Thyroid Function",
+  "CBC",
+  "Thyroid",
   "Vitamin D",
-  "Diabetes Check",
+  "Hormone",
+  "STD",
 ];
 
-export function TestCatalog() {
+export function TestCatalog({
+  initialResults,
+  initialQuery,
+  mode = "single",
+}: TestCatalogProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const skippedInitialFetchRef = useRef(false);
 
   const queryState = useMemo(
-    () => parseSearchParams(searchParams),
-    [searchParams],
+    () => parsePublicCatalogSearchParams(searchParams, { panelMode: mode }),
+    [mode, searchParams],
   );
 
-  const [tests, setTests] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [tests, setTests] = useState<PublicCatalogTest[]>(
+    initialResults?.data || [],
+  );
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [meta, setMeta] = useState({
-    page: queryState.page,
-    limit: queryState.limit,
-    total: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [searchInput, setSearchInput] = useState(queryState.searchTerm);
+  const [meta, setMeta] = useState(
+    initialResults?.meta || {
+      page: queryState.page,
+      limit: DEFAULT_PUBLIC_TESTS_LIMIT,
+      total: 0,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPrevPage: false,
+    },
+  );
+  const [loading, setLoading] = useState(!initialResults);
+  const [searchInput, setSearchInput] = useState(queryState.search);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Push query state to URL
+  const initialQueryKey = useMemo(
+    () => JSON.stringify(initialQuery || null),
+    [initialQuery],
+  );
+  const currentQueryKey = useMemo(
+    () => JSON.stringify(queryState),
+    [queryState],
+  );
+
   const pushQueryState = useCallback(
-    (next: Partial<QueryState>) => {
+    (next: Partial<PublicTestCatalogQueryState>) => {
       const params = new URLSearchParams(searchParams.toString());
 
       if (next.page !== undefined) params.set("page", String(next.page));
-      if (next.searchTerm !== undefined) {
-        if (next.searchTerm) {
-          params.set("searchTerm", next.searchTerm);
+      if (next.search !== undefined) {
+        if (next.search) {
+          params.set("search", next.search);
         } else {
-          params.delete("searchTerm");
+          params.delete("search");
         }
       }
       if (next.category !== undefined) params.set("category", next.category);
       if (next.sort !== undefined) params.set("sort", next.sort);
 
-      params.delete("limit");
-
-      // Clean up defaults
       if (params.get("page") === "1") params.delete("page");
-      if (!params.get("searchTerm")) params.delete("searchTerm");
-      if ((params.get("category") || "all") === "all")
-        params.delete("category");
+      if (!params.get("search")) params.delete("search");
+      if ((params.get("category") || "all") === "all") params.delete("category");
       if ((params.get("sort") || "name") === "name") params.delete("sort");
 
       const qs = params.toString();
@@ -108,271 +117,289 @@ export function TestCatalog() {
     [pathname, router, searchParams],
   );
 
-  // Load tests from API
   const loadTests = useCallback(async () => {
     setLoading(true);
-    const query = new URLSearchParams();
-    query.set("page", String(queryState.page));
-    query.set("limit", String(DEFAULT_LIMIT));
-
-    const sortMap: Record<
-      SortKey,
-      { sortBy: string; sortOrder: "asc" | "desc" }
-    > = {
-      name: { sortBy: "testName", sortOrder: "asc" },
-      "price-asc": { sortBy: "price", sortOrder: "asc" },
-      "price-desc": { sortBy: "price", sortOrder: "desc" },
-      turnaround: { sortBy: "createdAt", sortOrder: "desc" },
-    };
-    const { sortBy: backendSortBy, sortOrder } = sortMap[queryState.sort];
-    query.set("sortBy", backendSortBy);
-    query.set("sortOrder", sortOrder);
-
-    if (queryState.category && queryState.category !== "all") {
-      query.set("categoryId", queryState.category);
-    }
-
-    if (queryState.searchTerm.trim()) {
-      query.set("searchTerm", queryState.searchTerm.trim());
-    }
-
-    const url = getApiUrl(`/tests/all?${query.toString()}`);
     setApiError(null);
+
     try {
-      const res = await publicFetch(url);
+      const queryString = buildPublicTestsQueryString(queryState);
+      const res = await publicFetch(`/tests/all?${queryString}`);
+
       if (!res.ok) {
-        if (res.status === 404) {
-          // API endpoint not available - handle gracefully
-          console.warn("Tests API not available (404)");
-          setTests([]);
-          setMeta({ page: queryState.page, limit: queryState.limit, total: 0 });
-          return;
-        }
         const error = await res
           .json()
           .catch(() => ({ message: "Failed to load tests" }));
-        console.error("Backend error response:", error);
-        throw new Error(
-          error.message || `Failed to load tests (${res.status})`,
-        );
+        throw new Error(error.message || "Failed to load tests");
       }
-      const data = (await res.json().catch(() => null)) as TestsResponse | null;
-      console.log("Tests loaded successfully:", {
-        count: data?.data?.length,
-        total: data?.meta?.total,
+
+      const payload = await res.json().catch(() => null);
+      const normalized = normalizePublicTestsResponse(payload, {
+        page: queryState.page,
+        limit: DEFAULT_PUBLIC_TESTS_LIMIT,
+        total: 0,
       });
-      setTests(data?.data || []);
-      setMeta(
-        data?.meta || {
-          page: queryState.page,
-          limit: queryState.limit,
-          total: 0,
-        },
-      );
+
+      setTests(normalized.data);
+      setMeta(normalized.meta);
     } catch (error: any) {
-      console.error("Error loading tests:", error);
-      const errorMsg =
-        error?.message || "Failed to load tests. Please try again later.";
-      setApiError(errorMsg);
+      setApiError(
+        error?.message || "Failed to load tests. Please try again later.",
+      );
       setTests([]);
-      setMeta({ page: queryState.page, limit: queryState.limit, total: 0 });
+      setMeta((prev) => ({
+        ...prev,
+        page: queryState.page,
+        total: 0,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPrevPage: false,
+      }));
     } finally {
       setLoading(false);
     }
-  }, [
-    queryState.category,
-    queryState.page,
-    queryState.searchTerm,
-    queryState.limit,
-    queryState.sort,
-  ]);
+  }, [queryState]);
 
-  // Sync search input with URL
   useEffect(() => {
-    setSearchInput(queryState.searchTerm);
-  }, [queryState.searchTerm]);
+    setSearchInput(queryState.search);
+  }, [queryState.search]);
 
-  // Debounce search input changes
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchInput !== queryState.searchTerm) {
-        pushQueryState({ searchTerm: searchInput, page: 1 });
+      if (searchInput !== queryState.search) {
+        pushQueryState({ search: searchInput.trim(), page: 1 });
       }
     }, 300);
+
     return () => clearTimeout(timer);
-  }, [searchInput, queryState.searchTerm, pushQueryState]);
+  }, [pushQueryState, queryState.search, searchInput]);
 
-  // Load tests when query params change
   useEffect(() => {
-    loadTests();
-  }, [loadTests]);
+    if (
+      initialResults &&
+      !skippedInitialFetchRef.current &&
+      initialQueryKey === currentQueryKey
+    ) {
+      skippedInitialFetchRef.current = true;
+      return;
+    }
 
-  // Load categories on mount
+    loadTests();
+  }, [currentQueryKey, initialQueryKey, initialResults, loadTests]);
+
   useEffect(() => {
     const loadCategories = async () => {
       setCategoriesLoading(true);
+
       try {
         const cats = await getCategories();
         setCategories([
-          { id: "all", name: "All Tests", testCount: undefined },
-          ...cats.map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            testCount: c._count?.tests ?? undefined,
+          { id: "all", name: mode === "panel" ? "All Panels" : "All Tests" },
+          ...cats.map((category: any) => ({
+            id: category.id,
+            name: category.name,
+            testCount:
+              typeof category?._count?.tests === "number" &&
+              category._count.tests > 0
+                ? category._count.tests
+                : undefined,
           })),
         ]);
-      } catch (error) {
-        console.error("Error loading categories:", error);
-        setCategories([{ id: "all", name: "All Tests" }]);
+      } catch {
+        setCategories([
+          { id: "all", name: mode === "panel" ? "All Panels" : "All Tests" },
+        ]);
       } finally {
         setCategoriesLoading(false);
       }
     };
-    loadCategories();
-  }, []);
 
-  // Calculate pagination
+    loadCategories();
+  }, [mode]);
+
   const totalPages = Math.max(
     1,
-    Math.ceil((meta.total || 0) / (meta.limit || DEFAULT_LIMIT)),
+    meta.totalPages || Math.ceil((meta.total || 0) / (meta.limit || 1)),
   );
+  const isPanelCatalog = mode === "panel";
+  const catalogName = isPanelCatalog ? "Test Panels" : "Browse Tests";
+  const pageTitle = isPanelCatalog
+    ? "Browse Health Test Panels"
+    : "Laboratory Test Catalog";
+  const pageDescription = isPanelCatalog
+    ? "Compare bundled panels, included component tests, and the current best available storefront price before opening panel details."
+    : "Explore clinical test descriptions, preparation notes, specimen details, and the current best available storefront price.";
+  const subtitle = isPanelCatalog
+    ? "Search bundled panels by screening goal, included markers, or health concern. Open any panel to review included tests and current lab pricing."
+    : "Search by test name, condition, or CPT-related keywords. Open any test to review preparation, specimen, and storefront pricing details.";
+  const searchSuggestions = isPanelCatalog
+    ? ["Thyroid Panel", "CMP", "Hormone Panel", "Lipid Panel", "STD Panel"]
+    : SEARCH_SUGGESTIONS;
+  const emptyTitle = isPanelCatalog
+    ? "No matching panels found"
+    : "No matching tests found";
+  const emptyDescription = isPanelCatalog
+    ? "Try a broader search term or clear the category filter to browse all active test panels."
+    : "Try a broader search term or clear the category filter to browse the full catalog.";
+  const complianceTitle = isPanelCatalog
+    ? "Panel products from the live test catalog"
+    : "CLIA-aligned catalog browsing";
+  const complianceDescription = isPanelCatalog
+    ? "Each panel routes into the same shared detail page used by individual tests."
+    : "View preparation guidance and specimen requirements on each test page.";
 
   const handlePageChange = (page: number) => {
     pushQueryState({ page });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const clearFilters = () => {
+    setSearchInput("");
+    setApiError(null);
+    pushQueryState({
+      search: "",
+      category: "all",
+      page: 1,
+      sort: "name",
+    });
+  };
+
   return (
-    <div className='space-y-4 sm:space-y-6 md:space-y-8'>
-      {/* Enhanced Catalog Header */}
+    <div className='space-y-6 sm:space-y-8'>
       <CatalogHeader
         searchValue={searchInput}
         onSearchChange={setSearchInput}
         sortValue={queryState.sort}
-        onSortChange={(val) =>
-          pushQueryState({ sort: val as SortKey, page: 1 })
+        onSortChange={(value) =>
+          pushQueryState({ sort: value as PublicTestSortKey, page: 1 })
         }
         sortOptions={SORT_OPTIONS}
         resultCount={meta.total}
-        searchSuggestions={SEARCH_SUGGESTIONS}
+        searchSuggestions={searchSuggestions}
         onSuggestionClick={(suggestion) => setSearchInput(suggestion)}
         showSuggestions={true}
-        subtitle='Search from 300+ CLIA-certified tests • Results in 24-72 hours • No doctor visit required'
+        subtitle={subtitle}
       />
 
-      {/* Category Navigation */}
       <CategoryScroll
         categories={categories}
         selectedCategory={queryState.category}
-        onCategorySelect={(slug) => pushQueryState({ category: slug, page: 1 })}
+        onCategorySelect={(categoryId) =>
+          pushQueryState({ category: categoryId, page: 1 })
+        }
         isLoading={categoriesLoading}
       />
 
-      {/* Results Section */}
-      <div className='bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden'>
-        {/* Header with gradient */}
-        <div className='bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-slate-700 dark:to-slate-700 px-6 py-4 border-b border-slate-200 dark:border-slate-600'>
-          {loading ? (
-            <div className='text-center py-8'>
-              <div className='inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-cyan-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]' />
-              <p className='text-slate-500 dark:text-slate-400 mt-4 text-sm font-medium'>
-                Finding your perfect lab tests...
+      <div className='rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_80px_-50px_rgba(14,165,233,0.35)] overflow-hidden dark:border-slate-800 dark:bg-slate-950'>
+        <div className='border-b border-slate-200 bg-gradient-to-r from-white via-sky-50 to-cyan-50 px-6 py-5 dark:border-slate-800 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'>
+          <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+            <div>
+              <p className='text-xs font-semibold uppercase tracking-[0.2em] text-blue-600'>
+                {catalogName}
+              </p>
+              <h3 className='mt-2 text-2xl font-bold text-slate-900 dark:text-white'>
+                {pageTitle}
+              </h3>
+              <p className='mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400'>
+                {pageDescription}
               </p>
             </div>
+
+            {!loading && !apiError && (
+              <div className='rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300'>
+                <div className='flex items-center gap-2 font-medium'>
+                  <ShieldCheck className='h-4 w-4' />
+                  {complianceTitle}
+                </div>
+                <p className='mt-1 text-xs'>
+                  {complianceDescription}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className='p-6'>
+          {loading ? (
+            <div className='space-y-6'>
+              <div className='flex items-center gap-3 text-slate-600 dark:text-slate-400'>
+                <div className='h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-r-transparent' />
+                <div>
+                  <p className='font-semibold text-slate-900 dark:text-white'>
+                    Loading {isPanelCatalog ? "panels" : "tests"}
+                  </p>
+                  <p className='text-sm'>
+                    Fetching the latest catalog entries from the backend.
+                  </p>
+                </div>
+              </div>
+              <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3'>
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className='h-72 rounded-3xl border border-slate-200 bg-slate-100 animate-pulse dark:border-slate-800 dark:bg-slate-900'
+                  />
+                ))}
+              </div>
+            </div>
           ) : apiError ? (
-            <div className='text-center py-12'>
-              <div className='text-6xl mb-4'>⚠️</div>
-              <h3 className='text-lg font-semibold text-red-600 dark:text-red-400 mb-2'>
+            <div className='rounded-3xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-950 dark:bg-red-950/20'>
+              <div className='mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-red-600 shadow-sm dark:bg-slate-950'>
+                <AlertTriangle className='h-6 w-6' />
+              </div>
+              <h4 className='mt-4 text-lg font-semibold text-slate-900 dark:text-white'>
+                Unable to load the test catalog
+              </h4>
+              <p className='mt-2 text-sm text-slate-600 dark:text-slate-400'>
                 {apiError}
-              </h3>
-              <p className='text-slate-500 dark:text-slate-400 text-sm mb-4'>
-                Please check your connection or try again later.
               </p>
-              <Button
-                onClick={() => {
-                  setSearchInput("");
-                  pushQueryState({ searchTerm: "", category: "all", page: 1 });
-                  setApiError(null);
-                }}
-                variant='outline'
-                size='sm'
-              >
-                Retry
+              <Button onClick={clearFilters} variant='outline' className='mt-5'>
+                Reset filters
               </Button>
             </div>
           ) : tests.length === 0 ? (
-            <div className='text-center py-12'>
-              <div className='text-6xl mb-4'>🔍</div>
-              <h3 className='text-lg font-semibold text-slate-900 dark:text-white mb-2'>
-                No tests found
-              </h3>
-              <p className='text-slate-500 dark:text-slate-400 text-sm mb-4'>
-                Try adjusting your search terms or browse by category
+            <div className='rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center dark:border-slate-800 dark:bg-slate-900/40'>
+              <div className='mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm dark:bg-slate-950'>
+                <SearchX className='h-6 w-6' />
+              </div>
+              <h4 className='mt-4 text-lg font-semibold text-slate-900 dark:text-white'>
+                {emptyTitle}
+              </h4>
+              <p className='mt-2 text-sm text-slate-600 dark:text-slate-400'>
+                {emptyDescription}
               </p>
-              <Button
-                onClick={() => {
-                  setSearchInput("");
-                  pushQueryState({ searchTerm: "", category: "all", page: 1 });
-                }}
-                variant='outline'
-                size='sm'
-              >
-                Clear filters and show all tests
+              <Button onClick={clearFilters} variant='outline' className='mt-5'>
+                Clear filters
               </Button>
             </div>
           ) : (
-            <>
-              {/* Results Summary */}
-              <div className='mb-4'>
-                <h3 className='text-lg font-bold text-slate-900 dark:text-white'>
-                  Lab Test Results
-                </h3>
-                <p className='text-sm text-slate-600 dark:text-slate-300 font-medium mt-1'>
-                  💊 {meta.total ?? 0}{" "}
-                  {(meta.total ?? 0) === 1 ? "test" : "tests"} found
-                  {meta.total > 0 &&
-                    ` • Page ${queryState.page} of ${totalPages}`}
-                </p>
-              </div>
-
-              {/* Value Proposition Banner */}
-              <div className='bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3'>
-                <div className='flex items-center justify-center gap-4 text-xs sm:text-sm flex-wrap'>
-                  <span className='flex items-center gap-2 text-green-700 dark:text-green-400'>
-                    ✅ <strong>All tests include:</strong>
-                  </span>
-                  <span className='text-green-600 dark:text-green-300'>
-                    Board-certified physician review
-                  </span>
-                  <span className='text-green-600 dark:text-green-300'>•</span>
-                  <span className='text-green-600 dark:text-green-300'>
-                    Free shipping
-                  </span>
-                  <span className='text-green-600 dark:text-green-300'>•</span>
-                  <span className='text-green-600 dark:text-green-300'>
-                    Confidential results
-                  </span>
+            <div className='space-y-6'>
+              <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+                <div>
+                  <p className='text-sm font-medium text-slate-500 dark:text-slate-400'>
+                    Showing {meta.total} {isPanelCatalog ? "panel" : "catalog"} result
+                    {meta.total === 1 ? "" : "s"}
+                  </p>
+                  <div className='mt-1 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400'>
+                    <Beaker className='h-4 w-4 text-blue-600' />
+                    <span>
+                      Page {queryState.page} of {totalPages}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </>
+
+              <TestGrid tests={tests} fullWidth={true} />
+
+              <Pagination
+                currentPage={queryState.page}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                resultCount={meta.total}
+                isLoading={loading}
+              />
+            </div>
           )}
         </div>
-
-        {/* Test Grid */}
-        {!loading && tests.length > 0 && (
-          <div className='p-6'>
-            <TestGrid tests={tests as any} fullWidth={true} />
-
-            {/* Pagination */}
-            <Pagination
-              currentPage={queryState.page}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              resultCount={meta.total}
-              isLoading={loading}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,12 +1,140 @@
 yarn run v1.22.22
-$ next dev
- ⚠ Port 3000 is in use by process 11652, using available port 3001 instead.
-   ▲ Next.js 16.0.10 (Turbopack)
-   - Local:         http://localhost:3001
-   - Network:       http://172.23.1error Command failed with exit code 3221225786.
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
-dev\lock, is another instance of next dev running?
-   Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
-[?25h
-error Command failed with exit code 1.
+$ next start
+▲ Next.js 16.2.1
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.125:3000
+✓ Ready in 1076ms
+Failed to proxy http://localhost:7001/api/v1/tests/all?limit=1 AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:7001
+        at <unknown> (Error: connect ECONNREFUSED ::1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 7001
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:7001
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 7001
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:7001
+        at <unknown> (Error: connect ECONNREFUSED ::1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 7001
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:7001
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 7001
+    }
+  ]
+}
+Failed to proxy http://localhost:7001/api/v1/auth/register AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:7001
+        at <unknown> (Error: connect ECONNREFUSED ::1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 7001
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:7001
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 7001
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:7001
+        at <unknown> (Error: connect ECONNREFUSED ::1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 7001
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:7001
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 7001
+    }
+  ]
+}
+Failed to proxy http://localhost:7001/api/v1/tests/all?limit=1 AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:7001
+        at <unknown> (Error: connect ECONNREFUSED ::1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 7001
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:7001
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 7001
+    }
+  ]
+}
+AggregateError: 
+    at ignore-listed frames {
+  code: 'ECONNREFUSED',
+  [errors]: [
+    Error: connect ECONNREFUSED ::1:7001
+        at <unknown> (Error: connect ECONNREFUSED ::1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '::1',
+      port: 7001
+    },
+    Error: connect ECONNREFUSED 127.0.0.1:7001
+        at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:7001) {
+      errno: -4078,
+      code: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 7001
+    }
+  ]
+}
+^Cerror Command failed with exit code 3221225786.
 info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.

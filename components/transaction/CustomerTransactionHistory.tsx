@@ -8,10 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
-import {
-  getOrdersByUserId,
-  UserOrderSummary,
-} from "@/lib/services/order.service";
+import { getCustomerOrdersPreloaded } from "@/lib/dashboard/customer-preload.client";
+import { UserOrderSummary } from "@/lib/services/order.service";
 import { AlertCircle, Loader2, Receipt } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -35,7 +33,8 @@ function mapOrderToTransaction(order: UserOrderSummary): Transaction {
         ? "pending"
         : "completed";
 
-  const orderNumber = `ORD-${order.id.slice(0, 8).toUpperCase()}`;
+  const orderNumber =
+    order.orderNumber || `ORD-${order.id.slice(0, 8).toUpperCase()}`;
 
   return {
     id: order.id,
@@ -68,7 +67,7 @@ export function CustomerTransactionHistory() {
       setError(null);
 
       try {
-        const result = await getOrdersByUserId(user.id);
+        const result = await getCustomerOrdersPreloaded(user.id);
         setOrders(result);
       } catch (loadError) {
         setError(
@@ -110,17 +109,19 @@ export function CustomerTransactionHistory() {
 
   if (!isAuthenticated || !user?.id) {
     return (
-      <Card className='border-slate-200'>
+      <Card className='border-slate-200 dark:border-slate-800 dark:bg-slate-950'>
         <CardContent className='pt-8 pb-8 text-center'>
           <AlertCircle className='h-10 w-10 mx-auto text-slate-400 mb-3' />
-          <h2 className='text-xl font-semibold text-slate-900'>
+          <h2 className='text-xl font-semibold text-slate-900 dark:text-slate-100'>
             Sign in required
           </h2>
-          <p className='text-slate-600 mt-2 mb-5'>
+          <p className='text-slate-600 mt-2 mb-5 dark:text-slate-300'>
             Please sign in to view your transaction history.
           </p>
           <Button asChild>
-            <Link href='/login?from=/transactions'>Go to Sign In</Link>
+            <Link href='/login?from=/dashboard/customer/transactions'>
+              Go to Sign In
+            </Link>
           </Button>
         </CardContent>
       </Card>
@@ -129,7 +130,7 @@ export function CustomerTransactionHistory() {
 
   if (error) {
     return (
-      <Card className='border-rose-200 bg-rose-50/40'>
+      <Card className='border-rose-200 bg-rose-50/40 dark:border-rose-900/70 dark:bg-rose-950/30'>
         <CardContent className='pt-6 pb-6'>
           <div className='flex items-start justify-between gap-4'>
             <div>
@@ -154,13 +155,13 @@ export function CustomerTransactionHistory() {
 
   if (transactions.length === 0) {
     return (
-      <Card className='border-sky-200 bg-sky-50/30'>
+      <Card className='border-sky-200 bg-sky-50/30 dark:border-cyan-900/70 dark:bg-cyan-950/20'>
         <CardContent className='pt-10 pb-10 text-center'>
           <Receipt className='h-14 w-14 mx-auto text-slate-400 mb-4' />
-          <h2 className='text-2xl font-semibold text-slate-900'>
+          <h2 className='text-2xl font-semibold text-slate-900 dark:text-slate-100'>
             No transactions yet
           </h2>
-          <p className='text-slate-600 mt-2 mb-6'>
+          <p className='text-slate-600 mt-2 mb-6 dark:text-slate-300'>
             Once you place an order, your payment and refund records will appear
             here.
           </p>

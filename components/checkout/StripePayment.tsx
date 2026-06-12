@@ -14,22 +14,16 @@ import React, { useState } from "react";
 
 interface PaymentFormProps {
   amount: number;
-  customerEmail: string;
-  customerName: string;
   orderId?: string;
   disabled?: boolean;
-  paymentMethodType?: "card" | "automatic";
   onSuccess: (paymentIntentId: string) => void;
   onError: (error: string) => void;
 }
 
 const PaymentForm = ({
   amount,
-  customerEmail,
-  customerName,
   orderId,
   disabled = false,
-  paymentMethodType = "automatic",
   onSuccess,
   onError,
 }: PaymentFormProps) => {
@@ -63,12 +57,14 @@ const PaymentForm = ({
 
     try {
       // Step 1: Create payment intent on the backend
+      if (!orderId) {
+        onError("Order is not ready for payment yet");
+        setIsProcessing(false);
+        return;
+      }
+
       const paymentIntentResponse = await createPaymentIntent({
-        amount,
-        customerEmail,
-        customerName,
-        paymentMethodType,
-        metadata: orderId ? { orderId } : undefined,
+        orderId,
       });
 
       const { clientSecret, paymentIntentId } = paymentIntentResponse;
@@ -168,22 +164,16 @@ const PaymentForm = ({
 
 interface StripePaymentProps {
   amount: number;
-  customerEmail: string;
-  customerName: string;
   orderId?: string;
   disabled?: boolean;
-  paymentMethodType?: "card" | "automatic";
   onSuccess: (paymentIntentId: string) => void;
   onError: (error: string) => void;
 }
 
 export const StripePayment = ({
   amount,
-  customerEmail,
-  customerName,
   orderId,
   disabled = false,
-  paymentMethodType = "automatic",
   onSuccess,
   onError,
 }: StripePaymentProps) => {
@@ -210,11 +200,8 @@ export const StripePayment = ({
 
       <PaymentForm
         amount={safeAmount}
-        customerEmail={customerEmail}
-        customerName={customerName}
         orderId={orderId}
         disabled={disabled}
-        paymentMethodType={paymentMethodType}
         onSuccess={onSuccess}
         onError={onError}
       />

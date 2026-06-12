@@ -1,40 +1,38 @@
-import { getAccessTokenFromServer } from "@/app/actions/get-token";
-import { clientRefreshToken } from "@/lib/token-utils";
+import { handleAuthFailure, refreshSession } from "@/lib/auth/client";
+import { isAuthSessionErrorMessage } from "@/lib/auth/session-errors";
+import { getApiOrigin } from "@/lib/api/config";
+import { getCartDeviceId } from "@/lib/store/cart-store";
 import { io, Socket } from "socket.io-client";
 
 let socket: Socket | null = null;
 let socketToken: string | null = null;
 let connectPromise: Promise<Socket> | null = null;
 
-function getSocketBaseUrl() {
-  const apiUrl =
-    process.env.NEXT_PUBLIC_SOCKET_URL ||
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    (typeof window !== "undefined"
-      ? window.location.origin
-      : "http://localhost:7001");
+const MANUAL_REVIEW_QUEUE_EVENT = "order:manual-review-queue-update";
 
-  return apiUrl.replace(/\/api\/v1\/?$/, "");
+export interface ManualReviewQueueUpdatePayload {
+  orderId: string;
+  status: string;
+  manualReviewRequired: boolean;
+  updatedAt: string;
 }
 
-async function getNotificationAuthToken() {
-  let token = (await getAccessTokenFromServer())?.token;
+function isSocketAuthError(error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "";
 
-  if (!token) {
-    try {
-      await clientRefreshToken();
-      token = (await getAccessTokenFromServer())?.token;
-    } catch {
-      token = null;
-    }
-  }
+  return isAuthSessionErrorMessage(message);
+}
 
-  if (!token) {
-    throw new Error("Authentication token is required for notifications");
-  }
-
-  return token;
+function getSocketBaseUrl() {
+  return (process.env.NEXT_PUBLIC_SOCKET_URL || getApiOrigin()).replace(
+    /\/api\/v1\/?$/,
+    "",
+  );
 }
 
 export async function connectNotificationSocket() {
@@ -43,9 +41,9 @@ export async function connectNotificationSocket() {
   }
 
   connectPromise = (async () => {
-    const token = await getNotificationAuthToken();
+    let hasRetriedAfterRefresh = false;
 
-    if (socket && socketToken === token) {
+    if (socket && socketToken === "cookie-session") {
       return socket;
     }
 
@@ -56,9 +54,32 @@ export async function connectNotificationSocket() {
     socket = io(getSocketBaseUrl(), {
       transports: ["websocket", "polling"],
       withCredentials: true,
-      auth: { token },
+      auth: {
+        deviceId: getCartDeviceId(),
+      },
     });
-    socketToken = token;
+    socketToken = "cookie-session";
+
+    socket.on("connect_error", async (error) => {
+      if (!isSocketAuthError(error)) {
+        console.error("Notification socket connection failed", error);
+        return;
+      }
+
+      if (hasRetriedAfterRefresh) {
+        await handleAuthFailure();
+        return;
+      }
+
+      hasRetriedAfterRefresh = true;
+
+      try {
+        await refreshSession();
+        socket?.connect();
+      } catch {
+        await handleAuthFailure();
+      }
+    });
 
     return socket;
   })();
@@ -72,6 +93,27 @@ export async function connectNotificationSocket() {
 
 export function getNotificationSocket() {
   return socket;
+}
+
+export function subscribeToManualReviewQueueUpdates(
+  handler: (payload: ManualReviewQueueUpdatePayload) => void,
+) {
+  let active = true;
+  let subscribedSocket: Socket | null = null;
+
+  void connectNotificationSocket().then((nextSocket) => {
+    if (!active) {
+      return;
+    }
+
+    subscribedSocket = nextSocket;
+    subscribedSocket.on(MANUAL_REVIEW_QUEUE_EVENT, handler);
+  });
+
+  return () => {
+    active = false;
+    subscribedSocket?.off(MANUAL_REVIEW_QUEUE_EVENT, handler);
+  };
 }
 
 export function disconnectNotificationSocket() {

@@ -17,7 +17,7 @@ export async function changePassword(formData: FormData) {
         "https://ezlabtesting-api.com/api/v1"
       }/profile/change-password`,
       {
-        method: "POST",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },

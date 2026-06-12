@@ -1,5 +1,6 @@
 import { clientFetch } from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/lib/api-contracts/endpoints";
+import { isRegionRestrictedError } from "@/lib/services/state-restriction.service";
 import {
   ConfirmPaymentRequest,
   ConfirmPaymentResponse,
@@ -30,7 +31,14 @@ export async function createPaymentIntent(
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(parseErrorMessage(data, "Failed to create payment intent"));
+    const error = new Error(
+      parseErrorMessage(data, "Failed to create payment intent"),
+    ) as Error & { code?: string; details?: Record<string, unknown> };
+    if (isRegionRestrictedError(data)) {
+      error.code = data.code;
+      error.details = data.details;
+    }
+    throw error;
   }
 
   const payload = data?.data ?? data;
@@ -55,9 +63,14 @@ export async function confirmPaymentIntent(
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(
+    const error = new Error(
       parseErrorMessage(data, "Failed to confirm payment intent"),
-    );
+    ) as Error & { code?: string; details?: Record<string, unknown> };
+    if (isRegionRestrictedError(data)) {
+      error.code = data.code;
+      error.details = data.details;
+    }
+    throw error;
   }
 
   const payload = data?.data ?? data;

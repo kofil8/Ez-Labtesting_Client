@@ -19,7 +19,6 @@ import { useEffect, useState } from "react";
 type CategoryFormData = {
   name: string;
   slug: string;
-  icon: string;
   isActive: boolean;
 };
 
@@ -40,7 +39,6 @@ export function CategoryEditDialog({
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
     slug: "",
-    icon: "",
     isActive: true,
   });
 
@@ -49,14 +47,12 @@ export function CategoryEditDialog({
       setFormData({
         name: category.name || "",
         slug: category.slug || "",
-        icon: category.icon || "",
         isActive: category.isActive ?? true,
       });
     } else {
       setFormData({
         name: "",
         slug: "",
-        icon: "",
         isActive: true,
       });
     }
@@ -101,7 +97,6 @@ export function CategoryEditDialog({
     const payload = {
       name: formData.name.trim(),
       slug: formData.slug.trim(),
-      icon: formData.icon?.trim() || null,
       isActive: formData.isActive,
     };
 
@@ -152,21 +147,6 @@ export function CategoryEditDialog({
               />
               <p className='mt-1 text-xs text-muted-foreground'>
                 URL-friendly identifier (lowercase, hyphens only)
-              </p>
-            </div>
-
-            <div className='md:col-span-2'>
-              <Label htmlFor='icon'>Icon (Lucide name)</Label>
-              <Input
-                id='icon'
-                value={formData.icon}
-                onChange={(e) =>
-                  setFormData({ ...formData, icon: e.target.value })
-                }
-                placeholder='e.g., TestTube2, Heart, Activity'
-              />
-              <p className='mt-1 text-xs text-muted-foreground'>
-                Enter Lucide icon name
               </p>
             </div>
 

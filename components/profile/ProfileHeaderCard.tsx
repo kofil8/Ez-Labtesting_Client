@@ -36,16 +36,16 @@ export function ProfileHeaderCard({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm",
+        "overflow-hidden rounded-[30px] border border-slate-200/80 bg-white/92 shadow-[0_24px_60px_-44px_rgba(15,23,42,0.35)] backdrop-blur",
         className,
       )}
     >
-      <div className='h-24 bg-gradient-to-r from-blue-50 to-slate-50' />
+      <div className='h-28 bg-[linear-gradient(135deg,rgba(14,165,233,0.16)_0%,rgba(255,255,255,0.92)_52%,rgba(16,185,129,0.14)_100%)]' />
       <div className='px-5 pb-5 sm:px-6 sm:pb-6'>
         <div className='-mt-10 flex flex-col gap-4 sm:-mt-9 sm:flex-row sm:items-start sm:justify-between'>
           <div className='flex min-w-0 items-center gap-4'>
             <div className='relative h-20 w-20'>
-              <div className='flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-blue-600 text-2xl font-semibold text-white shadow-sm'>
+              <div className='flex h-20 w-20 items-center justify-center overflow-hidden rounded-[28px] border-4 border-white bg-gradient-to-br from-sky-600 to-cyan-500 text-2xl font-semibold text-white shadow-lg shadow-sky-100'>
                 {avatarUrl ? (
                   <Image
                     src={avatarUrl}
@@ -70,17 +70,17 @@ export function ProfileHeaderCard({
               <h1 className='truncate text-2xl font-semibold text-slate-900 sm:text-3xl'>
                 {fullName}
               </h1>
-              <div className='mt-2 flex flex-wrap items-center gap-2'>
+              <div className='mt-2 flex flex-wrap items-center gap-2.5'>
                 <Badge
                   variant='secondary'
-                  className='border border-blue-100 bg-blue-50 text-blue-700'
+                  className='rounded-full border border-sky-100 bg-sky-50 text-sky-700'
                 >
                   {roleLabel}
                 </Badge>
                 <Badge
                   variant='outline'
                   className={cn(
-                    "border",
+                    "rounded-full border",
                     verificationStatus === "verified"
                       ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                       : "border-slate-200 bg-slate-50 text-slate-700",
@@ -91,7 +91,7 @@ export function ProfileHeaderCard({
               </div>
             </div>
           </div>
-          <div className='flex gap-2 pt-2 sm:pt-0'>
+          <div className='flex flex-wrap gap-2 pt-2 sm:pt-0'>
             {editAction && <div>{editAction}</div>}
             {logoutAction && <div>{logoutAction}</div>}
           </div>

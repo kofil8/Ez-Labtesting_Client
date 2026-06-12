@@ -72,6 +72,11 @@ describe("checkout flow guards", () => {
       isLabPollingTerminal({ status: "PAID", requisitionPdfUrl: "https://x" }),
     ).toBe(true);
     expect(isLabPollingTerminal({ status: "PAID" })).toBe(false);
+    expect(isLabPollingTerminal({ status: "CANCELLED" })).toBe(true);
+    expect(isLabPollingTerminal({ status: "LAB_SUBMISSION_FAILED" })).toBe(
+      true,
+    );
+    expect(isLabPollingTerminal({ status: "PAYMENT_FAILED" })).toBe(true);
   });
 
   it("applies bounded backoff with max attempt cutoff", () => {

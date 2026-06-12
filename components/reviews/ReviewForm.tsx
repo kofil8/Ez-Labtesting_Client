@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hook/use-toast";
+import { trackEzLabEvent } from "@/lib/analytics";
 import { Loader2, Send, Star } from "lucide-react";
 import { useState } from "react";
 
@@ -89,9 +90,17 @@ export function ReviewForm({
         });
       }
 
+      trackEzLabEvent("review_submit_success", {
+        testId,
+        mode: initialData ? "update" : "create",
+      });
       onSuccess();
     } catch (error) {
       console.error("Error submitting review:", error);
+      trackEzLabEvent("review_submit_failure", {
+        testId,
+        mode: initialData ? "update" : "create",
+      });
       toast({
         title: "Error",
         description:

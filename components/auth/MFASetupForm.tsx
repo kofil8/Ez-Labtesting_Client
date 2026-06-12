@@ -1,6 +1,5 @@
 "use client";
 
-import { getMFAStatus, setupMFA } from "@/app/actions/mfa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,12 +10,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "@/hook/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import { getMFAStatus, setupMFA } from "@/lib/auth/client";
+import { getDashboardRouteForRole } from "@/lib/auth/shared";
 import { AlertCircle, CheckCircle2, Shield, Smartphone } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState, useTransition } from "react";
 
 const MFAQRDisplay = dynamic(
   () =>
@@ -47,12 +55,18 @@ interface MFAStatus {
 }
 
 export function MFASetupForm() {
-  const { user } = useAuth();
+  const { user, refreshAuth } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isMandatory = searchParams.get("mandatory") === "true";
   const setupRequired = searchParams.get("setup") === "required";
   const setupSuggested = searchParams.get("setup") === "suggested";
   const isFirstLogin = searchParams.get("firstLogin") === "true";
+  const mandatoryRoles = ["ADMIN", "LAB_PARTNER"];
+  const optionalRoles = ["SUPER_ADMIN"];
+  const roleKey = user?.role?.toUpperCase();
+  const isMandatoryRole = Boolean(roleKey && mandatoryRoles.includes(roleKey));
+  const isOptionalRole = Boolean(roleKey && optionalRoles.includes(roleKey));
 
   const [mfaStatus, setMfaStatus] = useState<MFAStatus | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -62,19 +76,65 @@ export function MFASetupForm() {
   const [qrCode, setQrCode] = useState("");
   const [secret, setSecret] = useState("");
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchMFAStatus();
-  }, []);
+  const resetDialogState = () => {
+    setSetupStep("idle");
+    setQrCode("");
+    setSecret("");
+    setBackupCodes([]);
+  };
 
-  const fetchMFAStatus = async () => {
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    resetDialogState();
+  };
+
+  const redirectAfterMandatorySetup = useCallback(async () => {
+    if (!isMandatoryRole) {
+      return;
+    }
+
+    const refreshedUser = await refreshAuth();
+    router.replace(getDashboardRouteForRole(refreshedUser?.role || user?.role));
+  }, [
+    isMandatoryRole,
+    refreshAuth,
+    router,
+    user?.role,
+  ]);
+
+  const fetchMFAStatus = useCallback(async () => {
     const result = await getMFAStatus();
     if (result.success && result.data) {
       setMfaStatus(result.data);
     } else {
       console.error("Failed to fetch MFA status:", result.message);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void fetchMFAStatus();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [fetchMFAStatus]);
+
+  useEffect(() => {
+    if (!isMandatoryRole || !mfaStatus?.mfaEnabled || setupStep !== "idle") {
+      return;
+    }
+
+    void redirectAfterMandatorySetup();
+  }, [
+    isMandatoryRole,
+    mfaStatus?.mfaEnabled,
+    redirectAfterMandatorySetup,
+    setupStep,
+  ]);
 
   const handleSetupMFA = () => {
     startTransition(async () => {
@@ -98,27 +158,22 @@ export function MFASetupForm() {
     });
   };
 
-  const mandatoryRoles = ["ADMIN", "LAB_PARTNER"];
-  const optionalRoles = ["SUPER_ADMIN"];
-  const roleKey = user?.role?.toUpperCase();
-  const isMandatoryRole = Boolean(roleKey && mandatoryRoles.includes(roleKey));
-  const isOptionalRole = Boolean(roleKey && optionalRoles.includes(roleKey));
-
   return (
     <div className='space-y-6'>
-      {(setupRequired || isMandatory || isMandatoryRole) && !mfaStatus?.mfaEnabled && (
-        <Alert
-          className='border-amber-500 bg-amber-50'
-          suppressHydrationWarning
-        >
-          <AlertCircle className='h-4 w-4 text-amber-600' />
-          <AlertDescription className='text-amber-800'>
-            <strong>Action Required:</strong> Two-factor authentication is
-            mandatory for your account role. Please complete the setup below to
-            continue using the application.
-          </AlertDescription>
-        </Alert>
-      )}
+      {(setupRequired || isMandatory || isMandatoryRole) &&
+        !mfaStatus?.mfaEnabled && (
+          <Alert
+            className='border-amber-500 bg-amber-50'
+            suppressHydrationWarning
+          >
+            <AlertCircle className='h-4 w-4 text-amber-600' />
+            <AlertDescription className='text-amber-800'>
+              <strong>Action Required:</strong> Two-factor authentication is
+              mandatory for your account role. Please complete the setup below
+              to continue using the application.
+            </AlertDescription>
+          </Alert>
+        )}
 
       {isMandatoryRole && !mfaStatus?.mfaEnabled && (
         <Alert className='border-blue-500 bg-blue-50' suppressHydrationWarning>
@@ -130,15 +185,20 @@ export function MFASetupForm() {
         </Alert>
       )}
 
-      {isOptionalRole && (setupSuggested || isFirstLogin) && !mfaStatus?.mfaEnabled && (
-        <Alert className='border-blue-500 bg-blue-50' suppressHydrationWarning>
-          <Shield className='h-4 w-4 text-blue-600' />
-          <AlertDescription className='text-blue-800'>
-            As a {user?.role.replace("_", " ")} user, two-factor authentication
-            is recommended for enhanced security.
-          </AlertDescription>
-        </Alert>
-      )}
+      {isOptionalRole &&
+        (setupSuggested || isFirstLogin) &&
+        !mfaStatus?.mfaEnabled && (
+          <Alert
+            className='border-blue-500 bg-blue-50'
+            suppressHydrationWarning
+          >
+            <Shield className='h-4 w-4 text-blue-600' />
+            <AlertDescription className='text-blue-800'>
+              As a {user?.role.replace("_", " ")} user, two-factor
+              authentication is recommended for enhanced security.
+            </AlertDescription>
+          </Alert>
+        )}
 
       <Card>
         <CardHeader>
@@ -165,45 +225,81 @@ export function MFASetupForm() {
           </div>
         </CardHeader>
         <CardContent className='space-y-4'>
-          {!mfaStatus?.mfaEnabled && setupStep === "idle" && (
+          {!mfaStatus?.mfaEnabled && (
             <>
               <p className='text-sm text-muted-foreground'>
                 Use an authenticator app like Google Authenticator or Microsoft
                 Authenticator to generate verification codes.
               </p>
               <Button
-                onClick={handleSetupMFA}
+                onClick={() => setIsDialogOpen(true)}
                 disabled={isPending}
                 className='w-full sm:w-auto'
               >
                 <Smartphone className='w-4 h-4 mr-2' />
                 Enable Two-Factor Authentication
               </Button>
+
+              <Dialog
+                open={isDialogOpen}
+                onOpenChange={(open) => {
+                  if (!open) {
+                    resetDialogState();
+                  }
+                  setIsDialogOpen(open);
+                }}
+              >
+                <DialogContent className='w-full max-w-[min(95vw,520px)] max-h-[90vh] overflow-y-auto rounded-[28px] p-4 sm:p-5'>
+                  <DialogHeader>
+                    <DialogTitle>Connect your authenticator app</DialogTitle>
+                    <DialogDescription>
+                      Step 1: Scan the QR code using your authenticator app,
+                      then enter the 6-digit code from the app.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className='mt-4 space-y-4'>
+                    {setupStep === "idle" && (
+                      <div className='space-y-4'>
+                        <div className='rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700'>
+                          Use an authenticator app like Google Authenticator or
+                          Microsoft Authenticator to generate verification
+                          codes.
+                        </div>
+                        <Button onClick={handleSetupMFA} disabled={isPending}>
+                          <Smartphone className='w-4 h-4 mr-2' />
+                          Start setup
+                        </Button>
+                      </div>
+                    )}
+
+                    {setupStep === "qr" && qrCode && secret && (
+                      <MFAQRDisplay
+                        qrCode={qrCode}
+                        secret={secret}
+                        onVerified={(codes) => {
+                          setBackupCodes(codes);
+                          setSetupStep("complete");
+                          fetchMFAStatus();
+                        }}
+                        onCancel={handleCloseDialog}
+                      />
+                    )}
+
+                    {setupStep === "complete" && backupCodes.length > 0 && (
+                      <MFABackupCodes
+                        codes={backupCodes}
+                        onDone={() => {
+                          fetchMFAStatus();
+                          handleCloseDialog();
+                          void redirectAfterMandatorySetup();
+                        }}
+                      />
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </>
-          )}
-
-          {setupStep === "qr" && qrCode && secret && (
-            <MFAQRDisplay
-              qrCode={qrCode}
-              secret={secret}
-              onVerified={(codes) => {
-                setBackupCodes(codes);
-                setSetupStep("complete");
-                fetchMFAStatus();
-              }}
-              onCancel={() => setSetupStep("idle")}
-            />
-          )}
-
-          {setupStep === "complete" && backupCodes.length > 0 && (
-            <MFABackupCodes
-              codes={backupCodes}
-              onDone={() => {
-                setSetupStep("idle");
-                setBackupCodes([]);
-                window.location.href = "/profile/security";
-              }}
-            />
           )}
 
           {mfaStatus?.mfaEnabled && setupStep === "idle" && (

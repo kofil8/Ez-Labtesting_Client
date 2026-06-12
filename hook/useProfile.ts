@@ -1,12 +1,9 @@
 import { Profile, UpdateProfilePayload } from "@/app/profile/types/profile";
-import { authenticatedFetch } from "@/lib/api-helpers";
+import { clientFetch, getApiUrl } from "@/lib/api-client";
 import { useCallback, useEffect, useState } from "react";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://ezlabtesting-api.com/api/v1";
-
 async function fetchProfile(): Promise<Profile> {
-  const res = await authenticatedFetch(`${API_BASE}/profile`, {
+  const res = await clientFetch(getApiUrl("/profile"), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -27,7 +24,7 @@ async function fetchProfile(): Promise<Profile> {
 async function updateProfileOnServer(
   payload: UpdateProfilePayload,
 ): Promise<Profile> {
-  const res = await authenticatedFetch(`${API_BASE}/profile`, {
+  const res = await clientFetch(getApiUrl("/profile"), {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

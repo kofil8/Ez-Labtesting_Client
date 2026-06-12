@@ -4,9 +4,13 @@ import {
   CreateOrderRequest,
   CreateOrderResponse,
 } from "@/lib/api-contracts/order.contract";
+import { extractApiMessage } from "@/lib/auth/shared";
+import { isRegionRestrictedError } from "@/lib/services/state-restriction.service";
+import type { Order } from "@/types/order";
 
 export interface OrderDetailsResponse {
   id: string;
+  orderNumber?: string;
   status:
     | "PENDING_PAYMENT"
     | "PAID"
@@ -26,6 +30,14 @@ export interface OrderDetailsResponse {
   labVisitInstructions?: string | null;
   manualReviewRequired?: boolean;
   accessOrderId?: string | null;
+  accessErrorMessage?: string | null;
+  labSubmissionErrorMessage?: string | null;
+  labSubmissionErrorCode?: string | null;
+  cancelledAt?: string | null;
+  cancellationReason?: string | null;
+  subtotal?: number;
+  processingFee?: number;
+  total?: number;
   patientAddress?: string | null;
   confirmedLabLocation?: {
     siteId?: string;
@@ -64,6 +76,10 @@ export interface OrderTrackingResponse {
   lastUpdated?: string;
 }
 
+export interface RequisitionDownloadResponse {
+  url: string;
+}
+
 export interface ManualReviewOrderSummary {
   id: string;
   status: string;
@@ -86,6 +102,7 @@ export interface ManualReviewOrderSummary {
 
 export interface UserOrderSummary {
   id: string;
+  orderNumber: string;
   status: string;
   subtotal: number;
   processingFee: number;
@@ -98,11 +115,73 @@ export interface UserOrderSummary {
   labVisitInstructions?: string | null;
   manualReviewRequired: boolean;
   accessOrderId?: string | null;
-  test?: {
+  itemsCount: number;
+  primaryTest?: {
     id: string;
     testName: string;
     price: number;
   } | null;
+}
+
+const EMPTY_CUSTOMER_ADDRESS = {
+  street: "",
+  city: "",
+  state: "",
+  zipCode: "",
+};
+
+const EMPTY_CUSTOMER_NOTIFICATIONS = {
+  email: false,
+  sms: false,
+};
+
+function normalizeAdminOrder(order: any): Order {
+  const patient = order.patient || {};
+  const itemCount = Number(order.itemCount || order.itemsCount || 0);
+  const status = String(order.status || order.orderStatus || "PENDING_PAYMENT");
+
+  return {
+    id: String(order.id),
+    userId: String(order.userId || ""),
+    orderNumber: order.orderNumber || undefined,
+    orderStatus: order.orderStatus ? String(order.orderStatus) : status,
+    status: status as Order["status"],
+    paymentStatus: order.paymentStatus
+      ? String(order.paymentStatus)
+      : undefined,
+    tests: Array.from({ length: Math.max(0, itemCount) }, (_, index) => ({
+      testId: `${order.id}-test-${index + 1}`,
+      testName: itemCount === 1 ? "Lab test" : `Lab test ${index + 1}`,
+      price: 0,
+    })),
+    itemCount,
+    totalAmount: Number(order.total || order.totalAmount || 0),
+    subtotal: Number(order.subtotal || 0),
+    discount: Number(order.discount || 0),
+    manualReviewRequired: Boolean(order.manualReviewRequired),
+    accessOrderId: order.accessOrderId || null,
+    paidAt: order.paidAt || null,
+    submittedToLabAt: order.submittedToLabAt || null,
+    labOrderPlacedAt: order.labOrderPlacedAt || null,
+    requisitionPdfUrl: order.requisitionPdfUrl || null,
+    drawCenter: order.drawCenter || null,
+    customerInfo: {
+      firstName: String(patient.firstName || ""),
+      lastName: String(patient.lastName || ""),
+      email: String(order.customerEmailSnapshot || ""),
+      phone: String(order.customerPhoneSnapshot || ""),
+      dateOfBirth: "",
+      address: EMPTY_CUSTOMER_ADDRESS,
+      notifications: EMPTY_CUSTOMER_NOTIFICATIONS,
+    },
+    paymentMethod: "card",
+    createdAt: String(order.createdAt || new Date().toISOString()),
+    updatedAt: order.updatedAt ? String(order.updatedAt) : undefined,
+    completedAt:
+      status === "COMPLETED" || status === "completed"
+        ? String(order.updatedAt || new Date().toISOString())
+        : undefined,
+  };
 }
 
 function buildIdempotencyKey(storageKey: string): string {
@@ -147,7 +226,35 @@ export async function confirmOrderPayment(
   }
 
   const data = await res.json();
-  return data?.data as { orderId: string; status: string; paidAt?: string };
+  const paymentResult = data?.data as {
+    orderId: string;
+    status: string;
+    paidAt?: string;
+  };
+
+  // Transition to READY_FOR_LAB_SUBMISSION and enqueue lab submission.
+  // Best-effort: if this fails the server polling will still work, but we
+  // try here so the order moves immediately.
+  try {
+    const confirmRes = await clientFetch(
+      API_ENDPOINTS.ORDERS.CONFIRM_ORDER(orderId),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    if (confirmRes.ok) {
+      const confirmData = await confirmRes.json().catch(() => ({}));
+      const confirmedStatus = confirmData?.data?.order?.orderStatus;
+      if (confirmedStatus) {
+        return { ...paymentResult, status: confirmedStatus };
+      }
+    }
+  } catch {
+    // Non-fatal: visit-lab page will poll and pick up the correct status.
+  }
+
+  return paymentResult;
 }
 
 let resumableOrderInFlight: Promise<OrderDetailsResponse | null> | null = null;
@@ -173,8 +280,20 @@ export async function createOrder(
   });
 
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || "Failed to create order");
+    const error = await res.json().catch(() => ({}));
+    const nextError = new Error(
+      extractApiMessage(error, "Failed to create order"),
+    ) as Error & {
+      code?: string;
+      details?: Record<string, unknown>;
+    };
+
+    if (isRegionRestrictedError(error)) {
+      nextError.code = error.code;
+      nextError.details = error.details;
+    }
+
+    throw nextError;
   }
 
   const data = await res.json();
@@ -226,6 +345,77 @@ export async function createOrder(
   return data as CreateOrderResponse;
 }
 
+/**
+ * Mark order as "awaiting_lab_submission" (order later)
+ */
+export async function orderLater(
+  orderId: string,
+): Promise<{ success: boolean }> {
+  const idempotencyKey = buildIdempotencyKey(`order-later-${orderId}`);
+
+  const res = await clientFetch(`/api/orders/${orderId}/order-later`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify({ orderId }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.message || "Failed to save order for later");
+  }
+
+  return { success: true };
+}
+
+/**
+ * Confirm order to lab (idempotent)
+ */
+export async function confirmToLab(
+  orderId: string,
+): Promise<{ success: boolean; requisitionUrl?: string }> {
+  const idempotencyKey = buildIdempotencyKey(`confirm-to-lab-${orderId}`);
+
+  const res = await clientFetch(`/api/orders/${orderId}/confirm-to-lab`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Idempotency-Key": idempotencyKey,
+    },
+    body: JSON.stringify({ orderId }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data?.message || "Failed to confirm order to lab");
+  }
+
+  return { success: true, requisitionUrl: data?.data?.requisitionUrl };
+}
+
+/**
+ * Request manual support for an order
+ */
+export async function requestSupport(
+  orderId: string,
+  details?: Record<string, unknown>,
+) {
+  const res = await clientFetch(`/api/orders/${orderId}/request-support`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId, details }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.message || "Failed to request support");
+  }
+
+  return { success: true };
+}
+
 export async function getOrderTracking(
   orderId: string,
 ): Promise<OrderTrackingResponse> {
@@ -247,6 +437,29 @@ export async function getOrderTracking(
   }
 
   return tracking as OrderTrackingResponse;
+}
+
+export async function getRequisitionDownloadUrl(
+  orderId: string,
+): Promise<RequisitionDownloadResponse> {
+  const res = await clientFetch(API_ENDPOINTS.ORDERS.GET_REQUISITION(orderId), {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to fetch requisition");
+  }
+
+  const data = await res.json();
+  const url = typeof data?.url === "string" ? data.url : null;
+
+  if (!url) {
+    throw new Error("Requisition download is not available yet");
+  }
+
+  return { url };
 }
 
 export async function getOrderDetails(
@@ -271,7 +484,11 @@ export async function getOrderDetails(
 
   return {
     id: order.id,
+    orderNumber: order.orderNumber || undefined,
     status: order.status,
+    subtotal: Number(order.subtotal || 0),
+    processingFee: Number(order.processingFee || 0),
+    total: Number(order.total || 0),
     requisitionPdfUrl: order.requisitionPdfUrl || null,
     labVisitInstructions: order.labVisitInstructions || null,
     manualReviewRequired: Boolean(order.manualReviewRequired),
@@ -322,7 +539,11 @@ export async function getResumableOrder(): Promise<OrderDetailsResponse | null> 
 
       return {
         id: order.id,
+        orderNumber: order.orderNumber || undefined,
         status: order.status,
+        subtotal: Number(order.subtotal || 0),
+        processingFee: Number(order.processingFee || 0),
+        total: Number(order.total || 0),
         requisitionPdfUrl: order.requisitionPdfUrl || null,
         labVisitInstructions: order.labVisitInstructions || null,
         manualReviewRequired: Boolean(order.manualReviewRequired),
@@ -380,6 +601,81 @@ export async function getManualReviewOrders(
   }));
 }
 
+export async function getAllOrders(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<Order[]> {
+  const res = await clientFetch(API_ENDPOINTS.ORDERS.ALL(params), {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to fetch orders");
+  }
+
+  const data = await res.json();
+  const orders = Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data?.orders)
+      ? data.orders
+      : [];
+
+  return orders.map(normalizeAdminOrder);
+}
+
+export async function adminManualReorder(orderId: string): Promise<void> {
+  const res = await clientFetch(API_ENDPOINTS.ORDERS.MANUAL_REORDER(orderId), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to manually re-order");
+  }
+}
+
+export async function adminRequestRefund(
+  orderId: string,
+  reason?: string,
+): Promise<void> {
+  const res = await clientFetch(API_ENDPOINTS.ORDERS.REQUEST_REFUND(orderId), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reason }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to request refund");
+  }
+}
+
+export async function adminApproveRefund(
+  orderId: string,
+  reason?: string,
+): Promise<{ refundId: string; amount: number; status: string }> {
+  const res = await clientFetch(API_ENDPOINTS.ORDERS.APPROVE_REFUND(orderId), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reason }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to approve refund");
+  }
+
+  const data = await res.json();
+  return data?.data?.refund as {
+    refundId: string;
+    amount: number;
+    status: string;
+  };
+}
+
 export async function getOrdersByUserId(
   userId: string,
 ): Promise<UserOrderSummary[]> {
@@ -398,6 +694,9 @@ export async function getOrdersByUserId(
 
   return orders.map((order: any) => ({
     id: String(order.id),
+    orderNumber:
+      String(order.orderNumber || "").trim() ||
+      `ORD-${String(order.id).slice(0, 8).toUpperCase()}`,
     status: String(order.status || "PENDING_PAYMENT"),
     subtotal: Number(order.subtotal || 0),
     processingFee: Number(order.processingFee || 0),
@@ -412,12 +711,16 @@ export async function getOrdersByUserId(
     labVisitInstructions: order.labVisitInstructions || null,
     manualReviewRequired: Boolean(order.manualReviewRequired),
     accessOrderId: order.accessOrderId || null,
-    test: order.test
-      ? {
-          id: String(order.test.id),
-          testName: String(order.test.testName || "Lab Test"),
-          price: Number(order.test.price || 0),
-        }
-      : null,
+    itemsCount: Number(order.itemsCount || 0),
+    primaryTest:
+      order.primaryTest || order.test
+        ? {
+            id: String((order.primaryTest || order.test).id),
+            testName: String(
+              (order.primaryTest || order.test).testName || "Lab Test",
+            ),
+            price: Number((order.primaryTest || order.test).price || 0),
+          }
+        : null,
   }));
 }

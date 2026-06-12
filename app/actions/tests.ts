@@ -5,58 +5,80 @@ import { authenticatedFetch } from "@/lib/api-helpers";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
 
-type TestDetailInput = {
-  turnaround?: number | string;
-  component?: string;
-  method?: string;
-  collectionNotes?: string | null;
-  clinicalUtility?: string | null;
-  cptCode?: string;
-  testingLocatiion?: string;
-  temperatures?: unknown;
-  collectionMethod?: string | null;
-  resultsDelivery?: string | null;
-};
-
-type TestPayload = {
-  testCode?: string;
-  testName?: string;
-  categoryId?: string;
-  price?: number | string;
-  turnaround?: number | string;
-  specimenType?: string;
+export type TestPayload = {
+  name?: string;
+  slug?: string;
   description?: string | null;
-  testDetails?: TestDetailInput | TestDetailInput[];
-  isPublished?: boolean;
+  shortDescription?: string | null;
+  categoryId?: string;
+  specimenType?: string | null;
+  cptCode?: string[] | string;
+  baseTurnaroundDays?: number | string;
+  isPanel?: boolean;
+  preparationInstructions?: string | null;
+  internalNotes?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  searchKeywords?: string[] | string;
+  requiresFasting?: boolean;
+  minAge?: number;
+  maxAge?: number;
   isActive?: boolean;
+  isPopular?: boolean;
+  removeTestImage?: boolean;
+  componentTestIds?: string[];
 };
 
-const FORM_DATA_FIELDS: Array<keyof TestPayload> = [
-  "testCode",
-  "testName",
-  "categoryId",
-  "price",
-  "turnaround",
-  "specimenType",
+export type TestMutationResult<T = any> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+
+const SCALAR_FIELDS: Array<keyof TestPayload> = [
+  "name",
+  "slug",
   "description",
-  "testDetails",
-  "isPublished",
+  "shortDescription",
+  "categoryId",
+  "specimenType",
+  "baseTurnaroundDays",
+  "isPanel",
+  "preparationInstructions",
+  "internalNotes",
+  "seoTitle",
+  "seoDescription",
+  "requiresFasting",
+  "minAge",
+  "maxAge",
   "isActive",
+  "isPopular",
+  "removeTestImage",
+];
+
+const ARRAY_FIELDS: Array<keyof TestPayload> = [
+  "cptCode",
+  "searchKeywords",
+  "componentTestIds",
 ];
 
 function buildTestFormData(payload: TestPayload, image?: File): FormData {
   const formData = new FormData();
 
-  for (const key of FORM_DATA_FIELDS) {
+  for (const key of SCALAR_FIELDS) {
+    const value = payload[key];
+    if (value === undefined || value === null) continue;
+    formData.append(key, String(value));
+  }
+
+  for (const key of ARRAY_FIELDS) {
     const value = payload[key];
     if (value === undefined || value === null) continue;
 
-    if (typeof value === "object") {
+    if (Array.isArray(value)) {
+      // backend stringArrayFromUnknown also accepts JSON-string arrays
       formData.append(key, JSON.stringify(value));
-      continue;
+    } else {
+      formData.append(key, String(value));
     }
-
-    formData.append(key, String(value));
   }
 
   if (image) {
@@ -66,31 +88,44 @@ function buildTestFormData(payload: TestPayload, image?: File): FormData {
   return formData;
 }
 
+export type TestSortBy =
+  | "name"
+  | "createdAt"
+  | "updatedAt"
+  | "isPopular"
+  | "baseTurnaroundDays"
+  | "orderCount";
+
 export type GetTestsOptions = {
   page?: number;
   limit?: number;
+  sortBy?: TestSortBy;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  categoryId?: string;
+  isPanel?: boolean;
+  requiresFasting?: boolean;
+  isPopular?: boolean;
+  minAge?: number;
+  maxAge?: number;
+  // 'true' (default), 'false' (archived only) or 'all' (admin view)
+  isActive?: "true" | "false" | "all";
+};
+
+export type TestsListMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages?: number;
+  hasNextPage?: boolean;
+  hasPrevPage?: boolean;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  searchTerm?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  testCode?: string;
-  testName?: string;
-  description?: string;
-  categoryId?: string;
-  categorySlug?: string;
-  isPublished?: boolean;
-  isActive?: boolean;
-  adminView?: boolean;
 };
 
 export type TestsListResponse<T = any> = {
   data: T[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-  };
+  meta: TestsListMeta;
 };
 
 export async function getTests(
@@ -103,34 +138,29 @@ export async function getTests(
     limit = 12,
     sortBy = "createdAt",
     sortOrder = "desc",
-    searchTerm,
-    minPrice,
-    maxPrice,
-    testCode,
-    testName,
-    description,
+    search,
     categoryId,
-    categorySlug,
-    isPublished,
+    isPanel,
+    requiresFasting,
+    isPopular,
+    minAge,
+    maxAge,
     isActive,
-    adminView,
   } = options;
 
   params.set("page", String(page));
   params.set("limit", String(limit));
   params.set("sortBy", sortBy);
   params.set("sortOrder", sortOrder);
-  if (searchTerm) params.set("searchTerm", searchTerm);
-  if (minPrice !== undefined) params.set("minPrice", String(minPrice));
-  if (maxPrice !== undefined) params.set("maxPrice", String(maxPrice));
-  if (testCode) params.set("testCode", testCode);
-  if (testName) params.set("testName", testName);
-  if (description) params.set("description", description);
+  if (search && search.trim()) params.set("search", search.trim());
   if (categoryId) params.set("categoryId", categoryId);
-  if (categorySlug) params.set("categorySlug", categorySlug);
-  if (isPublished !== undefined) params.set("isPublished", String(isPublished));
-  if (isActive !== undefined) params.set("isActive", String(isActive));
-  if (adminView !== undefined) params.set("adminView", String(adminView));
+  if (isPanel !== undefined) params.set("isPanel", String(isPanel));
+  if (requiresFasting !== undefined)
+    params.set("requiresFasting", String(requiresFasting));
+  if (isPopular !== undefined) params.set("isPopular", String(isPopular));
+  if (minAge !== undefined) params.set("minAge", String(minAge));
+  if (maxAge !== undefined) params.set("maxAge", String(maxAge));
+  if (isActive !== undefined) params.set("isActive", isActive);
 
   const query = params.toString();
 
@@ -164,10 +194,13 @@ export async function getTests(
   }
 
   const data = await res.json().catch(() => null);
-  return {
-    data: (data as any)?.data || [],
-    meta: (data as any)?.meta || { page, limit, total: 0 },
-  };
+  // Force a plain JSON-serializable shape across the server-action boundary.
+  return JSON.parse(
+    JSON.stringify({
+      data: (data as any)?.data || [],
+      meta: (data as any)?.meta || { page, limit, total: 0 },
+    }),
+  );
 }
 
 export async function getTestById(testId: string): Promise<any> {
@@ -211,7 +244,7 @@ export async function getTestById(testId: string): Promise<any> {
 export async function createTest(
   payload: TestPayload,
   image?: File,
-): Promise<any> {
+): Promise<TestMutationResult> {
   try {
     const formData = buildTestFormData(payload, image);
 
@@ -221,17 +254,28 @@ export async function createTest(
     });
 
     if (!res.ok) {
-      const error = await res
+      const errorBody = await res
         .json()
-        .catch(() => ({ message: "Failed to create test" }));
-      throw new Error(error.message || "Failed to create test");
+        .catch(() => ({ message: `Create failed with status ${res.status}` }));
+      const message =
+        (errorBody as any)?.message ||
+        (errorBody as any)?.error ||
+        `Create failed with status ${res.status}`;
+      console.error("createTest server error:", res.status, errorBody);
+      throw new Error(String(message));
     }
 
     const data = await res.json().catch(() => null);
-    return (data as any)?.data || data;
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify((data as any)?.data ?? data ?? null)),
+    };
   } catch (error: any) {
-    console.error("Error creating test:", error);
-    throw error;
+    console.error("Error creating test:", error?.message || error);
+    return {
+      success: false,
+      error: error?.message || "Failed to create test",
+    };
   }
 }
 
@@ -239,8 +283,12 @@ export async function updateTest(
   testId: string,
   payload: TestPayload,
   image?: File,
-): Promise<any> {
+): Promise<TestMutationResult> {
   try {
+    if (!testId) {
+      throw new Error("Test id is required to update a test");
+    }
+
     const formData = buildTestFormData(payload, image);
 
     const res = await authenticatedFetch(`${API_BASE_URL}/tests/${testId}`, {
@@ -249,17 +297,30 @@ export async function updateTest(
     });
 
     if (!res.ok) {
-      const error = await res
+      const errorBody = await res
         .json()
-        .catch(() => ({ message: "Failed to update test" }));
-      throw new Error(error.message || "Failed to update test");
+        .catch(() => ({ message: `Update failed with status ${res.status}` }));
+      const message =
+        (errorBody as any)?.message ||
+        (errorBody as any)?.error ||
+        `Update failed with status ${res.status}`;
+      console.error("updateTest server error:", res.status, errorBody);
+      // Throw a plain Error so the message survives the server-action boundary.
+      throw new Error(String(message));
     }
 
     const data = await res.json().catch(() => null);
-    return (data as any)?.data || data;
+    // Always return a plain JSON-serializable object.
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify((data as any)?.data ?? data ?? null)),
+    };
   } catch (error: any) {
-    console.error("Error updating test:", error);
-    throw error;
+    console.error("Error updating test:", error?.message || error);
+    return {
+      success: false,
+      error: error?.message || "Failed to update test",
+    };
   }
 }
 

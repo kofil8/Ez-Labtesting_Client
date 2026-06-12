@@ -1,5 +1,5 @@
-import { CreateOrderRequest } from "@/lib/api-contracts/order.contract";
 import { AccessOrderPayload } from "@/lib/api-contracts/access-order.contract";
+import { CreateOrderRequest } from "@/lib/api-contracts/order.contract";
 import { PatientInfo } from "@/lib/context/CheckoutContext";
 import { SelectedLabCenter } from "@/types/lab-center";
 
@@ -10,6 +10,7 @@ type BuildCreateOrderRequestParams = {
   labTestId: string;
   patientInfo: PatientInfo;
   processingFee: number;
+  promoCode?: string | null;
   selectedLab: SelectedLabCenter | null;
 };
 
@@ -20,6 +21,7 @@ export function buildCreateOrderRequest({
   labTestId,
   patientInfo,
   processingFee,
+  promoCode,
   selectedLab,
 }: BuildCreateOrderRequestParams): CreateOrderRequest {
   return {
@@ -31,10 +33,12 @@ export function buildCreateOrderRequest({
       lastName: patientInfo.lastName,
       dob: patientInfo.dob,
       gender: patientInfo.gender as "Male" | "Female" | "Other",
+      relationToUser: patientInfo.relationToUser || "SELF",
     },
     subtotal: getSubtotal,
     processingFee,
     total: getTotal + processingFee,
+    promoCode: promoCode || undefined,
     accessPayloadJson: accessOrderPayload,
   };
 }

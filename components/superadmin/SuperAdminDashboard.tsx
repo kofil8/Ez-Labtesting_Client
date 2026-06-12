@@ -8,7 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { subscribeToManualReviewQueueUpdates } from "@/lib/services/notifications.socket";
 import {
+  adminApproveRefund,
+  adminManualReorder,
   getManualReviewOrders,
   retryOrderAccessPlacement,
   type ManualReviewOrderSummary,
@@ -28,7 +31,7 @@ import {
   TestTube2,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -81,6 +84,44 @@ export function SuperAdminDashboard() {
   const [manualReviewTimeFilter, setManualReviewTimeFilter] = useState<
     "all" | "24h" | "72h"
   >("all");
+  const [manualReviewLastSyncAt, setManualReviewLastSyncAt] =
+    useState<Date | null>(null);
+  const [manualReviewSocketActive, setManualReviewSocketActive] =
+    useState(true);
+  const [manualReviewFilterNowMs, setManualReviewFilterNowMs] = useState(() =>
+    Date.now(),
+  );
+  const [reorderingOrderId, setReorderingOrderId] = useState<string | null>(
+    null,
+  );
+  const [refundingOrderId, setRefundingOrderId] = useState<string | null>(null);
+
+  const handleManualReorder = async (orderId: string) => {
+    try {
+      setReorderingOrderId(orderId);
+      setManualReviewError(null);
+      await adminManualReorder(orderId);
+      await Promise.all([loadManualReviewOrders(), loadDashboard()]);
+    } catch (error: any) {
+      setManualReviewError(error?.message || "Failed to manually re-order.");
+    } finally {
+      setReorderingOrderId(null);
+    }
+  };
+
+  const handleApproveRefund = async (orderId: string) => {
+    try {
+      setRefundingOrderId(orderId);
+      setManualReviewError(null);
+      await adminApproveRefund(orderId);
+      await Promise.all([loadManualReviewOrders(), loadDashboard()]);
+    } catch (error: any) {
+      setManualReviewError(error?.message || "Failed to approve refund.");
+    } finally {
+      setRefundingOrderId(null);
+    }
+  };
+
   const [bulkRetrySummary, setBulkRetrySummary] = useState<{
     attempted: number;
     succeeded: number;
@@ -88,11 +129,27 @@ export function SuperAdminDashboard() {
     failedOrderIds: string[];
   } | null>(null);
 
-  const loadManualReviewOrders = async () => {
+  const loadDashboard = useCallback(async () => {
+    try {
+      setIsDashboardLoading(true);
+      const summary = await getSuperAdminDashboardSummary();
+      setDashboardSummary(summary);
+      setDashboardError(null);
+    } catch (error: any) {
+      setDashboardError(error?.message || "Failed to load dashboard data.");
+    } finally {
+      setIsDashboardLoading(false);
+    }
+  }, []);
+
+  const loadManualReviewOrders = useCallback(async () => {
     try {
       setIsManualReviewLoading(true);
       const orders = await getManualReviewOrders(50);
       setManualReviewOrders(orders);
+      const syncedAt = new Date();
+      setManualReviewLastSyncAt(syncedAt);
+      setManualReviewFilterNowMs(syncedAt.getTime());
       setManualReviewError(null);
     } catch (error: any) {
       setManualReviewError(
@@ -101,32 +158,28 @@ export function SuperAdminDashboard() {
     } finally {
       setIsManualReviewLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        setIsDashboardLoading(true);
-        const summary = await getSuperAdminDashboardSummary();
-        setDashboardSummary(summary);
-        setDashboardError(null);
-      } catch (error: any) {
-        setDashboardError(error?.message || "Failed to load dashboard data.");
-      } finally {
-        setIsDashboardLoading(false);
-      }
-    };
+    void Promise.resolve().then(() =>
+      Promise.all([loadDashboard(), loadManualReviewOrders()]),
+    );
+  }, [loadDashboard, loadManualReviewOrders]);
 
-    loadDashboard();
-    loadManualReviewOrders();
-  }, []);
+  useEffect(() => {
+    const unsubscribe = subscribeToManualReviewQueueUpdates(() => {
+      setManualReviewSocketActive(true);
+      void Promise.all([loadDashboard(), loadManualReviewOrders()]);
+    });
+
+    return unsubscribe;
+  }, [loadDashboard, loadManualReviewOrders]);
 
   const filteredManualReviewOrders = useMemo(() => {
     if (manualReviewTimeFilter === "all") {
       return manualReviewOrders;
     }
 
-    const now = Date.now();
     const cutoffMs =
       manualReviewTimeFilter === "24h"
         ? 24 * 60 * 60 * 1000
@@ -134,9 +187,12 @@ export function SuperAdminDashboard() {
 
     return manualReviewOrders.filter((order) => {
       const updatedTime = new Date(order.updatedAt).getTime();
-      return Number.isFinite(updatedTime) && now - updatedTime <= cutoffMs;
+      return (
+        Number.isFinite(updatedTime) &&
+        manualReviewFilterNowMs - updatedTime <= cutoffMs
+      );
     });
-  }, [manualReviewOrders, manualReviewTimeFilter]);
+  }, [manualReviewFilterNowMs, manualReviewOrders, manualReviewTimeFilter]);
 
   const handleRetryManualReviewOrder = async (
     orderId: string,
@@ -147,7 +203,7 @@ export function SuperAdminDashboard() {
       setRetryingOrderId(orderId);
       await retryOrderAccessPlacement(orderId);
       if (shouldRefresh) {
-        await loadManualReviewOrders();
+        await Promise.all([loadManualReviewOrders(), loadDashboard()]);
       }
       return true;
     } catch (error: any) {
@@ -188,7 +244,7 @@ export function SuperAdminDashboard() {
         }
       }
 
-      await loadManualReviewOrders();
+      await Promise.all([loadManualReviewOrders(), loadDashboard()]);
       setBulkRetrySummary({
         attempted: filteredManualReviewOrders.length,
         succeeded,
@@ -235,7 +291,7 @@ export function SuperAdminDashboard() {
       })}`,
       change: stats.revenueGrowth,
       icon: DollarSign,
-      description: "All time revenue",
+      description: "vs. previous 30 days",
       color: "text-red-600",
       bgColor: "bg-red-50 dark:bg-red-950/20",
     },
@@ -251,7 +307,7 @@ export function SuperAdminDashboard() {
     {
       title: "Platform Users",
       value: stats.totalUsers.toString(),
-      change: 12.5,
+      change: null,
       icon: Users,
       description: "Total registered users",
       color: "text-blue-600",
@@ -260,7 +316,7 @@ export function SuperAdminDashboard() {
     {
       title: "Active Admins",
       value: stats.activeAdmins.toString(),
-      change: 0,
+      change: null,
       icon: Lock,
       description: "System administrators",
       color: "text-purple-600",
@@ -269,7 +325,7 @@ export function SuperAdminDashboard() {
     {
       title: "Pending Results",
       value: stats.pendingResults.toString(),
-      change: -8.2,
+      change: null,
       icon: Activity,
       description: "Tests awaiting results",
       color: "text-amber-600",
@@ -278,7 +334,7 @@ export function SuperAdminDashboard() {
     {
       title: "Active Tests",
       value: stats.activeTests.toString(),
-      change: 2.1,
+      change: null,
       icon: TestTube2,
       description: `${stats.activePromoCodes} promo codes`,
       color: "text-green-600",
@@ -313,8 +369,13 @@ export function SuperAdminDashboard() {
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
         {statCards.map((card, index) => {
           const Icon = card.icon;
-          const isPositive = card.change > 0;
-          const ChangeIcon = isPositive ? ArrowUpRight : ArrowDownRight;
+          const hasChange = card.change !== null;
+          const isPositive = hasChange && card.change > 0;
+          const ChangeIcon = hasChange
+            ? isPositive
+              ? ArrowUpRight
+              : ArrowDownRight
+            : null;
 
           return (
             <Card key={index} className='hover:shadow-lg transition-shadow'>
@@ -329,19 +390,25 @@ export function SuperAdminDashboard() {
               <CardContent>
                 <div className='text-2xl font-bold'>{card.value}</div>
                 <div className='flex items-center gap-1 mt-2'>
-                  <ChangeIcon
-                    className={cn(
-                      "h-4 w-4",
-                      isPositive ? "text-green-600" : "text-red-600",
-                    )}
-                  />
+                  {ChangeIcon && (
+                    <ChangeIcon
+                      className={cn(
+                        "h-4 w-4",
+                        isPositive ? "text-green-600" : "text-red-600",
+                      )}
+                    />
+                  )}
                   <p
                     className={cn(
                       "text-xs font-semibold",
-                      isPositive ? "text-green-600" : "text-red-600",
+                      hasChange
+                        ? isPositive
+                          ? "text-green-600"
+                          : "text-red-600"
+                        : "text-muted-foreground",
                     )}
                   >
-                    {Math.abs(card.change)}%
+                    {hasChange ? `${Math.abs(card.change)}%` : "N/A"}
                   </p>
                   <p className='text-xs text-muted-foreground'>
                     {card.description}
@@ -521,6 +588,12 @@ export function SuperAdminDashboard() {
 
             <div className='flex items-center gap-2'>
               <p className='text-xs text-muted-foreground'>
+                {manualReviewSocketActive ? "Live" : "Offline"}
+                {manualReviewLastSyncAt
+                  ? ` - synced ${manualReviewLastSyncAt.toLocaleTimeString()}`
+                  : ""}
+              </p>
+              <p className='text-xs text-muted-foreground'>
                 Visible: {filteredManualReviewOrders.length}
               </p>
               <Button
@@ -594,6 +667,9 @@ export function SuperAdminDashboard() {
                       Updated
                     </th>
                     <th className='h-12 px-4 text-left align-middle font-medium'>
+                      Status
+                    </th>
+                    <th className='h-12 px-4 text-left align-middle font-medium'>
                       Action
                     </th>
                   </tr>
@@ -617,18 +693,68 @@ export function SuperAdminDashboard() {
                         {new Date(order.updatedAt).toLocaleString()}
                       </td>
                       <td className='h-12 px-4 align-middle'>
-                        <Button
-                          size='sm'
-                          variant='outline'
-                          onClick={() => handleRetryManualReviewOrder(order.id)}
-                          disabled={
-                            retryingOrderId === order.id || isRetryingAllVisible
-                          }
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded-full text-xs font-semibold",
+                            order.status === "CANCELLED"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                              : "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+                          )}
                         >
-                          {retryingOrderId === order.id
-                            ? "Retrying..."
-                            : "Retry"}
-                        </Button>
+                          {order.status === "CANCELLED"
+                            ? "Cancelled (paid)"
+                            : order.status.replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td className='h-12 px-4 align-middle'>
+                        <div className='flex flex-wrap gap-1'>
+                          {order.status === "CANCELLED" ? (
+                            <>
+                              <Button
+                                size='sm'
+                                variant='outline'
+                                onClick={() => handleManualReorder(order.id)}
+                                disabled={
+                                  reorderingOrderId === order.id ||
+                                  refundingOrderId === order.id
+                                }
+                              >
+                                {reorderingOrderId === order.id
+                                  ? "Re-ordering..."
+                                  : "Re-order"}
+                              </Button>
+                              <Button
+                                size='sm'
+                                variant='destructive'
+                                onClick={() => handleApproveRefund(order.id)}
+                                disabled={
+                                  reorderingOrderId === order.id ||
+                                  refundingOrderId === order.id
+                                }
+                              >
+                                {refundingOrderId === order.id
+                                  ? "Refunding..."
+                                  : "Refund"}
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              size='sm'
+                              variant='outline'
+                              onClick={() =>
+                                handleRetryManualReviewOrder(order.id)
+                              }
+                              disabled={
+                                retryingOrderId === order.id ||
+                                isRetryingAllVisible
+                              }
+                            >
+                              {retryingOrderId === order.id
+                                ? "Retrying..."
+                                : "Retry"}
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

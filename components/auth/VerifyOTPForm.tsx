@@ -1,54 +1,26 @@
 "use client";
 
-import { resendOtp } from "@/app/actions/resend-otp";
-import { verifyOtp } from "@/app/actions/verify-otp";
+import { SixDigitCodeInput } from "@/components/shared/SixDigitCodeInput";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hook/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import {
+  forgotPassword,
+  resendOtp,
+  verifyOtp,
+  verifyResetOtp,
+} from "@/lib/auth/client";
 import { MFAFormData, mfaSchema } from "@/lib/schemas/auth-schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState, useTransition } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-
-// Separate component for OTP Input to manage refs properly
-function OTPInputField({
-  inputRefs,
-  index,
-  isPending,
-  onChangeOtp,
-  onBackspace,
-}: {
-  inputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
-  index: number;
-  isPending: boolean;
-  onChangeOtp: (index: number, value: string) => void;
-  onBackspace: (index: number, e: any) => void;
-}) {
-  return (
-    <Input
-      key={index}
-      ref={(el) => {
-        if (inputRefs.current) inputRefs.current[index] = el;
-      }}
-      maxLength={1}
-      disabled={isPending}
-      className='w-12 h-12 text-center text-xl font-bold border rounded-lg 
-                 focus-visible:ring-2 focus-visible:ring-primary'
-      onChange={(e) => onChangeOtp(index, e.target.value)}
-      onKeyDown={(e) => onBackspace(index, e)}
-    />
-  );
-}
 
 export function VerifyOTPForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast: toastHook } = useToast();
   const authContext = useAuth();
   const [isPending, startTransition] = useTransition();
   const [isResending, startResendTransition] = useTransition();
@@ -59,9 +31,6 @@ export function VerifyOTPForm() {
 
   // Skeleton UI
   const [loadingUI, setLoadingUI] = useState(true);
-
-  // OTP Input Refs - properly initialized
-  const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null));
 
   // Delay UI mount for skeleton effect
   useEffect(() => {
@@ -77,12 +46,13 @@ export function VerifyOTPForm() {
     return () => clearInterval(interval);
   }, []);
 
-  // Handle Email from URL
+  // Handle Email from URL or sessionStorage
   const emailParam = searchParams.get("email");
   const email =
     emailParam ||
     (typeof window !== "undefined"
-      ? sessionStorage.getItem("otp_email")
+      ? sessionStorage.getItem("otp_email") ||
+        sessionStorage.getItem("reset_email")
       : null) ||
     "";
 
@@ -92,82 +62,88 @@ export function VerifyOTPForm() {
       searchParams.get("fromLogin") === "true");
 
   const {
-    register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<MFAFormData>({
     resolver: zodResolver(mfaSchema),
     defaultValues: { code: "" },
   });
-
-  // Handle OTP Input
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^[0-9]?$/.test(value)) return; // allow only digits
-
-    const newCode = (watch("code") || "").split("");
-    newCode[index] = value;
-    setValue("code", newCode.join(""));
-
-    if (value && index < 5) inputRefs.current[index + 1]?.focus();
-
-    // Auto-submit when 6 digits filled
-    if (newCode.join("").length === 6) handleSubmit(onSubmit)();
-  };
-
-  const handleBackspace = (index: number, e: any) => {
-    if (e.key === "Backspace" && !e.target.value && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
+  const codeValue = useWatch({ control, name: "code" }) || "";
+  const isResetFlow = searchParams.get("flow") === "reset";
 
   // Submit Form
   const onSubmit = async (data: MFAFormData) => {
     if (!email) {
-      toast.error("Email not found. Restart signup.");
-      router.push("/register");
+      toast.error(
+        isResetFlow
+          ? "Email not found. Restart the password reset flow."
+          : "Email not found. Restart registration.",
+      );
+      router.push(isResetFlow ? "/forgot-password" : "/register");
       return;
     }
-
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("otp", data.code);
 
     setError("");
     startTransition(async () => {
       try {
-        const res = await verifyOtp(formData);
-        if (res?.success) {
-          // Only refresh auth if coming from login flow (user is already authenticated)
-          if (fromLogin) {
-            await authContext.refreshAuth();
-          }
+        if (isResetFlow) {
+          const resetResult = await verifyResetOtp(email, data.code);
 
-          // Clear stored email after successful verification
-          if (typeof window !== "undefined") {
-            sessionStorage.removeItem("otp_email");
-          }
-
-          // Show appropriate success message based on flow
-          if (fromLogin) {
-            toast.success("Email verified successfully!");
-          } else {
-            toast.success("Account verified! Please log in to continue.", {
-              duration: 5000,
-            });
-          }
-
-          setTimeout(() => {
-            const from = searchParams.get("from");
-            if (fromLogin) {
-              router.push(from || "/results");
-            } else {
-              // New registration - redirect to login with verified flag
-              router.push("/login?verified=true");
+          if (resetResult?.success) {
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("reset_email", String(email));
+              if (resetResult.resetToken) {
+                sessionStorage.setItem("reset_token", resetResult.resetToken);
+              }
             }
-          }, 1500);
+
+            toast.success("Code verified. Continue to reset your password.");
+            setTimeout(() => router.push("/reset-password"), 700);
+          }
+
+          return;
         }
+
+        const res = await verifyOtp({ email, otp: data.code });
+
+        if (!res?.success) {
+          return;
+        }
+
+        // Only refresh auth if coming from login flow (user is already authenticated)
+        if (fromLogin) {
+          await authContext.refreshAuth();
+        }
+
+        // Clear stored email after successful verification
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("otp_email");
+        }
+
+        // Show appropriate success message based on flow
+        if (fromLogin) {
+          toast.success("Email verified successfully!");
+        } else {
+          toast.success("Account verified! Please log in to continue.", {
+            duration: 5000,
+          });
+        }
+
+        setTimeout(() => {
+          const from = searchParams.get("from");
+          if (fromLogin) {
+            router.push(from || "/dashboard/customer/results");
+          } else {
+            // New registration - redirect to login with verified flag
+            const loginUrl =
+              from && from.startsWith("/") && !from.startsWith("//")
+                ? `/login?verified=true&from=${encodeURIComponent(from)}`
+                : "/login?verified=true";
+            router.push(loginUrl);
+          }
+        }, 1500);
       } catch (err: any) {
         const msg = err.message || "Invalid OTP. Try again.";
         setError(msg);
@@ -184,17 +160,31 @@ export function VerifyOTPForm() {
 
     startResendTransition(async () => {
       try {
-        const formData = new FormData();
-        formData.append("email", email);
-        const res = await resendOtp(formData);
+        // For reset flow, call forgotPassword to resend reset OTP
+        // For registration flow, call resendOtp
+        const res = isResetFlow
+          ? await forgotPassword(email)
+          : await resendOtp(email);
 
         if (res?.success) {
-          toast.success("New OTP sent to your email.");
+          toast.success(
+            isResetFlow
+              ? "A new reset code has been sent to your email."
+              : "New OTP sent to your email.",
+          );
           setTimer(60);
+        } else {
+          toast.error(
+            isResetFlow
+              ? "Unable to resend reset code. Please try again in a moment."
+              : "Unable to resend verification code. Please try again in a moment.",
+          );
         }
       } catch (err: any) {
         toast.error(
-          "Unable to resend verification code. Please try again in a moment.",
+          isResetFlow
+            ? "Unable to resend reset code. Please try again in a moment."
+            : "Unable to resend verification code. Please try again in a moment.",
         );
       }
     });
@@ -230,18 +220,21 @@ export function VerifyOTPForm() {
           <div className='space-y-2'>
             <Label>Enter Verification Code</Label>
 
-            <div className='flex justify-center gap-2'>
-              {Array.from({ length: 6 }).map((_, index) => (
-                <OTPInputField
-                  key={index}
-                  inputRefs={inputRefs}
-                  index={index}
-                  isPending={isPending}
-                  onChangeOtp={handleOtpChange}
-                  onBackspace={handleBackspace}
-                />
-              ))}
-            </div>
+            <SixDigitCodeInput
+              value={codeValue}
+              onChange={(value) =>
+                setValue("code", value, {
+                  shouldDirty: true,
+                  shouldTouch: true,
+                  shouldValidate: Boolean(errors.code),
+                })
+              }
+              onComplete={() => handleSubmit(onSubmit)()}
+              disabled={isPending}
+              ariaLabel='Email verification code'
+              className='mx-auto max-w-sm'
+              inputClassName='h-12 text-xl font-bold'
+            />
 
             {errors.code && (
               <p className='text-sm text-red-500'>{errors.code.message}</p>
@@ -279,7 +272,15 @@ export function VerifyOTPForm() {
             type='button'
             variant='ghost'
             className='w-full'
-            onClick={() => router.push(fromLogin ? "/login" : "/register")}
+            onClick={() =>
+              router.push(
+                isResetFlow
+                  ? "/forgot-password"
+                  : fromLogin
+                    ? "/login"
+                    : "/register",
+              )
+            }
           >
             Back
           </Button>

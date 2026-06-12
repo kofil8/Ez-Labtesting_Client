@@ -18,6 +18,8 @@ import React, {
 
 export type CheckoutStep = "PATIENT" | "PAYMENT" | "VISIT_LAB" | "CONFIRMATION";
 
+export type PatientRelation = "SELF" | "SPOUSE" | "CHILD" | "PARENT" | "OTHER";
+
 export interface PatientInfo {
   firstName: string;
   lastName: string;
@@ -29,6 +31,7 @@ export interface PatientInfo {
   city: string;
   state: string;
   zipCode: string;
+  relationToUser?: PatientRelation;
 }
 
 export interface OrderData {
@@ -71,6 +74,7 @@ const initialPatientInfo: PatientInfo = {
   city: "",
   state: "",
   zipCode: "",
+  relationToUser: "SELF",
 };
 
 export const CheckoutProvider = ({
@@ -100,7 +104,9 @@ export const CheckoutProvider = ({
     lastRecoveredAt?: number | null;
   };
 
-  // Load from sessionStorage on mount
+  // Load from sessionStorage on mount. This effect bridges an external
+  // store (sessionStorage) into React state, so setState calls are required.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const savedCheckout = sessionStorage.getItem("checkout-storage");
     if (savedCheckout) {

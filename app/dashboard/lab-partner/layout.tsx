@@ -1,4 +1,5 @@
 import { LabPartnerSidebar } from "@/components/lab-partner/LabPartnerSidebar";
+import { PrivilegedMfaGate } from "@/components/auth/PrivilegedMfaGate";
 
 export default function LabPartnerLayout({
   children,
@@ -6,14 +7,16 @@ export default function LabPartnerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className='flex min-h-screen'>
-      <LabPartnerSidebar />
-      <main
-        id='main-content-section'
-        className='flex-1 p-3 pt-14 sm:p-4 sm:pt-16 md:p-6 lg:p-8 lg:ml-56 lg:pt-6 xl:ml-64 xl:pt-8'
-      >
-        {children}
-      </main>
-    </div>
+    <PrivilegedMfaGate>
+      <div className='flex min-h-screen'>
+        <LabPartnerSidebar />
+        <main
+          id='main-content-section'
+          className='flex-1 p-3 pt-14 sm:p-4 sm:pt-16 md:p-6 lg:p-8 lg:ml-56 lg:pt-6 xl:ml-64 xl:pt-8'
+        >
+          {children}
+        </main>
+      </div>
+    </PrivilegedMfaGate>
   );
 }

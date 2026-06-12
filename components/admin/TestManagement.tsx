@@ -29,49 +29,75 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hook/use-toast";
-import { formatTurnaroundDisplay } from "@/lib/test-utils";
 import { formatCurrency } from "@/lib/utils";
 import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Clock3,
+  Layers,
   Loader2,
   Pencil,
   Plus,
   RotateCcw,
   Search,
+  Sparkles,
   Trash2,
   XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TestEditDialog } from "./TestEditDialog";
 
-type TestItem = {
+export type AdminTestItem = {
   id: string;
-  testCode: string;
-  testName: string;
-  price: number;
-  turnaround?: number;
-  specimenType?: string;
-  description?: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  shortDescription?: string | null;
   categoryId: string;
-  category?: Category;
-  testImage?: string;
-  testDetails?: any[];
-  isPublished?: boolean;
+  category?: Pick<Category, "id" | "name"> | null;
+  specimenType?: string | null;
+  cptCode?: string[];
+  baseTurnaroundDays?: number | null;
+  turnaroundDays?: number | null;
+  testImageUrl?: string | null;
   isActive?: boolean;
+  isPopular?: boolean;
+  isPanel?: boolean;
+  requiresFasting?: boolean;
+  minAge?: number | null;
+  maxAge?: number | null;
+  preparationInstructions?: string | null;
+  internalNotes?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  searchKeywords?: string[];
+  startingPrice?: number | null;
+  startingLab?: { id: string; name: string; code: string } | null;
+  componentCount?: number;
+  totalOrders?: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
-type PublishFilter = "all" | "published" | "draft";
 type ActiveFilter = "all" | "active" | "inactive";
+type PanelFilter = "all" | "panel" | "single";
 type SortOption =
   | "newest"
   | "oldest"
   | "name-asc"
   | "name-desc"
-  | "price-low-high"
-  | "price-high-low";
+  | "turnaround-asc"
+  | "turnaround-desc"
+  | "popular"
+  | "orders";
+
+type TestFilters = {
+  searchTerm: string;
+  categoryId: string;
+  panel: PanelFilter;
+  active: ActiveFilter;
+  sort: SortOption;
+};
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 
@@ -85,18 +111,20 @@ const SORT_OPTIONS: Record<
 > = {
   newest: { label: "Newest", sortBy: "createdAt", sortOrder: "desc" },
   oldest: { label: "Oldest", sortBy: "createdAt", sortOrder: "asc" },
-  "name-asc": { label: "Name (A-Z)", sortBy: "testName", sortOrder: "asc" },
-  "name-desc": { label: "Name (Z-A)", sortBy: "testName", sortOrder: "desc" },
-  "price-low-high": {
-    label: "Price (Low-High)",
-    sortBy: "price",
+  "name-asc": { label: "Name (A-Z)", sortBy: "name", sortOrder: "asc" },
+  "name-desc": { label: "Name (Z-A)", sortBy: "name", sortOrder: "desc" },
+  "turnaround-asc": {
+    label: "Turnaround (Fast-Slow)",
+    sortBy: "baseTurnaroundDays",
     sortOrder: "asc",
   },
-  "price-high-low": {
-    label: "Price (High-Low)",
-    sortBy: "price",
+  "turnaround-desc": {
+    label: "Turnaround (Slow-Fast)",
+    sortBy: "baseTurnaroundDays",
     sortOrder: "desc",
   },
+  popular: { label: "Popular first", sortBy: "isPopular", sortOrder: "desc" },
+  orders: { label: "Most ordered", sortBy: "orderCount", sortOrder: "desc" },
 };
 
 function buildPaginationItems(currentPage: number, totalPages: number) {
@@ -112,15 +140,20 @@ function buildPaginationItems(currentPage: number, totalPages: number) {
   return [1, "...", currentPage, "...", totalPages];
 }
 
-export function TestManagement() {
+type TestManagementProps = {
+  singleTestsOnly?: boolean;
+};
+
+export function TestManagement({ singleTestsOnly = false }: TestManagementProps) {
   const { toast } = useToast();
-  const [tests, setTests] = useState<TestItem[]>([]);
+  const defaultPanelFilter: PanelFilter = singleTestsOnly ? "single" : "all";
+  const [tests, setTests] = useState<AdminTestItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<TestFilters>({
     searchTerm: "",
     categoryId: "",
-    publish: "all" as PublishFilter,
+    panel: defaultPanelFilter,
     active: "all" as ActiveFilter,
     sort: "newest" as SortOption,
   });
@@ -128,7 +161,7 @@ export function TestManagement() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(10);
   const [meta, setMeta] = useState({ page: 1, limit: 10, total: 0 });
-  const [editingTest, setEditingTest] = useState<TestItem | null>(null);
+  const [editingTest, setEditingTest] = useState<AdminTestItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const loadCategories = useCallback(async () => {
@@ -146,17 +179,21 @@ export function TestManagement() {
       const query: GetTestsOptions = {
         page,
         limit,
-        searchTerm: filters.searchTerm || undefined,
+        search: filters.searchTerm || undefined,
         categoryId: filters.categoryId || undefined,
         sortBy: SORT_OPTIONS[filters.sort].sortBy,
         sortOrder: SORT_OPTIONS[filters.sort].sortOrder,
-        adminView: true,
       };
 
-      if (filters.publish === "published") query.isPublished = true;
-      if (filters.publish === "draft") query.isPublished = false;
-      if (filters.active === "active") query.isActive = true;
-      if (filters.active === "inactive") query.isActive = false;
+      if (singleTestsOnly) query.isPanel = false;
+      else if (filters.panel === "panel") query.isPanel = true;
+      else if (filters.panel === "single") query.isPanel = false;
+
+      // Admin needs to view archived tests too. Default backend behaviour
+      // hides inactive — so explicitly request the appropriate slice.
+      if (filters.active === "active") query.isActive = "true";
+      else if (filters.active === "inactive") query.isActive = "false";
+      else query.isActive = "all";
 
       const result = await getTests(query);
       const nextMeta = {
@@ -188,9 +225,10 @@ export function TestManagement() {
     } finally {
       setLoading(false);
     }
-  }, [filters, limit, page, toast]);
+  }, [filters, limit, page, singleTestsOnly, toast]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadCategories();
   }, [loadCategories]);
 
@@ -206,6 +244,7 @@ export function TestManagement() {
   }, [filters.searchTerm, searchInput]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadTests();
   }, [loadTests]);
 
@@ -214,13 +253,13 @@ export function TestManagement() {
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (test: TestItem) => {
+  const handleEdit = (test: AdminTestItem) => {
     setEditingTest(test);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (test: TestItem) => {
-    const testName = test.testName || "this test";
+  const handleDelete = async (test: AdminTestItem) => {
+    const testName = test.name || "this test";
     if (confirm(`Are you sure you want to delete "${testName}"?`)) {
       try {
         await deleteTestAPI(test.id);
@@ -241,17 +280,24 @@ export function TestManagement() {
 
   const handleSave = async (testData: any, imageFile?: File) => {
     try {
+      const displayName = testData?.name || "Test";
       if (editingTest) {
-        await updateTestAPI(editingTest.id, testData, imageFile);
+        const result = await updateTestAPI(editingTest.id, testData, imageFile);
+        if (!result.success) {
+          throw new Error(result.error);
+        }
         toast({
           title: "Success",
-          description: `${testData.testName} has been updated.`,
+          description: `${displayName} has been updated.`,
         });
       } else {
-        await createTestAPI(testData, imageFile);
+        const result = await createTestAPI(testData, imageFile);
+        if (!result.success) {
+          throw new Error(result.error);
+        }
         toast({
           title: "Success",
-          description: `${testData.testName} has been created.`,
+          description: `${displayName} has been created.`,
         });
       }
       setIsDialogOpen(false);
@@ -277,8 +323,9 @@ export function TestManagement() {
   const hasActiveFilters = Boolean(
     filters.searchTerm ||
     filters.categoryId ||
-    filters.publish !== "all" ||
-    filters.active !== "all",
+    (!singleTestsOnly && filters.panel !== "all") ||
+    filters.active !== "all" ||
+    filters.sort !== "newest",
   );
   const paginationItems = buildPaginationItems(page, totalPages);
 
@@ -329,25 +376,27 @@ export function TestManagement() {
                 ))}
               </SelectContent>
             </Select>
-            <Select
-              value={filters.publish}
-              onValueChange={(value) => {
-                setPage(1);
-                setFilters((prev) => ({
-                  ...prev,
-                  publish: value as PublishFilter,
-                }));
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Publication status' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All publication states</SelectItem>
-                <SelectItem value='published'>Published only</SelectItem>
-                <SelectItem value='draft'>Draft only</SelectItem>
-              </SelectContent>
-            </Select>
+            {!singleTestsOnly && (
+              <Select
+                value={filters.panel}
+                onValueChange={(value) => {
+                  setPage(1);
+                  setFilters((prev) => ({
+                    ...prev,
+                    panel: value as PanelFilter,
+                  }));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='Test type' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='all'>All test types</SelectItem>
+                  <SelectItem value='single'>Single tests</SelectItem>
+                  <SelectItem value='panel'>Panels</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
             <div className='flex flex-wrap items-center gap-2'>
@@ -427,7 +476,7 @@ export function TestManagement() {
                   setFilters({
                     searchTerm: "",
                     categoryId: "",
-                    publish: "all",
+                    panel: defaultPanelFilter,
                     active: "all",
                     sort: "newest",
                   });
@@ -485,17 +534,27 @@ export function TestManagement() {
                     const categoryName =
                       test.category?.name ||
                       categoryNameById.get(test.categoryId);
+                    const turnaroundDays =
+                      test.turnaroundDays ?? test.baseTurnaroundDays ?? null;
+                    const cptDisplay = (test.cptCode || [])
+                      .filter(Boolean)
+                      .join(", ");
                     return (
                       <TableRow key={test.id}>
                         <TableCell>
                           <div className='flex flex-col'>
-                            <span className='font-medium'>{test.testName}</span>
+                            <span className='font-medium'>{test.name}</span>
                             <span className='text-xs text-muted-foreground'>
-                              {test.testCode}
+                              /{test.slug}
                             </span>
                             {test.specimenType && (
                               <span className='text-xs text-muted-foreground mt-0.5'>
                                 {test.specimenType}
+                              </span>
+                            )}
+                            {cptDisplay && (
+                              <span className='text-xs text-muted-foreground mt-0.5'>
+                                CPT: {cptDisplay}
                               </span>
                             )}
                           </div>
@@ -505,13 +564,26 @@ export function TestManagement() {
                             {categoryName || "-"}
                           </Badge>
                         </TableCell>
-                        <TableCell>{formatCurrency(test.price || 0)}</TableCell>
+                        <TableCell>
+                          {test.startingPrice != null ? (
+                            <div className='flex flex-col'>
+                              <span>{formatCurrency(test.startingPrice)}</span>
+                              {test.startingLab?.name && (
+                                <span className='text-xs text-muted-foreground'>
+                                  via {test.startingLab.name}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className='text-xs text-muted-foreground'>
+                              No lab price
+                            </span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <span className='text-sm text-muted-foreground'>
-                            {test.turnaround
-                              ? formatTurnaroundDisplay(test.turnaround, {
-                                  style: "compact",
-                                })
+                            {turnaroundDays != null
+                              ? `${turnaroundDays} day${turnaroundDays === 1 ? "" : "s"}`
                               : "-"}
                           </span>
                         </TableCell>
@@ -533,22 +605,29 @@ export function TestManagement() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className='flex items-center gap-2'>
-                            {test.isActive === false ? (
+                          <div className='flex flex-wrap items-center gap-1'>
+                            {test.isPanel && (
+                              <Badge
+                                variant='outline'
+                                className='font-normal bg-blue-50 text-blue-700 border-blue-200'
+                              >
+                                <Layers className='mr-1 h-3 w-3' /> Panel
+                                {typeof test.componentCount === "number"
+                                  ? ` · ${test.componentCount}`
+                                  : ""}
+                              </Badge>
+                            )}
+                            {test.isPopular && (
+                              <Badge className='bg-amber-500 hover:bg-amber-500 font-normal'>
+                                <Sparkles className='mr-1 h-3 w-3' /> Popular
+                              </Badge>
+                            )}
+                            {!test.isActive && (
                               <Badge
                                 variant='outline'
                                 className='text-destructive'
                               >
                                 <XCircle className='mr-1 h-3 w-3' /> Archived
-                              </Badge>
-                            ) : test.isPublished ? (
-                              <Badge className='bg-emerald-500 hover:bg-emerald-500'>
-                                <CheckCircle2 className='mr-1 h-3 w-3' />{" "}
-                                Published
-                              </Badge>
-                            ) : (
-                              <Badge variant='secondary'>
-                                <Clock3 className='mr-1 h-3 w-3' /> Draft
                               </Badge>
                             )}
                           </div>
@@ -567,7 +646,9 @@ export function TestManagement() {
                               variant='ghost'
                               size='icon'
                               onClick={() => handleDelete(test)}
-                              title='Delete'
+                              title={
+                                test.isActive ? "Archive / Delete" : "Delete"
+                              }
                             >
                               <Trash2 className='h-4 w-4 text-destructive' />
                             </Button>
@@ -644,6 +725,7 @@ export function TestManagement() {
         onOpenChange={setIsDialogOpen}
         test={editingTest}
         onSave={handleSave}
+        allowPanels={!singleTestsOnly}
       />
     </div>
   );

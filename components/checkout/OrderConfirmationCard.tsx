@@ -103,7 +103,7 @@ export function OrderConfirmationCard({
                 <div>
                   <p className='font-medium'>Download Requisition Form</p>
                   <p className='text-sm text-muted-foreground'>
-                    You'll need this at the lab collection center
+                    You&apos;ll need this at the lab collection center
                   </p>
                 </div>
               </li>
@@ -247,13 +247,13 @@ export function OrderConfirmationCard({
       {/* Action Buttons */}
       <div className='flex gap-3 flex-col sm:flex-row'>
         <Button asChild className='flex-1'>
-          <Link href='/results'>
+          <Link href='/dashboard/customer/results'>
             Track Order
             <ArrowRight className='w-4 h-4 ml-2' />
           </Link>
         </Button>
         <Button asChild variant='outline' className='flex-1'>
-          <Link href='/dashboard'>Back to Dashboard</Link>
+          <Link href='/dashboard/customer'>Back to Dashboard</Link>
         </Button>
       </div>
     </div>

@@ -7,7 +7,7 @@ const genderSchema = z
 export const loginSchema = z.object({
   email: z
     .string()
-    .min(1, "Email or phone number is required")
+    .min(1, "Enter your email or mobile number.")
     .refine(
       (value) => {
         const input = value.trim();
@@ -16,9 +16,9 @@ export const loginSchema = z.object({
           /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
         return emailRegex.test(input) || phoneRegex.test(input);
       },
-      { message: "Enter a valid email address or phone number" },
+      { message: "Enter a valid email or mobile number." },
     ),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(1, "Enter your password."),
 });
 
 const signupBaseSchema = z.object({
@@ -81,23 +81,13 @@ const signupBaseSchema = z.object({
     .or(z.literal("")),
 });
 
-export const signupSchema = signupBaseSchema.refine(
-  (data) => data.password === data.confirmPassword,
-  {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  },
-);
-
 export const signupAccountSchema = signupBaseSchema
   .pick({
     firstName: true,
     lastName: true,
     email: true,
-    phone: true,
     password: true,
     confirmPassword: true,
-    profileImage: true,
     dateOfBirth: true,
     gender: true,
     addressLine1: true,
@@ -105,6 +95,20 @@ export const signupAccountSchema = signupBaseSchema
     city: true,
     state: true,
     zipCode: true,
+  })
+  .extend({
+    phone: z
+      .string()
+      .min(10, "Phone number is required")
+      .max(15, "Phone number must be 10 to 15 digits")
+      .regex(/^\d+$/, "Phone number must contain only digits"),
+    gender: z.enum(
+      ["MALE", "FEMALE", "NON_BINARY", "PREFER_NOT_TO_SAY", "OTHER"],
+      {
+        message: "Please select a valid gender",
+      },
+    ),
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -124,17 +128,16 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
   .object({
-    email: z.string().email("Invalid email address"),
-    otp: z
-      .string()
-      .length(6, "OTP must be 6 digits")
-      .regex(/^\d+$/, "OTP must contain only numbers"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
       .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/[0-9]/, "Password must contain at least one number"),
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(
+        /[!@#$%^&*()]/,
+        "Password must contain at least one special character (!@#$%^&*())",
+      ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -176,7 +179,11 @@ export const changePasswordSchema = z
       .min(8, "Password must be at least 8 characters")
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
       .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/[0-9]/, "Password must contain at least one number"),
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(
+        /[!@#$%^&*()]/,
+        "Password must contain at least one special character (!@#$%^&*())",
+      ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -185,7 +192,6 @@ export const changePasswordSchema = z
   });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
-export type SignupFormData = z.infer<typeof signupSchema>;
 export type SignupAccountFormData = z.infer<typeof signupAccountSchema>;
 export type MFAFormData = z.infer<typeof mfaSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;

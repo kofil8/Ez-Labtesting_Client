@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  verifyBackupCode as verifyBackupCodeAction,
-  verifyMFA as verifyMFAAction,
-} from "@/app/actions/mfa";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { SixDigitCodeInput } from "@/components/shared/SixDigitCodeInput";
 import {
   Card,
   CardContent,
@@ -16,6 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hook/use-toast";
+import {
+  verifyBackupCode as verifyBackupCodeAction,
+  verifyMFA as verifyMFAAction,
+} from "@/lib/auth/client";
+import { getDashboardRouteForRole } from "@/lib/auth/shared";
 import { useAuth } from "@/lib/auth-context";
 import { AlertCircle, Key, Shield } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -27,14 +29,19 @@ export function MFAVerificationForm() {
   const { refreshAuth } = useAuth();
 
   const tempToken = searchParams.get("tempToken");
+  const fromParam = searchParams.get("from");
+  const safeFrom =
+    fromParam && fromParam.startsWith("/") && !fromParam.startsWith("//")
+      ? fromParam
+      : null;
   const [verificationCode, setVerificationCode] = useState("");
   const [backupCode, setBackupCode] = useState("");
   const [useBackup, setUseBackup] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
-  const handleVerifyMFA = () => {
-    if (verificationCode.length !== 6) {
+  const handleVerifyMFA = (code = verificationCode) => {
+    if (code.length !== 6) {
       setError("Please enter a 6-digit code");
       return;
     }
@@ -47,7 +54,7 @@ export function MFAVerificationForm() {
     setError("");
 
     startTransition(async () => {
-      const result = await verifyMFAAction(tempToken, verificationCode);
+      const result = await verifyMFAAction(tempToken, code);
 
       if (!result.success) {
         setError(
@@ -56,27 +63,14 @@ export function MFAVerificationForm() {
         return;
       }
 
-      // Store the access token placeholder
-      if (result.data?.accessToken) {
-        localStorage.setItem("accessToken", result.data.accessToken);
-      }
-
       toast({
         title: "Success",
         description: "Logged in successfully!",
       });
 
       // Refresh auth context
-      await refreshAuth();
-
-      // Redirect based on role
-      const role = result.data?.user?.role;
-      const redirect =
-        role === "ADMIN"
-          ? "/admin"
-          : role === "LAB_PARTNER"
-            ? "/dashboard/lab-partner"
-            : "/dashboard/customer";
+      const user = await refreshAuth();
+      const redirect = safeFrom || getDashboardRouteForRole(user?.role);
 
       setTimeout(() => router.push(redirect), 500);
     });
@@ -106,11 +100,6 @@ export function MFAVerificationForm() {
         return;
       }
 
-      // Store the access token placeholder
-      if (result.data?.accessToken) {
-        localStorage.setItem("accessToken", result.data.accessToken);
-      }
-
       const remaining = result.data?.remainingBackupCodes ?? 0;
       toast({
         title: "Success",
@@ -118,16 +107,8 @@ export function MFAVerificationForm() {
       });
 
       // Refresh auth context
-      await refreshAuth();
-
-      // Redirect based on role
-      const role = result.data?.user?.role;
-      const redirect =
-        role === "ADMIN"
-          ? "/admin"
-          : role === "LAB_PARTNER"
-            ? "/dashboard/lab-partner"
-            : "/dashboard/customer";
+      const user = await refreshAuth();
+      const redirect = safeFrom || getDashboardRouteForRole(user?.role);
 
       setTimeout(() => router.push(redirect), 500);
     });
@@ -174,29 +155,26 @@ export function MFAVerificationForm() {
         {!useBackup ? (
           <>
             <div className='space-y-2'>
-              <Label htmlFor='verificationCode'>Verification Code</Label>
-              <Input
-                id='verificationCode'
-                type='text'
-                placeholder='000000'
-                maxLength={6}
+              <Label>Verification Code</Label>
+              <SixDigitCodeInput
                 value={verificationCode}
-                onChange={(e) => {
-                  setVerificationCode(e.target.value.replace(/\D/g, ""));
+                onChange={(value) => {
+                  setVerificationCode(value);
                   setError("");
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && verificationCode.length === 6) {
-                    handleVerifyMFA();
+                onComplete={(value) => {
+                  if (!isPending) {
+                    handleVerifyMFA(value);
                   }
                 }}
-                className='text-center text-2xl tracking-widest font-mono'
+                disabled={isPending}
                 autoFocus
+                ariaLabel='Verification code'
               />
             </div>
 
             <Button
-              onClick={handleVerifyMFA}
+              onClick={() => handleVerifyMFA()}
               disabled={isPending || verificationCode.length !== 6}
               className='w-full'
             >

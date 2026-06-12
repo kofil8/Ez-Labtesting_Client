@@ -6,9 +6,10 @@ export default function AdminsPage() {
   return (
     <div>
       <div className='mb-8'>
-        <h1 className='text-3xl font-bold tracking-tight'>Admin Users</h1>
+        <h1 className='text-3xl font-bold tracking-tight'>Admin & Lab Partners</h1>
         <p className='text-muted-foreground mt-2'>
-          Create and manage admin accounts
+          Manage admin and lab partner access. The super admin account is kept
+          separate.
         </p>
       </div>
       <AdminManagement />

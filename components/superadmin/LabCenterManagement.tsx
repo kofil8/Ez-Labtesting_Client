@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function LabCenterManagement() {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [labCenters, setLabCenters] = useState<LabCenter[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -83,21 +83,17 @@ export function LabCenterManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!token) {
+    if (!isAuthenticated) {
       toast.error("You must be logged in");
       return;
     }
 
     try {
       if (editingLabCenter) {
-        await LabCenterService.updateLabCenter(
-          editingLabCenter.id,
-          formData,
-          token,
-        );
+        await LabCenterService.updateLabCenter(editingLabCenter.id, formData);
         toast.success("Lab center updated successfully");
       } else {
-        await LabCenterService.createLabCenter(formData, token);
+        await LabCenterService.createLabCenter(formData);
         toast.success("Lab center created successfully");
       }
 
@@ -132,7 +128,7 @@ export function LabCenterManagement() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!token) {
+    if (!isAuthenticated) {
       toast.error("You must be logged in");
       return;
     }
@@ -142,7 +138,7 @@ export function LabCenterManagement() {
     }
 
     try {
-      await LabCenterService.deleteLabCenter(id, token);
+      await LabCenterService.deleteLabCenter(id);
       toast.success("Lab center deleted successfully");
       fetchLabCenters();
     } catch (error) {

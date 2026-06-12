@@ -8,7 +8,7 @@ export function PanelsHero() {
   return (
     <div className='relative min-h-[350px] bg-slate-950 overflow-hidden flex items-center'>
       <Image
-        src='/images/Manual-testing.webp'
+        src='/images/analyzing.webp'
         alt='Featured Panels'
         fill
         className='object-cover opacity-60 z-0'
@@ -43,7 +43,8 @@ export function PanelsHero() {
               transition={{ delay: 0.2 }}
               className='text-xl text-slate-300 max-w-2xl leading-relaxed font-light'
             >
-              Get a complete picture of your health with our carefully organized test bundles. Professional analysis with significant cost savings.
+              Get a complete picture of your health with our carefully organized
+              test bundles. Professional analysis with significant cost savings.
             </motion.p>
           </div>
         </PageContainer>

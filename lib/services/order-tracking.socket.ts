@@ -1,5 +1,6 @@
-import { getAccessTokenFromServer } from "@/app/actions/get-token";
-import { clientRefreshToken } from "@/lib/token-utils";
+import { getApiOrigin } from "@/lib/api/config";
+import { handleAuthFailure, refreshSession } from "@/lib/auth/client";
+import { isAuthSessionErrorMessage } from "@/lib/auth/session-errors";
 import { io } from "socket.io-client";
 
 type TrackingUpdate = {
@@ -26,15 +27,37 @@ type TrackingUpdate = {
 };
 
 const getSocketBaseUrl = () => {
-  const apiBaseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:7001/api/v1";
-  return apiBaseUrl.replace(/\/api\/v1\/?$/, "");
+  return (process.env.NEXT_PUBLIC_SOCKET_URL || getApiOrigin()).replace(
+    /\/api\/v1\/?$/,
+    "",
+  );
+};
+
+export type OrderStatusChange = {
+  orderId: string;
+  previousStatus?: string;
+  status: string;
+  reason?: string | null;
+  manualReviewRequired?: boolean;
+  updatedAt?: string;
 };
 
 type SubscriptionHandlers = {
   onTrackingUpdate: (update: TrackingUpdate) => void;
+  onStatusChanged?: (change: OrderStatusChange) => void;
   onError?: (message: string) => void;
 };
+
+function isSocketAuthError(error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "";
+
+  return isAuthSessionErrorMessage(message);
+}
 
 export async function subscribeToOrderTracking(
   orderId: string,
@@ -44,25 +67,11 @@ export async function subscribeToOrderTracking(
     throw new Error("orderId is required for tracking subscription");
   }
 
-  let token = (await getAccessTokenFromServer())?.token;
-
-  if (!token) {
-    try {
-      await clientRefreshToken();
-      token = (await getAccessTokenFromServer())?.token;
-    } catch {
-      token = null;
-    }
-  }
-
-  if (!token) {
-    throw new Error("Authentication token is required for realtime tracking");
-  }
+  let hasRetriedAfterRefresh = false;
 
   const socket = io(`${getSocketBaseUrl()}/orders`, {
     transports: ["websocket", "polling"],
     withCredentials: true,
-    auth: { token },
   });
 
   const handleConnect = () => {
@@ -82,12 +91,38 @@ export async function subscribeToOrderTracking(
     handlers.onError?.("Failed to receive order tracking update");
   };
 
-  const handleConnectError = (error: Error) => {
+  const handleConnectError = async (error: Error) => {
+    if (!isSocketAuthError(error)) {
+      handlers.onError?.(error.message || "Realtime connection failed");
+      return;
+    }
+
+    if (hasRetriedAfterRefresh) {
+      handlers.onError?.(error.message || "Realtime connection failed");
+      await handleAuthFailure();
+      return;
+    }
+
+    hasRetriedAfterRefresh = true;
+
+    try {
+      await refreshSession();
+      socket.connect();
+      return;
+    } catch {
+      await handleAuthFailure();
+    }
+
     handlers.onError?.(error.message || "Realtime connection failed");
+  };
+
+  const handleStatusChanged = (payload: OrderStatusChange) => {
+    handlers.onStatusChanged?.(payload);
   };
 
   socket.on("connect", handleConnect);
   socket.on("order:tracking-update", handleTrackingUpdate);
+  socket.on("order:status-changed", handleStatusChanged);
   socket.on("order:error", handleOrderError);
   socket.on("connect_error", handleConnectError);
 
@@ -99,6 +134,7 @@ export async function subscribeToOrderTracking(
     socket.emit("order:unsubscribe", { orderId });
     socket.off("connect", handleConnect);
     socket.off("order:tracking-update", handleTrackingUpdate);
+    socket.off("order:status-changed", handleStatusChanged);
     socket.off("order:error", handleOrderError);
     socket.off("connect_error", handleConnectError);
     socket.disconnect();

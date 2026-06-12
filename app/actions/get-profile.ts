@@ -2,7 +2,6 @@
 
 import { Profile, Role, VerificationStatus } from "@/app/profile/types/profile";
 import { authenticatedFetch } from "@/lib/api-helpers";
-import { cookies } from "next/headers";
 
 const VALID_ROLES: Role[] = ["customer", "lab_partner", "admin", "superadmin"];
 const VALID_VERIFICATION: VerificationStatus[] = [
@@ -144,10 +143,14 @@ function normalizeProfile(rawProfile: unknown): Profile {
     id: toStringValue(root.id) || toStringValue(root.userId) || "profile",
     firstName,
     lastName,
+    username: toOptionalString(root.username),
+    bio: toOptionalString(root.bio),
     displayName: toOptionalString(root.displayName),
     email,
     role: toRole(root.role),
     roleName: toOptionalString(root.roleName),
+    status: toOptionalString(root.status),
+    isVerified: typeof root.isVerified === "boolean" ? root.isVerified : undefined,
     avatarUrl: toOptionalString(root.avatarUrl ?? root.profileImage),
     contactInfo: {
       email,
@@ -156,7 +159,14 @@ function normalizeProfile(rawProfile: unknown): Profile {
       ),
       dateOfBirth,
       gender: toGender(contactInfo.gender ?? root.gender),
-      address: toOptionalString(contactInfo.address ?? root.address),
+      address: toOptionalString(
+        contactInfo.address ??
+          root.address ??
+          [root.addressLine1, root.addressLine2, root.city, root.state, root.zipCode]
+            .map(toStringValue)
+            .filter(Boolean)
+            .join(", "),
+      ),
       addressLine1: toOptionalString(
         contactInfo.addressLine1 ?? root.addressLine1,
       ),
@@ -207,13 +217,6 @@ function normalizeProfile(rawProfile: unknown): Profile {
 
 export async function getProfile() {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
-
-    if (!accessToken) {
-      throw new Error("Not authenticated. Please log in again.");
-    }
-
     const res = await authenticatedFetch(
       `${
         process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -233,12 +236,6 @@ export async function getProfile() {
           "Unable to load your profile information. Your data remains secure.",
       }));
 
-      if (res.status === 401) {
-        cookieStore.delete("accessToken");
-        cookieStore.delete("refreshToken");
-        throw new Error("Session expired. Please log in again.");
-      }
-
       throw new Error(
         error.message ||
           "Unable to load your profile information. Please refresh the page.",
@@ -250,10 +247,7 @@ export async function getProfile() {
 
     return { success: true, profile: normalizedProfile };
   } catch (error: any) {
-    if (
-      error?.message?.includes("Session expired") ||
-      error?.message?.includes("Not authenticated")
-    ) {
+    if (error?.message?.includes("Session expired")) {
       throw new Error("Session expired. Please log in again.");
     }
     throw error;

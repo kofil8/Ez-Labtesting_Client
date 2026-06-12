@@ -33,7 +33,7 @@ export function DeleteAdminDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the admin
+            This action cannot be undone. This will permanently delete the
             account for <strong>{adminName}</strong>.
           </AlertDialogDescription>
         </AlertDialogHeader>

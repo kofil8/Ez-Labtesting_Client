@@ -7,7 +7,11 @@ const SiteFooterLazy = dynamic(() =>
   import("@/components/shared/SiteFooter").then((m) => m.SiteFooter),
 );
 
-export function LazyFooter() {
+export function LazyFooter({
+  showDeveloperCredit = false,
+}: {
+  showDeveloperCredit?: boolean;
+}) {
   const footerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -36,13 +40,10 @@ export function LazyFooter() {
   }, []);
 
   return (
-    <div
-      ref={footerRef}
-      className={`transition-opacity duration-500 ease-in-out ${
-        isVisible ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      {isVisible && <SiteFooterLazy />}
+    <div ref={footerRef}>
+      {isVisible && (
+        <SiteFooterLazy showDeveloperCredit={showDeveloperCredit} />
+      )}
     </div>
   );
 }

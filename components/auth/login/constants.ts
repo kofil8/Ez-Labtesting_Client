@@ -1,0 +1,17 @@
+export const LOGIN_COPY = {
+  badge: "Secure access",
+  title: "Welcome back",
+  description: "Sign in to continue your lab testing journey.",
+  emailLabel: "Email or mobile number",
+  emailPlaceholder: "you@example.com or 555-000-1234",
+  passwordLabel: "Password",
+  passwordPlaceholder: "Enter your password",
+  rememberMe: "Remember me",
+  forgotPassword: "Forgot password?",
+  submit: "Sign in",
+  submitPending: "Signing in...",
+  verifiedTitle: "Email verified",
+  verifiedDescription: "Your account is active. You can sign in now.",
+  helpPrompt: "New here?",
+  createAccount: "Create account",
+} as const;

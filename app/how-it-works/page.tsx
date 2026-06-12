@@ -31,9 +31,9 @@ export default function HowItWorksPage() {
                   How EzLabTesting Works
                 </h1>
                 <p className='text-xl text-muted-foreground mb-8'>
-                  Getting lab tests has never been easier. We've streamlined the
-                  entire process to save you time and provide you with accurate
-                  results quickly.
+                  Getting lab tests has never been easier. We are committed to
+                  streamlining the entire process to save you time and provide
+                  you with accurate results quickly.
                 </p>
               </div>
             </div>
@@ -59,9 +59,10 @@ export default function HowItWorksPage() {
                     </div>
                     <p className='text-lg text-muted-foreground mb-4'>
                       Browse through our extensive catalog of individual tests
-                      and comprehensive health panels. Whether you need routine
-                      blood work, specialized diagnostics, or complete health
-                      screenings, we have you covered.
+                      with clear clinical information. Whether you need routine
+                      blood work, specialized diagnostics, or targeted
+                      monitoring, you can review the right option with more
+                      confidence.
                     </p>
                     <ul className='space-y-2'>
                       <li className='flex items-start gap-2'>
@@ -73,7 +74,8 @@ export default function HowItWorksPage() {
                       <li className='flex items-start gap-2'>
                         <CheckCircle2 className='w-5 h-5 text-primary mt-0.5 flex-shrink-0' />
                         <span>
-                          Compare test packages and save with bundled panels
+                          Review specimen type, preparation notes, and fasting
+                          requirements
                         </span>
                       </li>
                       <li className='flex items-start gap-2'>
@@ -106,7 +108,7 @@ export default function HowItWorksPage() {
                     <p className='text-lg text-muted-foreground mb-4'>
                       Find a convenient lab center near you and schedule your
                       visit at a time that fits your schedule. Our extensive
-                      network of certified labs ensures you're never far from
+                      network of certified labs ensures you are never far from
                       quality care.
                     </p>
                     <ul className='space-y-2'>
@@ -223,7 +225,7 @@ export default function HowItWorksPage() {
                   Why Choose EzLabTesting?
                 </h2>
                 <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
-                  We're committed to making healthcare accessible, affordable,
+                  We are committed to making healthcare accessible, affordable,
                   and convenient for everyone.
                 </p>
               </div>
@@ -379,13 +381,13 @@ export default function HowItWorksPage() {
                       Browse Tests
                     </Button>
                   </Link>
-                  <Link href='/panels'>
+                  <Link href='/find-lab-center'>
                     <Button
                       size='lg'
                       variant='outline'
                       className='w-full sm:w-auto bg-transparent border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary'
                     >
-                      View Test Panels
+                      Find Lab Center
                     </Button>
                   </Link>
                 </div>

@@ -4,235 +4,500 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hook/use-toast";
+import { useCartRestrictionGuard } from "@/hook/useCartRestrictionGuard";
 import { useAuth } from "@/lib/auth-context";
-import { useCartStore } from "@/lib/store/cart-store";
-import { formatTurnaroundDisplay } from "@/lib/test-utils";
-import { formatCurrency } from "@/lib/utils";
-import { Test } from "@/types/test";
-import { motion } from "framer-motion";
 import {
+  buildCartItemFromPublicTest,
+  canAddCatalogTestToCart,
+} from "@/lib/tests/cart-item";
+import {
+  formatStartingPriceLabel,
+  formatTurnaroundDaysLabel,
+  getCatalogTurnaroundDays,
+  getTestStartingLab,
+} from "@/lib/tests/storefront-display";
+import { useCartStore } from "@/lib/store/cart-store";
+import type { PublicCatalogTest } from "@/types/public-test";
+import {
+  ArrowRight,
   Beaker,
-  Clock,
+  ClipboardCheck,
+  Clock3,
+  Info,
+  Layers3,
+  LineChart,
   ShieldCheck,
   ShoppingCart,
-  TrendingUp,
-  Zap,
+  Stethoscope,
+  TestTube2,
+  Wallet,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface TestCardProps {
-  test: Test;
+  test: PublicCatalogTest;
   variant?: "compact" | "detailed" | "animated";
   index?: number;
-  onCheckout?: () => void;
+}
+
+export const SOLD_COUNT_VISIBILITY_THRESHOLD = 100;
+
+const TEMP_PHYSICIAN_REVIEWED_SLUGS = new Set<string>();
+
+export function getVisibleSoldLabel(test: PublicCatalogTest) {
+  const soldCount =
+    typeof test.soldCount === "number"
+      ? test.soldCount
+      : typeof test.totalOrders === "number"
+        ? test.totalOrders
+        : undefined;
+
+  if (
+    typeof soldCount !== "number" ||
+    soldCount < SOLD_COUNT_VISIBILITY_THRESHOLD
+  ) {
+    return null;
+  }
+
+  return `${Intl.NumberFormat("en-US", {
+    notation: soldCount >= 1000 ? "compact" : "standard",
+    maximumFractionDigits: soldCount >= 1000 ? 1 : 0,
+  }).format(soldCount)} sold`;
+}
+
+export function isPhysicianReviewedTest(test: PublicCatalogTest) {
+  return (
+    test.isPhysicianReviewed === true ||
+    TEMP_PHYSICIAN_REVIEWED_SLUGS.has(test.slug)
+  );
 }
 
 export function TestCard({
   test,
   variant = "compact",
   index = 0,
-  onCheckout,
 }: TestCardProps) {
-  const addToCart = useCartStore((state) => state.addItem);
   const { toast } = useToast();
+  const { ensureCanOrder } = useCartRestrictionGuard();
+  const { isAuthenticated, isLoading } = useAuth();
+  const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+  const addItem = useCartStore((state) => state.addItem);
+  const items = useCartStore((state) => state.items);
+  const categoryName = test.category?.name || "General Health";
+  const summary = test.shortDescription || test.description;
+  const turnaroundLabel = formatTurnaroundDaysLabel(getCatalogTurnaroundDays(test));
+  const startingLab = getTestStartingLab(test);
+  const priceLabel = formatStartingPriceLabel(test);
+  const prepLabel = test.requiresFasting
+    ? "Fasting required"
+    : test.preparation
+      ? "Prep instructions included"
+      : "No fasting noted";
+  const specimenLabel = test.specimenType || "See test details";
+  const whyThisTest =
+    summary ||
+    `Review ${test.testName} details, preparation, specimen type, and lab options before ordering.`;
+  const bestFor = test.isPanel
+    ? "Baseline review, clinician follow-up, and health tracking"
+    : `${categoryName} questions, symptom checks, or routine screening`;
+  const componentLabel = test.isPanel
+    ? test.componentCount
+      ? `${test.componentCount} included tests`
+      : "Panel test"
+    : "Single lab test";
+  const cartItem = buildCartItemFromPublicTest(test);
+  const canAddToCart = canAddCatalogTestToCart(test) && !!cartItem;
+  const isAlreadyInCart = items.some((item) => item.id === `test-${test.id}`);
+  const soldLabel = getVisibleSoldLabel(test);
+  const physicianReviewed = isPhysicianReviewedTest(test);
 
-  const handleAddToCart = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const renderHeroImage = (mode: "compact" | "detailed") => {
+    const imageHeight =
+      mode === "compact" ? "h-32 sm:h-36" : "h-40 sm:h-44";
+    const iconSize =
+      mode === "compact" ? "h-14 w-14" : "h-16 w-16";
+    const iconClass = mode === "compact" ? "h-6 w-6" : "h-7 w-7";
 
-    if (!isAuthenticated) {
-      toast({
-        title: "Login Required",
-        description: "Please login to book a test.",
-        variant: "destructive",
-      });
-      router.push(`/login?from=/tests`);
-      return;
-    }
-
-    addToCart({
-      id: `test-${test.id}`,
-      itemType: "TEST",
-      name: test.testName,
-      price: test.price,
-      testId: test.id,
-    });
-
-    toast({
-      title: "✅ Test added to cart!",
-      description: `${test.testName} has been added to your cart.`,
-    });
-
-    if (onCheckout) {
-      onCheckout();
-    }
-  };
-
-  const getCategoryColor = () => {
-    return "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/30 dark:text-cyan-400 border-cyan-300 dark:border-cyan-800/50";
-  };
-
-  const getCategoryName = () => {
-    if (typeof test.category === "string") {
-      return test.category.charAt(0).toUpperCase() + test.category.slice(1);
-    }
-    return test.category?.name || "General";
-  };
-
-  const isPopular =
-    test.price < 150 || test.testName.toLowerCase().includes("panel");
-  const isFastTrack = Math.ceil(test.turnaround / 24) <= 2;
-  const retailPrice = test.price * 1.67;
-
-  const cardContent = (
-    <Card
-      className={`h-full flex flex-col overflow-hidden border transition-all duration-300 ${
-        variant === "animated"
-          ? "group hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 relative"
-          : "group hover:shadow-lg hover:border-primary/30"
-      } border-slate-100 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900`}
-    >
-      {/* Top Accent Line */}
-      {variant === "animated" && (
-        <div className='absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-blue-400 to-secondary opacity-80' />
-      )}
-
-      {/* Image Section */}
-      {test.testImage && (
-        <div className='relative w-full h-40 bg-slate-100 dark:bg-slate-800 overflow-hidden'>
+    if (test.testImage) {
+      return (
+        <div className={`relative w-full overflow-hidden bg-muted ${imageHeight}`}>
           <Image
             src={test.testImage}
             alt={test.testName}
             fill
             sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
-            className={`object-cover ${
-              variant === "animated"
-                ? "group-hover:scale-110 transition-transform duration-700"
-                : "transition-transform duration-500"
-            }`}
+            loading={index === 0 ? "eager" : "lazy"}
+            priority={index === 0}
+            className='object-cover transition-transform duration-500 group-hover:scale-[1.03]'
           />
-          {/* Badges - Compact only */}
-          {variant === "compact" && (
-            <>
-              {isPopular && (
-                <div className='absolute top-3 left-3 z-10'>
-                  <Badge className='bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold shadow-lg border-0 px-3 py-1'>
-                    <TrendingUp className='h-3 w-3 mr-1' />
-                    Popular
-                  </Badge>
-                </div>
-              )}
-              {isFastTrack && (
-                <div className='absolute top-3 right-3 z-10'>
-                  <Badge className='bg-primary text-white font-bold shadow-lg border-0 px-3 py-1'>
-                    <Zap className='h-3 w-3 mr-1' />
-                    24-48hr
-                  </Badge>
-                </div>
-              )}
-            </>
-          )}
+          {test.isPopular ? (
+            <Badge className='absolute left-3 top-3 rounded-full border-0 bg-amber-500 px-3 py-1 text-[11px] font-semibold text-white shadow-md shadow-amber-500/25'>
+              Popular
+            </Badge>
+          ) : null}
+          {soldLabel ? (
+            <Badge className='absolute right-3 top-3 rounded-full border border-white/70 bg-slate-950/80 px-3 py-1 text-[11px] font-semibold text-white shadow-md backdrop-blur-sm'>
+              {soldLabel}
+            </Badge>
+          ) : null}
         </div>
-      )}
+      );
+    }
 
-      <CardContent className='p-5 flex flex-col flex-1'>
-        {/* Category & Certification */}
-        <div className='mb-3 flex items-center gap-2 flex-wrap'>
+    return (
+      <div
+        className={`relative flex items-center justify-center bg-[linear-gradient(135deg,#eff8ff_0%,#f8fafc_100%)] dark:bg-muted ${imageHeight}`}
+      >
+        {test.isPopular ? (
+          <Badge className='absolute left-3 top-3 rounded-full border-0 bg-amber-500 px-3 py-1 text-[11px] font-semibold text-white shadow-md shadow-amber-500/25'>
+            Popular
+          </Badge>
+        ) : null}
+        {soldLabel ? (
+          <Badge className='absolute right-3 top-3 rounded-full border border-white/70 bg-slate-950/80 px-3 py-1 text-[11px] font-semibold text-white shadow-md backdrop-blur-sm'>
+            {soldLabel}
+          </Badge>
+        ) : null}
+        <div
+          className={`flex items-center justify-center rounded-xl bg-card text-sky-700 shadow-sm dark:text-cyan-300 ${iconSize}`}
+        >
+          <Beaker className={iconClass} />
+        </div>
+      </div>
+    );
+  };
+
+  const renderCompactBadges = () => (
+    <div className='flex flex-wrap items-center gap-2'>
+      <Badge className='rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[11px] font-semibold text-sky-700 shadow-none hover:bg-sky-50 dark:border-cyan-900/60 dark:bg-cyan-950/30 dark:text-cyan-300'>
+        {categoryName}
+      </Badge>
+      {test.isPanel ? (
+        <Badge className='rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1 text-[11px] font-semibold text-cyan-700 shadow-none hover:bg-cyan-50 dark:border-cyan-900/60 dark:bg-cyan-950/30 dark:text-cyan-300'>
+          <Layers3 className='mr-1 h-3 w-3' />
+          Panel
+        </Badge>
+      ) : test.requiresFasting ? (
+        <Badge
+          variant='outline'
+          className='rounded-full border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300'
+        >
+          Fasting
+        </Badge>
+      ) : null}
+      {physicianReviewed ? (
+        <Badge
+          variant='outline'
+          className='rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300'
+        >
+          <Stethoscope className='mr-1 h-3 w-3' />
+          Physician Reviewed
+        </Badge>
+      ) : null}
+    </div>
+  );
+
+  const renderCompactPriceBlock = () => (
+    <div className='rounded-lg border border-border bg-muted/45 px-3 py-3'>
+      <p className='text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground'>
+        Starting price
+      </p>
+      <p className='mt-1 text-lg font-semibold text-foreground'>
+        {priceLabel}
+      </p>
+      <p className='mt-1 line-clamp-1 text-xs font-medium text-muted-foreground'>
+        {startingLab
+          ? `Lowest listed lab: ${startingLab.code}`
+          : componentLabel}
+      </p>
+    </div>
+  );
+
+  const renderCompactCtaRow = () => (
+    <Button
+      asChild
+      className='h-10 w-full rounded-lg bg-sky-600 text-white hover:bg-sky-700 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400'
+    >
+      <Link href={`/tests/${test.slug}`} scroll>
+        View Details
+        <ArrowRight className='ml-2 h-4 w-4' />
+      </Link>
+    </Button>
+  );
+
+  const handleAddToCart = async () => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      const query = searchParams.toString();
+      const from = query ? `${pathname}?${query}` : pathname;
+      router.push(`/login?from=${encodeURIComponent(from)}`);
+      return;
+    }
+
+    if (!cartItem) {
+      toast({
+        title: "Unavailable for cart",
+        description: "This product does not currently have a public storefront price.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isAlreadyInCart) {
+      toast({
+        title: "Already in cart",
+        description: `${test.testName} is already in your cart.`,
+      });
+      return;
+    }
+
+    const canOrder = await ensureCanOrder({
+      laboratoryCode: "ACCESS",
+      testId: test.id,
+    });
+
+    if (!canOrder) {
+      return;
+    }
+
+    addItem(cartItem);
+    toast({
+      title: "Added to cart",
+      description: `${test.testName} has been added to your cart.`,
+    });
+  };
+
+  if (variant === "compact") {
+    return (
+      <Card className='group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm transition-colors hover:border-sky-200 hover:shadow-[0_18px_45px_-34px_rgba(2,132,199,0.5)] dark:hover:border-cyan-800'>
+        {renderHeroImage("compact")}
+
+        <CardContent className='flex flex-1 flex-col gap-4 p-4'>
+          {renderCompactBadges()}
+
+          <div className='space-y-2'>
+            <h3 className='line-clamp-2 text-base font-semibold leading-snug text-foreground'>
+              {test.testName}
+            </h3>
+          </div>
+
+          <div className='mt-auto space-y-4'>
+            {renderCompactPriceBlock()}
+            {renderCompactCtaRow()}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card
+      className={`group h-full overflow-hidden border border-border bg-card text-card-foreground shadow-sm transition-colors hover:border-sky-200 hover:shadow-[0_24px_60px_-42px_rgba(2,132,199,0.45)] dark:hover:border-cyan-800 ${
+        variant === "detailed" ? "rounded-xl" : "rounded-xl"
+      }`}
+    >
+      {renderHeroImage("detailed")}
+
+      <CardContent className='flex h-full flex-col p-5'>
+        <div className='mb-4 flex flex-wrap items-center gap-2'>
+          <Badge className='rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[11px] font-semibold text-sky-700 shadow-none hover:bg-sky-50 dark:border-cyan-900/60 dark:bg-cyan-950/30 dark:text-cyan-300'>
+            {categoryName}
+          </Badge>
+          {test.isPanel ? (
+            <Badge className='rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1 text-[11px] font-semibold text-cyan-700 shadow-none hover:bg-cyan-50 dark:border-cyan-900/60 dark:bg-cyan-950/30 dark:text-cyan-300'>
+              <Layers3 className='mr-1 h-3 w-3' />
+              Panel
+            </Badge>
+          ) : null}
           <Badge
             variant='outline'
-            className={`text-[10px] font-bold uppercase tracking-wider border ${getCategoryColor()}`}
+            className='rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300'
           >
-            {getCategoryName()}
+            <ShieldCheck className='mr-1 h-3 w-3' />
+            Active Test
           </Badge>
-          {variant !== "detailed" && (
+          {physicianReviewed ? (
             <Badge
               variant='outline'
-              className='text-[10px] font-bold uppercase tracking-wider border bg-emerald-500/5 text-emerald-600 border-emerald-200 dark:border-emerald-800'
+              className='rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300'
             >
-              <ShieldCheck className='h-3 w-3 mr-1' />
-              CLIA
+              <Stethoscope className='mr-1 h-3 w-3' />
+              Physician Reviewed
+            </Badge>
+          ) : null}
+          {test.requiresFasting && (
+            <Badge
+              variant='outline'
+              className='rounded-full border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300'
+            >
+              Fasting
             </Badge>
           )}
         </div>
 
-        {/* Title */}
-        <h3 className='font-bold text-base leading-tight line-clamp-2 group-hover:text-primary transition-colors mb-2 text-slate-900 dark:text-white'>
-          {test.testName}
-        </h3>
-
-        {/* Description */}
-        {variant === "animated" && (
-          <p className='text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 flex-1 italic leading-relaxed'>
-            &quot;{test.description}&quot;
+        <div className='space-y-2'>
+          <h3 className='line-clamp-2 text-lg font-semibold leading-snug text-foreground'>
+            {test.testName}
+          </h3>
+          <p className='line-clamp-3 text-sm leading-6 text-muted-foreground'>
+            {summary}
           </p>
-        )}
+        </div>
 
-        {/* Pricing */}
-        <div className='mb-3 flex items-baseline gap-2'>
-          <div className='text-2xl font-bold text-slate-900 dark:text-white'>
-            {formatCurrency(test.price)}
+        <div className='mt-5 rounded-xl border border-border bg-muted/45 p-4'>
+          <div className='flex items-start justify-between gap-3 border-b border-border pb-3'>
+            <div>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground'>
+                Cash price
+              </p>
+              <p className='mt-1 text-lg font-semibold text-foreground'>
+                {priceLabel}
+              </p>
+              <p className='mt-1 text-xs text-muted-foreground'>
+                Includes lab processing and online results when available.
+              </p>
+            </div>
+            <div className='rounded-lg bg-background p-2 text-sky-700 shadow-sm dark:text-cyan-300'>
+              <Wallet className='h-5 w-5' />
+            </div>
           </div>
-          {variant === "compact" && (
-            <>
-              <div className='text-xs text-slate-400 line-through font-medium'>
-                {formatCurrency(retailPrice)}
-              </div>
+
+          <div className='mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-600'>
+            {startingLab ? (
               <Badge
                 variant='outline'
-                className='text-[9px] bg-emerald-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-800 font-bold ml-auto'
+                className='rounded-full border-border bg-background px-3 py-1 text-[11px] font-semibold text-foreground'
               >
-                Save{" "}
-                {Math.round(((retailPrice - test.price) / retailPrice) * 100)}%
+                Lowest listed lab: {startingLab.code}
               </Badge>
-            </>
-          )}
+            ) : (
+              <Badge
+                variant='outline'
+                className='rounded-full border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300'
+              >
+                Price unavailable
+              </Badge>
+            )}
+            <Badge
+              variant='outline'
+              className='rounded-full border-border bg-background px-3 py-1 text-[11px] font-semibold text-foreground'
+            >
+              {componentLabel}
+            </Badge>
+          </div>
         </div>
 
-        {/* Features */}
-        <div className='grid grid-cols-2 gap-2 mb-4 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl'>
-          <div className='flex items-center gap-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-400'>
-            <Clock className='h-3.5 w-3.5 text-primary' />
-            <span>
-              {formatTurnaroundDisplay(test.turnaround, { style: "compact" })}
+        <div className='mt-4 grid gap-3 rounded-xl border border-border bg-muted/45 p-3 sm:grid-cols-2'>
+          <div className='flex items-center gap-2'>
+            <div className='flex h-9 w-9 items-center justify-center rounded-lg bg-background text-sky-700 shadow-sm dark:text-cyan-300'>
+              <Clock3 className='h-4 w-4' />
+            </div>
+            <div>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground'>
+                Turnaround
+              </p>
+              <p className='text-sm text-foreground'>{turnaroundLabel}</p>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-2'>
+            <div className='flex h-9 w-9 items-center justify-center rounded-lg bg-background text-sky-700 shadow-sm dark:text-cyan-300'>
+              <TestTube2 className='h-4 w-4' />
+            </div>
+            <div>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground'>
+                {test.isPanel ? "Panel type" : "Specimen"}
+              </p>
+              <p className='truncate text-sm text-foreground'>
+                {test.isPanel ? componentLabel : specimenLabel}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className='mt-4 grid gap-3 rounded-xl border border-border bg-card p-3'>
+          <div className='flex items-start gap-2'>
+            <Info className='mt-0.5 h-4 w-4 shrink-0 text-sky-700 dark:text-cyan-300' />
+            <div>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground'>
+                Why this test
+              </p>
+              <p className='mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground'>
+                {whyThisTest}
+              </p>
+            </div>
+          </div>
+          <div className='flex items-center gap-2 rounded-xl bg-muted/55 px-3 py-2'>
+            <ClipboardCheck className='h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-300' />
+            <p className='text-sm font-medium text-foreground'>
+              {prepLabel}
+            </p>
+          </div>
+          <div className='flex items-start gap-2 rounded-xl bg-emerald-50 px-3 py-2 dark:bg-emerald-950/25'>
+            <LineChart className='mt-0.5 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-300' />
+            <div>
+              <p className='text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800 dark:text-emerald-200'>
+                Best for
+              </p>
+              <p className='mt-1 line-clamp-2 text-sm leading-5 text-emerald-900 dark:text-emerald-100'>
+                {bestFor}
+              </p>
+            </div>
+          </div>
+          <div className='flex items-center justify-between gap-3 rounded-xl bg-blue-50 px-3 py-2 dark:bg-cyan-950/25'>
+            <span className='text-sm font-semibold text-blue-900 dark:text-cyan-100'>
+              Sample result preview available
+            </span>
+            <span className='text-xs font-semibold text-blue-700 dark:text-cyan-300'>
+              {soldLabel || "Popular"}
             </span>
           </div>
-          <div className='flex items-center gap-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-400'>
-            <Beaker className='h-3.5 w-3.5 text-secondary' />
-            <span className='truncate'>{test.specimenType}</span>
-          </div>
         </div>
 
-        {/* CTA Button */}
-        <Button
-          onClick={handleAddToCart}
-          className='w-full bg-primary hover:bg-blue-600 text-white font-bold rounded-full h-10 shadow-lg shadow-blue-500/10 transition-all active:scale-95 text-sm'
-        >
-          <ShoppingCart className='h-4 w-4 mr-1.5' />
-          Add to Cart
-        </Button>
+        <div className='mt-5 grid gap-2 sm:grid-cols-3'>
+          <Button
+            asChild
+            variant='ghost'
+            className='h-11 rounded-lg text-foreground hover:bg-muted'
+          >
+            <Link href={`/tests/${test.slug}#preparation`} scroll>
+              Quick Prep
+            </Link>
+          </Button>
+          <Button
+            onClick={handleAddToCart}
+            disabled={
+              isLoading ||
+              (isAuthenticated && (!canAddToCart || isAlreadyInCart))
+            }
+            variant='outline'
+            className='h-11 rounded-lg border-border text-foreground hover:bg-muted disabled:bg-muted disabled:text-muted-foreground'
+          >
+            <ShoppingCart className='mr-2 h-4 w-4' />
+            {!isAuthenticated
+              ? "Add to Cart"
+              : isAlreadyInCart
+              ? "In Cart"
+              : canAddToCart
+                ? "Add to Cart"
+                : "Unavailable"}
+          </Button>
+          <Button
+            asChild
+            className='h-11 w-full rounded-lg bg-sky-600 text-white hover:bg-sky-700 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400'
+          >
+            <Link href={`/tests/${test.slug}`} scroll>
+              View Details
+              <ArrowRight className='ml-2 h-4 w-4' />
+            </Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
-
-  // Wrap with motion div for animated variant
-  if (variant === "animated") {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
-        className='h-full'
-      >
-        {cardContent}
-      </motion.div>
-    );
-  }
-
-  return <Link href={`/tests/${test.id}`}>{cardContent}</Link>;
 }

@@ -13,6 +13,7 @@ export {
   getResumableOrder,
 } from "./order.service";
 export { confirmPaymentIntent, createPaymentIntent } from "./payment.service";
+export { getRestrictionStatus, isRegionRestrictedError } from "./state-restriction.service";
 export { getSuperAdminDashboardSummary } from "./superadmin.service";
 export {
   addSupportMessage,

@@ -44,7 +44,7 @@ interface ReviewItemProps {
   currentUserId?: string;
   onEdit?: (review: Review) => void;
   onDelete?: (reviewId: string) => void;
-  onHelpfulUpdate?: (reviewId: string, helpful: boolean) => void;
+  onHelpfulUpdate?: (review: Review) => void;
 }
 
 function ReviewItem({
@@ -58,7 +58,7 @@ function ReviewItem({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isMarkingHelpful, setIsMarkingHelpful] = useState(false);
 
-  const isOwnReview = currentUserId === review.user.name; // Note: This is a simplified check
+  const isOwnReview = Boolean(currentUserId && currentUserId === review.userId);
 
   const handleDelete = async () => {
     try {
@@ -68,7 +68,7 @@ function ReviewItem({
         description: "Your review has been removed successfully.",
       });
       onDelete?.(review.id);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete review. Please try again.",
@@ -84,12 +84,12 @@ function ReviewItem({
     setIsMarkingHelpful(true);
     try {
       const result = await markReviewHelpful(review.id);
-      onHelpfulUpdate?.(review.id, result.helpful);
+      onHelpfulUpdate?.(result.review);
       toast({
         title: result.helpful ? "Marked as helpful" : "Removed helpful mark",
         description: "Thank you for your feedback!",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update helpful status. Please try again.",
@@ -105,7 +105,6 @@ function ReviewItem({
       <Card className='hover:shadow-md transition-shadow'>
         <CardContent className='p-6'>
           <div className='space-y-4'>
-            {/* Header */}
             <div className='flex items-start justify-between'>
               <div className='flex items-start gap-3'>
                 <div className='w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold'>
@@ -153,7 +152,6 @@ function ReviewItem({
                 </div>
               </div>
 
-              {/* Actions dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
@@ -185,7 +183,6 @@ function ReviewItem({
               </DropdownMenu>
             </div>
 
-            {/* Review Content */}
             <div className='space-y-2'>
               <h4 className='font-semibold text-gray-900 dark:text-gray-100'>
                 {review.title}
@@ -195,7 +192,6 @@ function ReviewItem({
               </p>
             </div>
 
-            {/* Footer */}
             <div className='flex items-center justify-between pt-2 border-t'>
               <Button
                 variant='ghost'
@@ -225,7 +221,6 @@ function ReviewItem({
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -255,7 +250,7 @@ interface ReviewListProps {
   currentUserId?: string;
   onEdit?: (review: Review) => void;
   onDelete?: (reviewId: string) => void;
-  onHelpfulUpdate?: (reviewId: string, helpful: boolean) => void;
+  onHelpfulUpdate?: (review: Review) => void;
 }
 
 export function ReviewList({
@@ -268,7 +263,7 @@ export function ReviewList({
   if (reviews.length === 0) {
     return (
       <div className='text-center py-12'>
-        <div className='text-6xl mb-4'>⭐</div>
+        <Star className='mx-auto mb-4 h-12 w-12 text-amber-400' />
         <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2'>
           No reviews yet
         </h3>

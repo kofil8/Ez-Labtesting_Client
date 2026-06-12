@@ -1,10 +1,10 @@
 "use client";
 
-import { Test } from "@/types/test";
+import type { PublicCatalogTest } from "@/types/public-test";
 import { Info, Zap } from "lucide-react";
 
 interface TestPreparationProps {
-  test: Test;
+  test: PublicCatalogTest;
 }
 
 export function TestPreparation({ test }: TestPreparationProps) {
@@ -13,7 +13,7 @@ export function TestPreparation({ test }: TestPreparationProps) {
       title: "Follow Collection Instructions",
       description:
         test.preparation ||
-        "Follow the instructions provided with your test kit",
+        "Follow the preparation guidance supplied for this test before visiting a collection site.",
     },
     {
       title: "Stay Hydrated",
@@ -25,13 +25,12 @@ export function TestPreparation({ test }: TestPreparationProps) {
       description:
         "Government-issued photo ID required at lab collection centers",
     },
-    ...(test.fastingRequired
+    ...(test.requiresFasting
       ? [
           {
-            title: `Fasting Required (${test.fastingHours || 8} hours)`,
-            description: `Avoid food and beverages (except water) for ${
-              test.fastingHours || 8
-            } hours before collection`,
+            title: "Fasting Required",
+            description:
+              "Avoid food and beverages other than water before collection unless your provider tells you otherwise.",
           },
         ]
       : []),
@@ -39,7 +38,6 @@ export function TestPreparation({ test }: TestPreparationProps) {
 
   return (
     <div className='space-y-5 animate-in fade-in duration-300'>
-      {/* Instructions box */}
       <div className='p-4 sm:p-5 rounded-xl border border-primary/20 bg-primary/5'>
         <h3 className='text-sm sm:text-base font-semibold mb-2 flex items-center gap-2'>
           <Zap className='h-4 w-4 sm:h-5 sm:w-5 text-primary' />
@@ -47,11 +45,10 @@ export function TestPreparation({ test }: TestPreparationProps) {
         </h3>
         <p className='text-sm text-muted-foreground leading-relaxed'>
           {test.preparation ||
-            "No special preparation needed for this test. Simply follow the instructions in your collection kit."}
+            "No special preparation is listed for this test. Follow any instructions provided by your clinician or collection site."}
         </p>
       </div>
 
-      {/* Step guide */}
       <div>
         <h3 className='text-sm sm:text-base font-semibold mb-3'>
           Step-by-Step Guide
@@ -78,12 +75,11 @@ export function TestPreparation({ test }: TestPreparationProps) {
         </ul>
       </div>
 
-      {/* Tip box */}
       <div className='flex gap-3 p-3 sm:p-4 rounded-lg bg-muted/50 border border-border'>
         <Info className='h-4 w-4 text-primary shrink-0 mt-0.5' />
         <p className='text-xs sm:text-sm text-muted-foreground'>
-          {test.collectionMethod ||
-            "Sample collection is quick and easy. Follow the instructions provided with your kit for best results."}
+          Most tests require a standard lab collection visit. Bring a valid ID
+          and confirm preparation requirements before your appointment.
         </p>
       </div>
     </div>

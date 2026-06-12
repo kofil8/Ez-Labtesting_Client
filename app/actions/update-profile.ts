@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { authenticatedFetch } from "@/lib/api-helpers";
 
 const GENDER_ALIASES: Record<string, string> = {
@@ -31,6 +32,7 @@ export async function updateProfile(formData: FormData) {
     // Extract form fields
     const firstName = formData.get("firstName") as string | null;
     const lastName = formData.get("lastName") as string | null;
+    const username = formData.get("username") as string | null;
     const bio = formData.get("bio") as string | null;
     const phone = formData.get("phoneNumber") as string | null;
     const gender = formData.get("gender") as string | null;
@@ -63,10 +65,11 @@ export async function updateProfile(formData: FormData) {
     const dataObj: Record<string, any> = {};
     if (firstName !== null) dataObj.firstName = firstName;
     if (lastName !== null) dataObj.lastName = lastName;
+    if (username !== null) dataObj.username = username;
     if (bio !== null) dataObj.bio = bio;
     if (phone !== null) dataObj.phoneNumber = phone;
     if (gender !== null) dataObj.gender = normalizeGender(gender);
-    if (dateOfBirth !== null) {
+    if (dateOfBirth !== null && dateOfBirth.trim()) {
       // Convert "YYYY-MM-DD" to ISO-8601 DateTime format
       dataObj.dateOfBirth = new Date(dateOfBirth).toISOString();
     }
@@ -131,6 +134,10 @@ export async function updateProfile(formData: FormData) {
     }
 
     const data = await res.json();
+
+    // Revalidate all profile-related pages so the UI reflects the updated data
+    revalidatePath("/dashboard/customer/profile");
+    revalidatePath("/dashboard");
 
     return { success: true, profile: data?.data || data };
   } catch (error: any) {

@@ -13,69 +13,69 @@ import {
 const features = [
   {
     icon: DollarSign,
-    title: "Transparent Pricing",
+    title: "85% cheaper than many walk-in prices",
     description:
-      "The price you see is the price you pay. No hidden fees, no surprise bills. Our cash prices are up to 85% less than typical retail lab costs.",
+      "The price you see is the price you pay. No co-pay surprises, hidden processing fees, or insurance pre-authorization delays.",
   },
   {
     icon: ShieldCheck,
-    title: "CLIA-Certified Labs",
+    title: "Same quality labs physicians use",
     description:
-      "All tests are processed by CLIA-certified laboratories, including our partner Access Medical Laboratories. The same quality labs trusted by physicians.",
+      "Tests are processed by CLIA-certified laboratories, including partner Access Medical Laboratories.",
   },
   {
     icon: Clock,
-    title: "Fast Results (1–3 Days)",
+    title: "Results in plain English",
     description:
-      "Most results are available within 1 to 3 business days. Access your results securely online as soon as they are ready.",
+      "Most results are available within 1 to 3 business days, with secure online access and context you can bring to your doctor.",
   },
   {
     icon: Lock,
-    title: "100% Confidential",
+    title: "Private from order to results",
     description:
-      "Your results are private and accessible only to you. We never share your health data with employers or insurance companies.",
+      "Your results are accessible only to you. We never share health data with employers or insurance companies.",
   },
   {
     icon: Zap,
-    title: "No Insurance Needed",
+    title: "No insurance needed",
     description:
-      "Skip the insurance hassle entirely. Our cash-pay model means anyone can order tests directly — no referrals, no pre-authorization, no waiting.",
+      "Order eligible tests directly with clear cash pricing, no referral requirement, and no pre-authorization wait.",
   },
   {
     icon: MapPin,
-    title: "4,000+ Draw Centers",
+    title: "Book in 60 seconds",
     description:
-      "Visit any of our nationwide partner draw centers. Most locations accept walk-ins so you can get your blood drawn at your convenience.",
+      "Find nearby partner draw centers and choose a convenient visit path. Many locations support walk-ins or flexible windows.",
   },
 ];
 
 export function WhyChooseUsSection() {
   return (
-    <section className='py-16 sm:py-20 lg:py-24 bg-white'>
+    <section className='bg-white py-16 dark:bg-slate-950 sm:py-20 lg:py-24'>
       <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
-          className='mx-auto max-w-3xl text-center mb-12 lg:mb-16'
+          className='mx-auto mb-12 max-w-2xl text-center lg:mb-16'
         >
-          <p className='mb-3 text-xs font-bold uppercase tracking-wider text-blue-600'>
+          <p className='mb-3 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-cyan-300'>
             Why Ez LabTesting
           </p>
-          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 mb-4'>
-            Why Thousands Choose Us
+          <h2 className='mb-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl lg:text-4xl'>
+            Built for answers, not surprise bills
           </h2>
-          <p className='text-base sm:text-lg text-slate-600 leading-relaxed'>
-            We make lab testing accessible, affordable, and private.
+          <p className='text-sm leading-relaxed text-slate-500 dark:text-slate-300 sm:text-base'>
+            The difference is not only certification. It is clearer prices,
+            easier booking, secure access, and results you can actually use.
           </p>
         </motion.div>
 
-        {/* Feature Grid */}
         <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           {features.map((feature, i) => {
             const Icon = feature.icon;
+
             return (
               <motion.div
                 key={feature.title}
@@ -83,16 +83,16 @@ export function WhyChooseUsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ duration: 0.4, delay: (i % 3) * 0.1 }}
-                className='flex gap-4 p-6 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-white hover:shadow-md transition-all duration-200'
+                className='flex gap-4 rounded-xl border border-slate-200 bg-slate-50 p-6 shadow-sm transition-all duration-300 hover:border-slate-300 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70 dark:hover:border-cyan-800 dark:hover:bg-slate-900'
               >
-                <div className='shrink-0 w-11 h-11 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center'>
-                  <Icon className='h-5 w-5 text-cyan-600' />
+                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-100/50 bg-blue-50 dark:border-cyan-900/60 dark:bg-cyan-950/30'>
+                  <Icon className='h-4 w-4 text-blue-600 dark:text-cyan-300' />
                 </div>
                 <div>
-                  <h3 className='text-base font-bold text-slate-900 mb-1.5'>
+                  <h3 className='mb-1.5 text-sm font-semibold text-slate-900 dark:text-white'>
                     {feature.title}
                   </h3>
-                  <p className='text-sm text-slate-600 leading-relaxed'>
+                  <p className='text-sm leading-relaxed text-slate-500 dark:text-slate-400'>
                     {feature.description}
                   </p>
                 </div>

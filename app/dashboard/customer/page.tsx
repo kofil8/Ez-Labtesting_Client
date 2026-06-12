@@ -1,21 +1,21 @@
-import { PageSkeleton } from "@/components/shared/PageSkeleton";
-import dynamic from "next/dynamic";
-import { Suspense } from "react";
+import { CustomerDashboardOverview } from "@/components/dashboard/customer/CustomerDashboardOverview";
+import { getCustomerDashboardData } from "@/lib/dashboard/customer.server";
+import { redirect } from "next/navigation";
 
-const CustomerDashboardLazy = dynamic(() =>
-  import("@/components/dashboard/CustomerDashboard").then(
-    (m) => m.CustomerDashboard,
-  ),
-);
+export const dynamic = "force-dynamic";
 
-export default function DashboardCustomerPage() {
+export default async function DashboardCustomerPage() {
+  const { viewer, orders, ordersError } = await getCustomerDashboardData();
+
+  if (!viewer) {
+    redirect("/login?from=/dashboard/customer");
+  }
+
   return (
-    <Suspense fallback={<PageSkeleton />}>
-      <div className='flex min-h-screen flex-col bg-gradient-to-br from-background via-background to-primary/5'>
-        <main id='main-content-section' className='flex-1 w-full'>
-          <CustomerDashboardLazy />
-        </main>
-      </div>
-    </Suspense>
+    <CustomerDashboardOverview
+      viewer={viewer}
+      orders={orders}
+      ordersError={ordersError}
+    />
   );
 }

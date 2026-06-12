@@ -14,6 +14,7 @@ export interface Patient {
   lastName: string;
   dob: string; // ISO 8601 date format: YYYY-MM-DD
   gender: "Male" | "Female" | "Other";
+  relationToUser?: "SELF" | "SPOUSE" | "CHILD" | "PARENT" | "OTHER";
 }
 
 /**
@@ -28,6 +29,7 @@ export interface CreateOrderRequest {
   subtotal: number;
   processingFee: number;
   total: number;
+  promoCode?: string;
   accessPayloadJson: any; // ACCESS Lab payload (patient info + test details)
   stripePaymentIntentId?: string;
 }

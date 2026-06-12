@@ -256,7 +256,6 @@ export function EditProfileDialog({
                     defaultCountry='us'
                     placeholder='Enter phone number'
                     variant='compact'
-                    showIcon={false}
                   />
                 </div>
 
@@ -438,7 +437,6 @@ export function EditProfileDialog({
                     placeholder='Enter phone number'
                     defaultCountry='us'
                     variant='compact'
-                    showIcon={false}
                   />
                 </div>
               </div>

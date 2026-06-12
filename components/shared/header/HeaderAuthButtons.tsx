@@ -18,11 +18,11 @@ export function HeaderAuthButtons({
   onLogout,
 }: HeaderAuthButtonsProps) {
   return (
-    <div className='ml-1 hidden items-center gap-2 min-[600px]:flex'>
+    <div className='ml-1 hidden items-center gap-2 lg:flex'>
       {isAuthenticated ? (
         <>
           <Link
-            href='/profile'
+            href='/dashboard/customer/profile'
             onClick={onLinkClick}
             aria-label='Go to profile'
           >
@@ -48,7 +48,7 @@ export function HeaderAuthButtons({
           <Button
             variant='ghost'
             asChild
-            className='rounded-full px-3.5 font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+            className='rounded-full px-3.5 font-semibold text-muted-foreground hover:bg-muted hover:text-foreground'
           >
             <Link href='/login' onClick={onLinkClick}>
               Login
@@ -58,7 +58,7 @@ export function HeaderAuthButtons({
             asChild
             className='rounded-full bg-[#2b63df] px-5 text-white shadow-[0_10px_20px_-13px_rgba(37,99,235,0.95)] hover:bg-[#1f55cf]'
           >
-            <Link href='/signup' onClick={onLinkClick}>
+            <Link href='/register' onClick={onLinkClick}>
               Create Account
             </Link>
           </Button>

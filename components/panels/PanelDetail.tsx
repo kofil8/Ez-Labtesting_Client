@@ -13,6 +13,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hook/use-toast";
+import { useCartRestrictionGuard } from "@/hook/useCartRestrictionGuard";
+import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/store/cart-store";
 import { formatCurrency } from "@/lib/utils";
 import { Panel } from "@/types/panel";
@@ -30,7 +32,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export function PanelDetail({ panel }: { panel: Panel }) {
@@ -38,8 +40,12 @@ export function PanelDetail({ panel }: { panel: Panel }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const addItem = useCartStore((state) => state.addItem);
+  const { isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const { ensureCanOrder } = useCartRestrictionGuard();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Calculate savings percentage from discount percent
   const savingsAmount = panel.basePrice - panel.bundlePrice;
@@ -51,7 +57,25 @@ export function PanelDetail({ panel }: { panel: Panel }) {
   // Get max turnaround days (use a default if test data not available)
   const totalTurnaround = 5; // Default value, would need test details for actual calculation
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      const query = searchParams.toString();
+      const from = query ? `${pathname}?${query}` : pathname;
+      router.push(`/login?from=${encodeURIComponent(from)}`);
+      return;
+    }
+
+    const canOrder = await ensureCanOrder({
+      laboratoryCode: "ACCESS",
+      testId: includedTests[0]?.id,
+    });
+
+    if (!canOrder) {
+      return;
+    }
+
     addItem({
       id: `panel-${panel.id}`,
       itemType: "PANEL",

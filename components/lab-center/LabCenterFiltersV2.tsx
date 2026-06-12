@@ -19,15 +19,6 @@ import { Slider } from "@/components/ui/slider";
 import { LabLocatorFilters } from "@/types/lab-center";
 import { Filter, SlidersHorizontal } from "lucide-react";
 
-const LAB_TYPES = [
-  { value: "all", label: "All lab types" },
-  { value: "Quest Diagnostics", label: "Quest Diagnostics" },
-  { value: "Labcorp", label: "Labcorp" },
-  { value: "Hospital Lab", label: "Hospital Lab" },
-  { value: "Urgent Care", label: "Urgent Care" },
-  { value: "Medical Clinic", label: "Medical Clinic" },
-];
-
 const STATUSES = [
   { value: "all", label: "Any hours" },
   { value: "Open", label: "Open now" },
@@ -91,27 +82,6 @@ function FiltersPanel({
       </div>
 
       <div className='grid gap-4 sm:grid-cols-2'>
-        <div className='space-y-2'>
-          <Label className='text-xs font-semibold uppercase tracking-[0.18em] text-slate-500'>
-            Lab type
-          </Label>
-          <Select
-            value={filters.type}
-            onValueChange={(value) => onFilterChange("type", value)}
-          >
-            <SelectTrigger className='h-11 rounded-2xl border-slate-200 bg-white/80'>
-              <SelectValue placeholder='Choose a lab type' />
-            </SelectTrigger>
-            <SelectContent>
-              {LAB_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className='space-y-2'>
           <Label className='text-xs font-semibold uppercase tracking-[0.18em] text-slate-500'>
             Hours

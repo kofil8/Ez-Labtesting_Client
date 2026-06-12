@@ -251,7 +251,7 @@ export function PaymentConfirmation({
           Share Details
         </Button>
         <Button asChild className='gap-2'>
-          <Link href='/results'>View Dashboard</Link>
+          <Link href='/dashboard/customer/results'>View Dashboard</Link>
         </Button>
       </motion.div>
     </div>

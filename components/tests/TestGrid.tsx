@@ -1,8 +1,8 @@
-import { Test } from "@/types/test";
+import type { PublicCatalogTest } from "@/types/public-test";
 import { TestCard } from "./TestCard";
 
 interface TestGridProps {
-  tests: Test[];
+  tests: PublicCatalogTest[];
   fullWidth?: boolean;
   animated?: boolean;
 }
@@ -15,9 +15,7 @@ export function TestGrid({
   return (
     <div
       className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5 ${
-        fullWidth
-          ? "lg:grid-cols-2 xl:grid-cols-3"
-          : "lg:grid-cols-2 xl:grid-cols-3"
+        fullWidth ? "lg:grid-cols-2 xl:grid-cols-3" : "lg:grid-cols-2 xl:grid-cols-3"
       }`}
     >
       {tests.map((test, index) => (

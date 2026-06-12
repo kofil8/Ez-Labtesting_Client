@@ -34,6 +34,19 @@ export function isPaymentSubmitDisabled(params: {
   );
 }
 
+export const TERMINAL_FAIL_STATES = new Set([
+  "FAILED",
+  "PAYMENT_FAILED",
+  "LAB_SUBMISSION_FAILED",
+  "LAB_SUBMISSION_FAILED_FINAL",
+  "CANCELLED",
+  "CANCELED",
+]);
+
+export function isOrderFailureState(status?: string): boolean {
+  return Boolean(status && TERMINAL_FAIL_STATES.has(status));
+}
+
 export function isLabPollingTerminal(params: {
   status?: string;
   requisitionPdfUrl?: string | null;
@@ -43,10 +56,15 @@ export function isLabPollingTerminal(params: {
 
   return (
     Boolean(requisitionPdfUrl) ||
-    status === "FAILED" ||
+    isOrderFailureState(status) ||
     status === "LAB_ORDER_PLACED" ||
+    status === "SUBMITTED_TO_LAB" ||
+    status === "REQUISITION_READY" ||
     status === "COMPLETED" ||
-    (status === "PAID" && Boolean(manualReviewRequired))
+    status === "MANUAL_REVIEW_REQUIRED" ||
+    status === "LAB_SUBMISSION_FAILED" ||
+    (status === "PAID" && Boolean(manualReviewRequired)) ||
+    (status === "AWAITING_USER_CONFIRMATION" && Boolean(manualReviewRequired))
   );
 }
 

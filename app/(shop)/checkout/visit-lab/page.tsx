@@ -7,10 +7,13 @@ import {
   computeLabPollDelay,
   hasExceededLabPollAttempts,
   isLabPollingTerminal,
+  isOrderFailureState,
 } from "@/lib/checkout/flow-guards";
 import { useCheckout } from "@/lib/context/CheckoutContext";
+import { subscribeToOrderTracking } from "@/lib/services/order-tracking.socket";
 import {
   getOrderDetails,
+  getRequisitionDownloadUrl,
   getResumableOrder,
   retryOrderAccessPlacement,
 } from "@/lib/services/order.service";
@@ -20,11 +23,14 @@ import {
   CheckCircle,
   Download,
   FileText,
+  LifeBuoy,
   Loader2,
   MapPin,
   RotateCcw,
   Shield,
+  XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CheckoutShell from "../CheckoutShell";
@@ -68,21 +74,43 @@ export default function CheckoutVisitLabPage() {
     string | null
   >(null);
   const [manualReviewRequired, setManualReviewRequired] = useState(false);
+  const [failureReason, setFailureReason] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPolling, setIsPolling] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const [isContinuing, setIsContinuing] = useState(false);
+  const [isRequisitionLoading, setIsRequisitionLoading] = useState(false);
   const [pollGeneration, setPollGeneration] = useState(0);
   const hasHydratedResume = useRef(false);
+  const hasClearedCartRef = useRef(false);
 
   const isPaidFlow = useMemo(
     () =>
       orderStatus === "PAID" ||
+      orderStatus === "AWAITING_USER_CONFIRMATION" ||
+      orderStatus === "READY_FOR_LAB_SUBMISSION" ||
+      orderStatus === "LAB_SUBMISSION_IN_PROGRESS" ||
       orderStatus === "LAB_ORDER_PLACED" ||
+      orderStatus === "SUBMITTED_TO_LAB" ||
+      orderStatus === "REQUISITION_READY" ||
       orderStatus === "COMPLETED",
     [orderStatus],
   );
+
+  const isFailureFlow = useMemo(
+    () => isOrderFailureState(orderStatus),
+    [orderStatus],
+  );
+
+  const isCancelled = orderStatus === "CANCELLED" || orderStatus === "CANCELED";
+
+  useEffect(() => {
+    if (isPaidFlow && !hasClearedCartRef.current) {
+      hasClearedCartRef.current = true;
+      clearCart();
+    }
+  }, [isPaidFlow, clearCart]);
 
   useEffect(() => {
     if (hasHydratedResume.current) {
@@ -105,9 +133,9 @@ export default function CheckoutVisitLabPage() {
           setOrderId(resumable.id);
           setOrder({
             orderId: resumable.id,
-            subtotal: getTotal(),
-            processingFee: 2.5,
-            total: getTotal() + 2.5,
+            subtotal: resumable.subtotal ?? getTotal(),
+            processingFee: resumable.processingFee ?? 2.5,
+            total: resumable.total ?? getTotal() + 2.5,
           });
           setLastRecoveredAt(Date.now());
         }
@@ -137,6 +165,12 @@ export default function CheckoutVisitLabPage() {
       setRequisitionPdfUrl(details.requisitionPdfUrl || null);
       setLabVisitInstructions(details.labVisitInstructions || null);
       setManualReviewRequired(Boolean(details.manualReviewRequired));
+      setFailureReason(
+        details.cancellationReason ||
+          details.accessErrorMessage ||
+          details.labSubmissionErrorMessage ||
+          null,
+      );
       setStatusError(null);
       return details;
     };
@@ -212,9 +246,62 @@ export default function CheckoutVisitLabPage() {
     };
   }, [resolvedOrderId, isLoading, pollGeneration]);
 
-  const handleDownloadRequisition = () => {
-    if (!requisitionPdfUrl) return;
-    window.open(requisitionPdfUrl, "_blank", "noopener,noreferrer");
+  // Realtime: react to server status-changed pushes so users see lab
+  // cancellation/failure instantly without waiting for the next poll tick.
+  useEffect(() => {
+    if (!resolvedOrderId || isLoading) return;
+
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+
+    subscribeToOrderTracking(resolvedOrderId, {
+      onTrackingUpdate: (update) => {
+        if (!update?.status) return;
+        setOrderStatus(update.status);
+      },
+      onStatusChanged: (change) => {
+        if (!change?.status) return;
+        setOrderStatus(change.status);
+        if (change.reason) setFailureReason(change.reason);
+        if (typeof change.manualReviewRequired === "boolean") {
+          setManualReviewRequired(change.manualReviewRequired);
+        }
+        // Force a fresh fetch so we get requisition / instructions too.
+        setPollGeneration((value) => value + 1);
+      },
+      onError: () => {
+        // Silent fallback — polling effect keeps the UI fresh.
+      },
+    })
+      .then((dispose) => {
+        if (cancelled) {
+          dispose();
+          return;
+        }
+        unsubscribe = dispose;
+      })
+      .catch(() => {
+        // Silent fallback — polling keeps things working.
+      });
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, [resolvedOrderId, isLoading]);
+
+  const handleDownloadRequisition = async () => {
+    if (!resolvedOrderId || !requisitionPdfUrl) return;
+
+    try {
+      setIsRequisitionLoading(true);
+      const { url } = await getRequisitionDownloadUrl(resolvedOrderId);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error: any) {
+      setStatusError(error?.message || "Unable to open the requisition.");
+    } finally {
+      setIsRequisitionLoading(false);
+    }
   };
 
   const handleRetryAccessPlacement = async () => {
@@ -313,12 +400,15 @@ export default function CheckoutVisitLabPage() {
               <p className='text-sm text-muted-foreground'>{orderStatus}</p>
             </div>
 
-            {isPolling && !requisitionPdfUrl && (
-              <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                <Loader2 className='h-4 w-4 animate-spin' />
-                Syncing with lab partner...
-              </div>
-            )}
+            {isPolling &&
+              !requisitionPdfUrl &&
+              !isFailureFlow &&
+              orderStatus !== "AWAITING_USER_CONFIRMATION" && (
+                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                  <Loader2 className='h-4 w-4 animate-spin' />
+                  Syncing with lab partner...
+                </div>
+              )}
 
             {labVisitInstructions && (
               <p className='text-sm text-muted-foreground'>
@@ -355,6 +445,80 @@ export default function CheckoutVisitLabPage() {
           </CardContent>
         </Card>
 
+        {isFailureFlow && (
+          <Card className='border-2 border-rose-200 bg-rose-50/40 dark:border-rose-900/60 dark:bg-rose-950/20'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2 text-rose-700 dark:text-rose-300'>
+                <XCircle className='h-5 w-5' />
+                {isCancelled
+                  ? "Lab order cancelled"
+                  : "Lab order could not be placed"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-4 text-sm'>
+              <p className='text-rose-800 dark:text-rose-200'>
+                {isCancelled
+                  ? "The lab partner cancelled this order. Your payment is protected and our team has been notified."
+                  : "Our lab partner could not place this order. Your payment is protected and our team has been notified."}
+              </p>
+
+              {failureReason && (
+                <div className='rounded-lg border border-rose-200 bg-white/60 p-3 dark:border-rose-900/60 dark:bg-rose-950/30'>
+                  <p className='text-xs font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-300'>
+                    Reason from lab partner
+                  </p>
+                  <p className='mt-1 text-rose-900 dark:text-rose-100'>
+                    {failureReason}
+                  </p>
+                </div>
+              )}
+
+              <p className='text-rose-800/80 dark:text-rose-200/80'>
+                A refund (if applicable) will be processed automatically. You
+                can request a manual review or contact our support team for
+                immediate help.
+              </p>
+
+              <div className='flex flex-wrap items-center gap-3'>
+                {!isCancelled && (
+                  <Button
+                    type='button'
+                    variant='outline'
+                    onClick={handleRetryAccessPlacement}
+                    disabled={isRetrying}
+                  >
+                    {isRetrying ? (
+                      <>
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                        Retrying...
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className='mr-2 h-4 w-4' />
+                        Retry Lab Placement
+                      </>
+                    )}
+                  </Button>
+                )}
+                <Button asChild variant='outline'>
+                  <Link href='/dashboard/customer/support'>
+                    <LifeBuoy className='mr-2 h-4 w-4' />
+                    Contact Support
+                  </Link>
+                </Button>
+                <Button
+                  variant='ghost'
+                  onClick={() =>
+                    router.push("/dashboard/customer/transactions")
+                  }
+                >
+                  View Orders
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className='border'>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
@@ -378,9 +542,15 @@ export default function CheckoutVisitLabPage() {
             )}
 
             {requisitionPdfUrl && (
-              <Button variant='outline' onClick={handleDownloadRequisition}>
+              <Button
+                variant='outline'
+                onClick={handleDownloadRequisition}
+                disabled={isRequisitionLoading}
+              >
                 <Download className='mr-2 h-4 w-4' />
-                Download Requisition
+                {isRequisitionLoading
+                  ? "Preparing requisition..."
+                  : "Download Requisition"}
               </Button>
             )}
 
@@ -404,7 +574,7 @@ export default function CheckoutVisitLabPage() {
 
               <Button
                 variant='ghost'
-                onClick={() => router.push("/transactions")}
+                onClick={() => router.push("/dashboard/customer/transactions")}
               >
                 View Orders
               </Button>

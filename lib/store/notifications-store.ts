@@ -1,6 +1,6 @@
+import type { NotificationItem } from "@/lib/services/notifications.api";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { NotificationItem } from "@/lib/services/notifications.api";
 
 type NotificationsState = {
   notifications: NotificationItem[];
@@ -9,15 +9,13 @@ type NotificationsState = {
   ownerUserId: string | null;
   setHydrated: (value: boolean) => void;
   ensureUserScope: (userId: string | null) => void;
-  setNotifications: (
-    items: NotificationItem[],
-    userId?: string | null,
-  ) => void;
+  setNotifications: (items: NotificationItem[], userId?: string | null) => void;
   prependNotification: (item: NotificationItem) => void;
   setUnreadCount: (count: number) => void;
   markAsReadLocal: (id: string) => void;
   markAllAsReadLocal: () => void;
   removeNotificationLocal: (id: string) => void;
+  clearAllNotificationsLocal: () => void;
   resetNotifications: () => void;
 };
 
@@ -83,7 +81,8 @@ export const useNotificationsStore = create<NotificationsState>()(
 
         set({
           notifications: next,
-          unreadCount: next.filter((notification) => !notification.isRead).length,
+          unreadCount: next.filter((notification) => !notification.isRead)
+            .length,
           ownerUserId: ownerUserId ?? item.userId ?? null,
         });
       },
@@ -103,7 +102,8 @@ export const useNotificationsStore = create<NotificationsState>()(
 
         set({
           notifications: next,
-          unreadCount: next.filter((notification) => !notification.isRead).length,
+          unreadCount: next.filter((notification) => !notification.isRead)
+            .length,
         });
       },
 
@@ -128,9 +128,16 @@ export const useNotificationsStore = create<NotificationsState>()(
 
         set({
           notifications: next,
-          unreadCount: next.filter((notification) => !notification.isRead).length,
+          unreadCount: next.filter((notification) => !notification.isRead)
+            .length,
         });
       },
+
+      clearAllNotificationsLocal: () =>
+        set({
+          notifications: [],
+          unreadCount: 0,
+        }),
 
       resetNotifications: () =>
         set({

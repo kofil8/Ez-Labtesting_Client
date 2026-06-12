@@ -1,6 +1,7 @@
 import {
   DEFAULT_LOCATOR_FILTERS,
   getAppliedFilterChips,
+  isNationwideSearchQuery,
   mapGeolocationErrorMessage,
   sortLabs,
 } from "@/lib/locator/controller";
@@ -30,12 +31,14 @@ describe("locator/controller", () => {
       getAppliedFilterChips({
         ...DEFAULT_LOCATOR_FILTERS,
         radius: 50,
+        provider: "QUEST",
         rating: "4",
         status: "Open",
         sort: "rating",
       }),
     ).toEqual([
       { key: "radius", label: "Within 50 mi" },
+      { key: "provider", label: "Provider: Quest Diagnostics" },
       { key: "status", label: "Open now" },
       { key: "rating", label: "4+ stars" },
       { key: "sort", label: "Sort: Top rated" },
@@ -74,5 +77,12 @@ describe("locator/controller", () => {
     expect(mapGeolocationErrorMessage({ code: 1 })).toContain("denied");
     expect(mapGeolocationErrorMessage({ code: 2 })).toContain("unavailable");
     expect(mapGeolocationErrorMessage({ code: 3 })).toContain("timed out");
+  });
+
+  it("detects nationwide search aliases", () => {
+    expect(isNationwideSearchQuery("USA")).toBe(true);
+    expect(isNationwideSearchQuery("United States")).toBe(true);
+    expect(isNationwideSearchQuery("  us  ")).toBe(true);
+    expect(isNationwideSearchQuery("California")).toBe(false);
   });
 });

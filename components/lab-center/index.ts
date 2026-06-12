@@ -10,5 +10,6 @@ export { LabCenterMapV2 } from "./LabCenterMapV2";
 export { LabCenterSearch } from "./LabCenterSearch";
 export { LabCenterSearchV2 } from "./LabCenterSearchV2";
 export { LabCenterResultsV2 } from "./LabCenterResultsV2";
+export { NationwideLabResults } from "./NationwideLabResults";
 export { LabInfoWindow } from "./LabInfoWindow";
 export { LabMarker } from "./LabMarker";

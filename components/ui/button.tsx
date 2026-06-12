@@ -11,15 +11,15 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline: "border border-slate-300 bg-background shadow-sm hover:bg-slate-100 hover:text-slate-900",
+        outline: "border border-border bg-background text-foreground shadow-sm hover:bg-muted hover:text-foreground",
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/90",
-        ghost: "hover:bg-slate-100 hover:text-slate-900",
+        ghost: "text-foreground hover:bg-muted hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         gradient: "bg-gradient-to-r from-sky-700 to-cyan-700 text-white shadow-sm hover:from-sky-800 hover:to-cyan-800",
         medical: "bg-gradient-to-r from-blue-700 to-teal-700 text-white shadow-sm hover:from-blue-800 hover:to-teal-800",
         success: "bg-emerald-600 text-white shadow-sm hover:bg-emerald-700",
         warning: "bg-amber-500 text-white shadow-sm hover:bg-amber-600",
-        glass: "backdrop-blur-md bg-white/80 border border-slate-200 shadow-sm hover:bg-white",
+        glass: "border border-border bg-background/80 text-foreground shadow-sm backdrop-blur-md hover:bg-background",
       },
       size: {
         default: "h-11 px-6 py-2.5",

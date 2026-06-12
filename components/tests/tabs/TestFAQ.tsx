@@ -2,19 +2,18 @@
 
 import { getTestDetailConfig } from "@/app/(shop)/tests/data/test-detail-config";
 import { Button } from "@/components/ui/button";
-import { Test } from "@/types/test";
+import type { PublicCatalogTest } from "@/types/public-test";
 import { AlertCircle, ChevronDown, ChevronUp, Phone } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 interface TestFAQProps {
-  test: Test;
+  test: PublicCatalogTest;
 }
 
 export function TestFAQ({ test }: TestFAQProps) {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-  const config = getTestDetailConfig(
-    typeof test.category === "string" ? test.category : test.category?.name,
-  );
+  const config = getTestDetailConfig(test.category?.name);
 
   return (
     <div className='space-y-4 animate-in fade-in duration-300'>
@@ -66,9 +65,11 @@ export function TestFAQ({ test }: TestFAQProps) {
               Our support team is available to answer any questions about this
               test.
             </p>
-            <Button variant='outline' size='sm'>
-              <Phone className='h-4 w-4 mr-2' />
-              Contact Support
+            <Button asChild variant='outline' size='sm'>
+              <Link href='/help-center'>
+                <Phone className='h-4 w-4 mr-2' />
+                Contact Support
+              </Link>
             </Button>
           </div>
         </div>

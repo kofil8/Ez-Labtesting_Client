@@ -34,7 +34,7 @@ export function OnboardingPrompt({
       description: "Name, email, and date of birth",
       icon: User,
       isComplete: completeness.basicInfo,
-      href: "/profile/pages/personal",
+      href: "/dashboard/customer/profile",
     },
     {
       id: "address",
@@ -42,7 +42,7 @@ export function OnboardingPrompt({
       description: "Street, city, state, and ZIP code",
       icon: Phone,
       isComplete: completeness.address,
-      href: "/profile/pages/personal",
+      href: "/dashboard/customer/profile",
     },
     {
       id: "phone",
@@ -50,7 +50,7 @@ export function OnboardingPrompt({
       description: "Valid phone number for notifications",
       icon: Phone,
       isComplete: completeness.phone,
-      href: "/profile/pages/personal",
+      href: "/dashboard/customer/profile",
     },
   ];
 
@@ -167,7 +167,7 @@ export function OnboardingPrompt({
         {/* Action Button */}
         {incompleteItems.length > 0 && (
           <Button asChild className='w-full'>
-            <Link href='/profile/pages/personal'>
+            <Link href='/dashboard/customer/profile'>
               Complete Profile ({completeness.overall}%)
             </Link>
           </Button>

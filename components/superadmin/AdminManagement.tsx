@@ -30,13 +30,6 @@ type PaginationState = {
   total: number;
 };
 
-function splitName(fullName: string): { firstName: string; lastName: string } {
-  const parts = fullName.trim().split(" ");
-  const firstName = parts.shift() || "";
-  const lastName = parts.join(" ") || "";
-  return { firstName, lastName };
-}
-
 export function AdminManagement() {
   const { toast } = useToast();
   const router = useRouter();
@@ -56,6 +49,11 @@ export function AdminManagement() {
   const [isSaving, setIsSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  const visibleAdmins = useMemo(
+    () => admins.filter((admin) => admin.role !== "SUPER_ADMIN"),
+    [admins],
+  );
+
   const loadAdmins = useCallback(
     async (page = pagination.page, limit = pagination.limit) => {
       setIsLoading(true);
@@ -67,7 +65,9 @@ export function AdminManagement() {
         }
 
         if (result.data) {
-          setAdmins(result.data.admins);
+          setAdmins(
+            result.data.admins.filter((admin) => admin.role !== "SUPER_ADMIN"),
+          );
           setPagination(result.data.pagination);
         }
       } catch (error: any) {
@@ -98,19 +98,21 @@ export function AdminManagement() {
   }, [loadAdmins]);
 
   const handleSaveAdmin = async (data: FormState) => {
-    const { firstName, lastName } = splitName(data.name);
     setIsSaving(true);
     try {
       const result = editingAdmin
         ? await updateAdminAction(editingAdmin.id, {
-            firstName,
-            lastName,
+            firstName: data.firstName.trim(),
+            lastName: data.lastName.trim(),
             email: data.email.trim(),
+            phoneNumber: data.phoneNumber.trim(),
             role: data.role,
+            status: data.status,
           })
         : await createAdminAction({
-            firstName,
-            lastName,
+            firstName: data.firstName.trim(),
+            lastName: data.lastName.trim(),
+            phoneNumber: data.phoneNumber.trim(),
             email: data.email.trim(),
             password: data.password!,
             role: data.role,
@@ -120,7 +122,7 @@ export function AdminManagement() {
         throw new Error(result.message);
       }
 
-      toast({ title: editingAdmin ? "Admin updated" : "Admin created" });
+      toast({ title: editingAdmin ? "Account updated" : "Account created" });
       setIsDialogOpen(false);
       setEditingAdmin(null);
       await loadAdmins(1, pagination.limit);
@@ -130,7 +132,7 @@ export function AdminManagement() {
         return;
       }
       toast({
-        title: `Failed to ${editingAdmin ? "update" : "create"} admin`,
+        title: `Failed to ${editingAdmin ? "update" : "create"} account`,
         description: error.message || "Please try again",
         variant: "destructive",
       });
@@ -150,7 +152,7 @@ export function AdminManagement() {
         throw new Error(result.message);
       }
 
-      toast({ title: "Admin deleted" });
+      toast({ title: "Account deleted" });
       setDeletingAdminId(null);
       await loadAdmins(pagination.page, pagination.limit);
     } catch (error: any) {
@@ -159,7 +161,7 @@ export function AdminManagement() {
         return;
       }
       toast({
-        title: "Failed to delete",
+        title: "Failed to delete account",
         description: error.message || "Please try again",
         variant: "destructive",
       });
@@ -183,7 +185,8 @@ export function AdminManagement() {
     if (!admin) return;
     setBusyId(id);
     try {
-      const result = await updateAdminAction(id, { isActive: !admin.isActive });
+      const nextStatus = admin.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+      const result = await updateAdminAction(id, { status: nextStatus });
 
       if (!result.ok) {
         throw new Error(result.message);
@@ -193,9 +196,10 @@ export function AdminManagement() {
         const updatedAdmin = result.data;
         setAdmins((prev) => prev.map((a) => (a.id === id ? updatedAdmin : a)));
         toast({
-          title: updatedAdmin.isActive
-            ? "Admin activated"
-            : "Admin deactivated",
+          title:
+            updatedAdmin.status === "ACTIVE"
+              ? "Account activated"
+              : "Account deactivated",
         });
       }
     } catch (error: any) {
@@ -214,8 +218,8 @@ export function AdminManagement() {
   };
 
   const totalAdminsText = useMemo(() => {
-    if (!pagination.total) return "0 administrators";
-    return `${pagination.total} administrator${
+    if (!pagination.total) return "0 managed accounts";
+    return `${pagination.total} managed account${
       pagination.total === 1 ? "" : "s"
     } in the system`;
   }, [pagination.total]);
@@ -228,16 +232,17 @@ export function AdminManagement() {
     setPagination((p) => ({ ...p, limit, page: 1 }));
   };
 
-  const deletingAdmin = admins.find((a) => a.id === deletingAdminId);
+  const deletingAdmin = visibleAdmins.find((a) => a.id === deletingAdminId);
 
   return (
     <div className='space-y-6'>
       <Card>
         <CardHeader className='flex flex-row items-center justify-between'>
           <div>
-            <CardTitle>Admin User Management</CardTitle>
+            <CardTitle>Admin and Lab Partner Management</CardTitle>
             <CardDescription>
-              Create and manage administrator accounts
+              Create and manage admin and lab partner accounts. The super admin
+              account is managed separately.
             </CardDescription>
           </div>
           <Button
@@ -245,7 +250,7 @@ export function AdminManagement() {
             onClick={handleCreateAdmin}
           >
             <Plus className='h-4 w-4' />
-            Create Admin
+            Create Account
           </Button>
         </CardHeader>
       </Card>
@@ -273,12 +278,12 @@ export function AdminManagement() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Active Admins</CardTitle>
+          <CardTitle>Managed Accounts</CardTitle>
           <CardDescription>{totalAdminsText}</CardDescription>
         </CardHeader>
         <CardContent>
           <AdminTable
-            admins={admins}
+            admins={visibleAdmins}
             isLoading={isLoading}
             busyId={busyId}
             pagination={pagination}

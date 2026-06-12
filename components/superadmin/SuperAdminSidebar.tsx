@@ -3,7 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
+  Bell,
   FolderTree,
+  Headset,
   History,
   LayoutDashboard,
   LockKeyhole,
@@ -14,6 +16,7 @@ import {
   ShoppingCart,
   TestTube2,
   Ticket,
+  User,
   Users,
   X,
 } from "lucide-react";
@@ -22,6 +25,16 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const navItems = [
+  {
+    title: "Account",
+    items: [
+      {
+        title: "My Profile",
+        href: "/dashboard/superadmin/profile",
+        icon: User,
+      },
+    ],
+  },
   {
     title: "Overview",
     items: [
@@ -35,6 +48,11 @@ const navItems = [
   {
     title: "System Management",
     items: [
+      {
+        title: "Notifications",
+        href: "/dashboard/superadmin/notifications",
+        icon: Bell,
+      },
       {
         title: "Admin Users",
         href: "/dashboard/superadmin/admins",
@@ -89,6 +107,11 @@ const navItems = [
         title: "Orders",
         href: "/dashboard/superadmin/orders",
         icon: ShoppingCart,
+      },
+      {
+        title: "Support",
+        href: "/dashboard/superadmin/support",
+        icon: Headset,
       },
     ],
   },

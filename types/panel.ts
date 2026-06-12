@@ -54,4 +54,5 @@ export interface UpdatePanelInput {
   startsAt?: string;
   endsAt?: string;
   testIds?: string[];
+  removePanelImage?: boolean;
 }

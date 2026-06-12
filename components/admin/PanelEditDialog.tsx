@@ -38,6 +38,7 @@ import { useForm } from "react-hook-form";
 type PanelFormPayload = Omit<CreatePanelInput, "startsAt" | "endsAt"> & {
   startsAt?: string;
   endsAt?: string;
+  removePanelImage?: boolean;
 };
 
 interface PanelEditDialogProps {
@@ -88,6 +89,7 @@ export function PanelEditDialog({
   const [testSearch, setTestSearch] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removePanelImage, setRemovePanelImage] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -105,6 +107,8 @@ export function PanelEditDialog({
     setTestSearch("");
     setCategoryFilter("all");
     setImageFile(null);
+    setRemovePanelImage(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     if (panel) {
       reset({
         name: panel.name,
@@ -130,6 +134,14 @@ export function PanelEditDialog({
       setSelectedTestIds([]);
     }
   }, [panel, reset, open]);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   // Bundle price from discount %
   useEffect(() => {
@@ -213,6 +225,7 @@ export function PanelEditDialog({
       discountPercent: Number(discount.toFixed(2)),
       isActive: data.isActive ?? true,
       testIds: selectedTestIds,
+      ...(removePanelImage ? { removePanelImage: true } : {}),
     };
 
     setIsSubmitting(true);
@@ -230,6 +243,24 @@ export function PanelEditDialog({
     basePrice > 0 && savings > 0 ? Math.round((savings / basePrice) * 100) : 0;
 
   const currentStepIndex = STEP_ORDER.indexOf(step);
+
+  const selectPanelImage = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setFormError("Please select an image file.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setFormError("Panel image must be smaller than 10 MB.");
+      return;
+    }
+    if (imagePreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setFormError(null);
+    setImageFile(file);
+    setRemovePanelImage(false);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -339,8 +370,7 @@ export function PanelEditDialog({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      setImageFile(file);
-                      setImagePreview(URL.createObjectURL(file));
+                      selectPanelImage(file);
                     }}
                   />
 
@@ -363,8 +393,12 @@ export function PanelEditDialog({
                         <button
                           type='button'
                           onClick={() => {
+                            if (imagePreview?.startsWith("blob:")) {
+                              URL.revokeObjectURL(imagePreview);
+                            }
                             setImageFile(null);
                             setImagePreview(null);
+                            setRemovePanelImage(Boolean(panel?.panelImage));
                             if (fileInputRef.current)
                               fileInputRef.current.value = "";
                           }}
@@ -388,8 +422,7 @@ export function PanelEditDialog({
                         setIsDragging(false);
                         const file = e.dataTransfer.files?.[0];
                         if (!file || !file.type.startsWith("image/")) return;
-                        setImageFile(file);
-                        setImagePreview(URL.createObjectURL(file));
+                        selectPanelImage(file);
                       }}
                       className={`w-full h-36 border-2 border-dashed rounded-xl transition-colors flex flex-col items-center justify-center gap-2 ${
                         isDragging

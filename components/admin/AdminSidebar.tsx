@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   FolderTree,
+  Headset,
   LayoutDashboard,
   Menu,
   Package,
@@ -65,6 +66,11 @@ const navItems = [
         title: "Orders",
         href: "/dashboard/admin/orders",
         icon: ShoppingCart,
+      },
+      {
+        title: "Support",
+        href: "/dashboard/admin/support",
+        icon: Headset,
       },
     ],
   },

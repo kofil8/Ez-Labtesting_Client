@@ -276,9 +276,9 @@ export function AdminDashboard() {
             <CardTitle>Revenue Trend</CardTitle>
             <CardDescription>Monthly revenue over time</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width='100%' height={300}>
-              <AreaChart data={revenueByMonth}>
+           <CardContent>
+             <ResponsiveContainer width='100%' height={300}>
+               <AreaChart data={revenueByMonth}>
                 <defs>
                   <linearGradient id='colorRevenue' x1='0' y1='0' x2='0' y2='1'>
                     <stop
@@ -334,9 +334,9 @@ export function AdminDashboard() {
             <CardTitle>Order Status Distribution</CardTitle>
             <CardDescription>Breakdown of orders by status</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width='100%' height={300}>
-              <PieChart>
+           <CardContent>
+             <ResponsiveContainer width='100%' height={300}>
+               <PieChart>
                 <Pie
                   data={ordersByStatus}
                   cx='50%'
@@ -387,9 +387,9 @@ export function AdminDashboard() {
             <CardTitle>Top Selling Tests</CardTitle>
             <CardDescription>Most popular tests by order count</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width='100%' height={300}>
-              <BarChart data={topSellingTests} layout='vertical'>
+           <CardContent>
+             <ResponsiveContainer width='100%' height={300}>
+               <BarChart data={topSellingTests} layout='vertical'>
                 <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
                 <XAxis type='number' className='text-xs' />
                 <YAxis
@@ -427,9 +427,9 @@ export function AdminDashboard() {
               Breakdown of revenue by payment type
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width='100%' height={300}>
-              <BarChart data={revenueByPaymentMethod}>
+           <CardContent>
+             <ResponsiveContainer width='100%' height={300}>
+               <BarChart data={revenueByPaymentMethod}>
                 <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
                 <XAxis
                   dataKey='method'

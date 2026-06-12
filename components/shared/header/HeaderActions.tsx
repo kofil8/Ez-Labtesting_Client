@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu, ShoppingCart, X } from "lucide-react";
 import { NotificationsBell } from "../../notifications/NotificationsBell";
+// import { ThemeToggle } from "./ThemeToggle"; // TODO: Re-enable dark mode toggle later
 
 interface HeaderActionsProps {
   cartCount: number;
@@ -23,6 +24,8 @@ export function HeaderActions({
 }: HeaderActionsProps) {
   return (
     <div className='flex items-center gap-1 min-[600px]:gap-1.5'>
+      {/* <ThemeToggle /> */}
+
       {showCart && (
         <Button
           variant='ghost'
@@ -45,12 +48,16 @@ export function HeaderActions({
       <Button
         variant='ghost'
         size='icon'
-        className='text-muted-foreground hover:bg-muted hover:text-foreground min-[600px]:hidden'
+        className='text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden'
         onClick={onMenuToggle}
         aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         aria-expanded={isMobileMenuOpen}
       >
-        {isMobileMenuOpen ? <X className='h-6 w-6' /> : <Menu className='h-6 w-6' />}
+        {isMobileMenuOpen ? (
+          <X className='h-6 w-6' />
+        ) : (
+          <Menu className='h-6 w-6' />
+        )}
       </Button>
     </div>
   );

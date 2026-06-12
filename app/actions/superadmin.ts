@@ -1,20 +1,23 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { authenticatedFetch } from "@/lib/api-helpers";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7001/api/v1";
 
 // Types
-export type AdminRole = "ADMIN" | "SUPER_ADMIN";
+export type AdminRole = "ADMIN" | "LAB_PARTNER" | "SUPER_ADMIN";
+export type ManagedAdminRole = Exclude<AdminRole, "SUPER_ADMIN">;
+export type AccountStatus = "ACTIVE" | "DISABLED" | "BLOCKED";
 
 export type AdminRecord = {
   id: string;
   email: string;
   firstName: string | null;
   lastName: string | null;
+  phoneNumber: string;
   role: AdminRole;
-  isActive: boolean;
+  status: AccountStatus;
   lastLogin: string | null;
   createdAt: string;
   updatedAt: string;
@@ -33,17 +36,19 @@ export type AdminListResponse = {
 export type CreateAdminPayload = {
   firstName: string;
   lastName: string;
+  phoneNumber: string;
   email: string;
   password: string;
-  role: AdminRole;
+  role: ManagedAdminRole;
 };
 
 export type UpdateAdminPayload = Partial<{
   firstName: string;
   lastName: string;
+  phoneNumber: string;
   email: string;
-  role: AdminRole;
-  isActive: boolean;
+  role: ManagedAdminRole;
+  status: AccountStatus;
 }>;
 
 type ActionResult<T> = {
@@ -57,22 +62,13 @@ type ActionResult<T> = {
  * Handles authentication via cookies
  */
 async function serverFetch(url: string, options: RequestInit = {}) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("accessToken")?.value;
-
-  if (!accessToken) {
-    throw new Error("Session expired. Please log in again.");
-  }
-
   try {
-    const response = await fetch(url, {
+    const response = await authenticatedFetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
         ...options.headers,
       },
-      cache: "no-store",
     });
 
     return response;

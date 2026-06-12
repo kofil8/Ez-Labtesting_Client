@@ -42,6 +42,23 @@ interface EnhancedSupportChatProps {
   onClose?: () => void;
 }
 
+function getStatusIcon(status: string) {
+  if (status === "resolved") {
+    return <CheckCircle className='h-4 w-4 text-emerald-600' />;
+  }
+  if (status === "in_progress") {
+    return <Clock className='h-4 w-4 text-sky-600' />;
+  }
+  if (status === "closed") {
+    return <X className='h-4 w-4 text-slate-600' />;
+  }
+  return <AlertCircle className='h-4 w-4 text-amber-600' />;
+}
+
+function getStatusLabel(status: string) {
+  return status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
+}
+
 export function EnhancedSupportChat({
   ticket,
   onNewTicket,
@@ -87,115 +104,94 @@ export function EnhancedSupportChat({
 
   if (!isOpen) return null;
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "resolved":
-        return <CheckCircle className='w-4 h-4 text-emerald-600' />;
-      case "in_progress":
-        return <Clock className='w-4 h-4 text-blue-600 animate-spin' />;
-      case "closed":
-        return <X className='w-4 h-4 text-slate-600' />;
-      default:
-        return <AlertCircle className='w-4 h-4 text-amber-600' />;
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
-  };
-
   return (
-    <Card className='h-full max-h-screen flex flex-col bg-white dark:bg-slate-900'>
-      {/* Header */}
-      <CardHeader className='flex-shrink-0 bg-gradient-to-r from-blue-50 to-transparent dark:from-blue-950/50 pb-4 border-b border-slate-200 dark:border-slate-700'>
+    <Card className='flex h-full max-h-screen flex-col rounded-[30px] border-slate-200/80 bg-white/92 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]'>
+      <CardHeader className='border-b border-slate-100 bg-slate-50/70 pb-4'>
         <div className='flex items-center justify-between gap-4'>
-          <div className='flex items-center gap-2'>
-            <MessageCircle className='w-5 h-5 text-blue-600' />
+          <div className='flex items-center gap-3'>
+            <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700'>
+              <MessageCircle className='h-5 w-5' />
+            </div>
             <div>
-              <CardTitle className='text-lg'>
-                {ticket ? "Support Ticket" : "Contact Support"}
+              <CardTitle className='text-lg text-slate-950'>
+                {ticket ? "Support ticket" : "Open a support ticket"}
               </CardTitle>
-              {ticket && (
-                <p className='text-xs text-muted-foreground mt-0.5'>
-                  {ticket.subject}
-                </p>
-              )}
+              <p className='mt-1 text-sm text-slate-500'>
+                {ticket
+                  ? ticket.subject
+                  : "Describe the issue once and keep updates in one thread."}
+              </p>
             </div>
           </div>
-          {onClose && (
+
+          {onClose ? (
             <button
               onClick={onClose}
-              className='p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors'
+              className='rounded-xl p-2 transition-colors hover:bg-slate-100'
             >
-              <X className='w-5 h-5' />
+              <X className='h-4 w-4 text-slate-500' />
             </button>
-          )}
+          ) : null}
         </div>
       </CardHeader>
 
-      {/* Content */}
-      <CardContent className='flex-1 overflow-auto p-4 space-y-4'>
+      <CardContent className='flex-1 overflow-auto p-5'>
         {ticket ? (
-          <>
-            {/* Ticket Status */}
-            <div className='flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700'>
-              <div className='flex items-center gap-2'>
+          <div className='space-y-4'>
+            <div className='flex flex-wrap items-center justify-between gap-3 rounded-[22px] border border-slate-200 bg-slate-50/70 px-4 py-3'>
+              <div className='flex items-center gap-2 text-sm font-medium text-slate-900'>
                 {getStatusIcon(ticket.status)}
-                <span className='text-sm font-medium'>
-                  {getStatusLabel(ticket.status)}
-                </span>
+                {getStatusLabel(ticket.status)}
               </div>
-              <div className='text-xs text-muted-foreground'>
+              <div className='text-xs text-slate-500'>
                 Created {new Date(ticket.created).toLocaleDateString()}
               </div>
             </div>
 
-            {/* Messages */}
-            <div className='space-y-3 max-h-96 overflow-y-auto'>
+            <div className='max-h-[420px] space-y-3 overflow-y-auto pr-1'>
               {ticket.messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-2 ${
+                  className={`flex gap-3 ${
                     msg.sender === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {msg.sender === "support" && (
-                    <div className='w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0'>
-                      <MessageCircle className='w-4 h-4 text-blue-600' />
+                  {msg.sender === "support" ? (
+                    <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-50 text-sky-700'>
+                      <MessageCircle className='h-4 w-4' />
                     </div>
-                  )}
+                  ) : null}
+
                   <div
-                    className={`max-w-xs px-4 py-2 rounded-lg ${
+                    className={`max-w-[32rem] rounded-[22px] px-4 py-3 ${
                       msg.sender === "user"
-                        ? "bg-blue-600 text-white rounded-br-none"
-                        : "bg-slate-100 dark:bg-slate-700 text-foreground rounded-bl-none"
+                        ? "bg-sky-600 text-white"
+                        : "bg-slate-100 text-slate-900"
                     }`}
                   >
-                    <p className='text-sm'>{msg.message}</p>
+                    <p className='text-sm leading-6'>{msg.message}</p>
                     <p
-                      className={`text-xs mt-1 ${
-                        msg.sender === "user"
-                          ? "text-blue-100"
-                          : "text-muted-foreground"
+                      className={`mt-2 text-xs ${
+                        msg.sender === "user" ? "text-sky-100" : "text-slate-500"
                       }`}
                     >
                       {msg.timestamp.toLocaleTimeString()}
                     </p>
                   </div>
-                  {msg.sender === "user" && (
-                    <div className='w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0'>
-                      <User className='w-4 h-4 text-white' />
+
+                  {msg.sender === "user" ? (
+                    <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white'>
+                      <User className='h-4 w-4' />
                     </div>
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>
 
-            {/* Message Input */}
-            <div className='space-y-2 flex-shrink-0'>
+            <div className='space-y-2 border-t border-slate-100 pt-4'>
               <div className='flex gap-2'>
                 <Input
-                  placeholder='Type your message...'
+                  placeholder='Type a message'
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => {
@@ -205,54 +201,55 @@ export function EnhancedSupportChat({
                     }
                   }}
                   disabled={sending || ticket.status === "closed"}
-                  className='text-sm'
+                  className='rounded-2xl border-slate-200'
                 />
                 <Button
-                  size='sm'
                   onClick={handleSendMessage}
                   disabled={
                     !newMessage.trim() || sending || ticket.status === "closed"
                   }
-                  className='flex-shrink-0'
+                  className='rounded-2xl'
                 >
-                  <Send className='w-4 h-4' />
+                  <Send className='h-4 w-4' />
                 </Button>
               </div>
-              {ticket.status === "closed" && (
-                <p className='text-xs text-amber-600 dark:text-amber-400'>
-                  This ticket is closed. Create a new ticket to continue.
+              {ticket.status === "closed" ? (
+                <p className='text-xs text-amber-600'>
+                  This ticket is closed. Open a new ticket to continue.
                 </p>
-              )}
+              ) : null}
             </div>
-          </>
+          </div>
         ) : (
-          <div className='space-y-4'>
-            {/* Quick Links */}
-            <div className='space-y-2'>
-              <p className='text-sm font-semibold text-muted-foreground'>
-                Need quick help?
-              </p>
-              <div className='grid grid-cols-2 gap-2'>
-                <Button variant='outline' className='text-xs h-auto py-2'>
-                  <Phone className='w-3 h-3 mr-1' />
-                  Call Us
+          <div className='space-y-5'>
+            <div className='grid gap-3 sm:grid-cols-2'>
+              <div className='rounded-[22px] border border-slate-200 bg-slate-50/70 p-4'>
+                <p className='text-sm font-semibold text-slate-950'>Best for urgent help</p>
+                <p className='mt-1 text-sm leading-6 text-slate-600'>
+                  Use chat or phone if an order is blocked or a result needs fast follow-up.
+                </p>
+                <Button variant='outline' className='mt-3 rounded-full'>
+                  <Phone className='h-4 w-4' />
+                  Call support
                 </Button>
-                <Button variant='outline' className='text-xs h-auto py-2'>
-                  View FAQs
-                </Button>
+              </div>
+              <div className='rounded-[22px] border border-slate-200 bg-slate-50/70 p-4'>
+                <p className='text-sm font-semibold text-slate-950'>Best for tracked issues</p>
+                <p className='mt-1 text-sm leading-6 text-slate-600'>
+                  Open one ticket for billing, requisition, or results questions you want documented.
+                </p>
               </div>
             </div>
 
-            {/* New Ticket Form */}
-            <div className='space-y-3 border-t border-slate-200 dark:border-slate-700 pt-4'>
-              <p className='text-sm font-semibold'>Create a Support Ticket</p>
+            <div className='space-y-3 border-t border-slate-100 pt-5'>
+              <p className='text-sm font-semibold text-slate-950'>Create a ticket</p>
 
               <div className='space-y-2'>
-                <label className='text-xs font-medium text-muted-foreground'>
+                <label className='text-xs font-medium uppercase tracking-[0.18em] text-slate-500'>
                   Subject
                 </label>
                 <Input
-                  placeholder='Brief description of your issue'
+                  placeholder='Briefly describe the issue'
                   value={newTicketForm.subject}
                   onChange={(e) =>
                     setNewTicketForm({
@@ -261,16 +258,16 @@ export function EnhancedSupportChat({
                     })
                   }
                   disabled={creating}
-                  className='text-sm'
+                  className='rounded-2xl border-slate-200'
                 />
               </div>
 
               <div className='space-y-2'>
-                <label className='text-xs font-medium text-muted-foreground'>
-                  Details
+                <label className='text-xs font-medium uppercase tracking-[0.18em] text-slate-500'>
+                  Message
                 </label>
                 <Textarea
-                  placeholder='Please provide details about your issue...'
+                  placeholder='Include the order number and what you need help with.'
                   value={newTicketForm.message}
                   onChange={(e) =>
                     setNewTicketForm({
@@ -278,9 +275,9 @@ export function EnhancedSupportChat({
                       message: e.target.value,
                     })
                   }
+                  rows={5}
                   disabled={creating}
-                  rows={4}
-                  className='text-sm'
+                  className='rounded-2xl border-slate-200'
                 />
               </div>
 
@@ -291,18 +288,10 @@ export function EnhancedSupportChat({
                   !newTicketForm.message.trim() ||
                   creating
                 }
-                className='w-full'
+                className='rounded-full'
               >
-                {creating ? "Creating..." : "Create Ticket"}
+                {creating ? "Creating..." : "Create ticket"}
               </Button>
-            </div>
-
-            {/* Info Box */}
-            <div className='bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-200 dark:border-blue-900 text-xs text-blue-900 dark:text-blue-200 space-y-1'>
-              <p className='font-semibold'>Expected Response Times:</p>
-              <p>• High priority: 1-2 hours</p>
-              <p>• Medium priority: 4-8 hours</p>
-              <p>• Low priority: 24 hours</p>
             </div>
           </div>
         )}

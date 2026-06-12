@@ -12,7 +12,6 @@ export const metadata = {
 export default function ResetPasswordPage() {
   return (
     <div className='flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'>
-      
       <main id='main-content-section' className='flex-1'>
         <PageContainer>
           <div className='flex items-center justify-center min-h-[calc(100vh-200px)] py-12 px-4'>
@@ -39,8 +38,8 @@ export default function ResetPasswordPage() {
                   <span className='text-gradient-success'>Password</span>
                 </h1>
                 <p className='text-muted-foreground text-base'>
-                  Enter the OTP code sent to your email and create a new
-                  password.
+                  You have verified your code. Create a new password to secure
+                  your account.
                 </p>
               </div>
 

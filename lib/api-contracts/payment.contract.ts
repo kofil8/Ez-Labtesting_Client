@@ -8,14 +8,11 @@
 
 /**
  * Request to create a Stripe payment intent
- * Frontend sends amount and customer details
+ * Frontend sends the order id only.
+ * Backend derives amount, currency, and ownership from the stored order.
  */
 export interface CreatePaymentIntentRequest {
-  amount: number;
-  customerEmail: string;
-  customerName: string;
-  paymentMethodType?: "card" | "automatic";
-  metadata?: Record<string, string>;
+  orderId: string;
 }
 
 /**

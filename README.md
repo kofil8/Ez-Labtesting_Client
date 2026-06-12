@@ -119,7 +119,7 @@ See `GOOGLE_MAPS_SETUP.md` for detailed setup instructions.
 - **`/cart`** - Shopping cart
 - **`/checkout`** - Checkout form
 - **`/login`** - User login
-- **`/signup`** - User registration
+- **`/register`** - User registration
 - **`/mfa`** - Two-factor authentication
 - **`/results`** - Order history
 - **`/results/[orderId]`** - Individual test results

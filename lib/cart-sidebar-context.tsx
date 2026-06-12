@@ -1,41 +1,48 @@
-'use client'
+"use client";
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 interface CartSidebarContextType {
-  isOpen: boolean
-  openCart: () => void
-  closeCart: () => void
-  toggleCart: () => void
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
+  toggleCart: () => void;
 }
 
 const CartSidebarContext = createContext<CartSidebarContextType | undefined>(
-  undefined
-)
+  undefined,
+);
 
 export function CartSidebarProvider({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
-  const openCart = () => setIsOpen(true)
-  const closeCart = () => setIsOpen(false)
-  const toggleCart = () => setIsOpen(!isOpen)
+  const openCart = useCallback(() => setIsOpen(true), []);
+  const closeCart = useCallback(() => setIsOpen(false), []);
+  const toggleCart = useCallback(() => {
+    setIsOpen((current) => !current);
+  }, []);
+
+  const value = useMemo(
+    () => ({ isOpen, openCart, closeCart, toggleCart }),
+    [closeCart, isOpen, openCart, toggleCart],
+  );
 
   return (
-    <CartSidebarContext.Provider value={{ isOpen, openCart, closeCart, toggleCart }}>
+    <CartSidebarContext.Provider value={value}>
       {children}
     </CartSidebarContext.Provider>
-  )
+  );
 }
 
 export function useCartSidebar() {
-  const context = useContext(CartSidebarContext)
+  const context = useContext(CartSidebarContext);
   if (context === undefined) {
-    throw new Error('useCartSidebar must be used within CartSidebarProvider')
+    throw new Error("useCartSidebar must be used within CartSidebarProvider");
   }
-  return context
+  return context;
 }
 

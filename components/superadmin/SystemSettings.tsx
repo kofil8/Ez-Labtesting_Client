@@ -18,8 +18,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Save } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, Loader2, Save } from "lucide-react";
+import { useToast } from "@/hook/use-toast";
+import { useEffect, useState } from "react";
 
 interface SystemSetting {
   id: string;
@@ -30,7 +31,7 @@ interface SystemSetting {
   options?: { label: string; value: string }[];
 }
 
-const mockSettings: SystemSetting[] = [
+const INITIAL_SETTINGS: SystemSetting[] = [
   {
     id: "1",
     name: "Platform Name",
@@ -86,11 +87,91 @@ const mockSettings: SystemSetting[] = [
 ];
 
 export function SystemSettings() {
-  const [settings, setSettings] = useState<SystemSetting[]>(mockSettings);
+  const { toast } = useToast();
+  const [settings, setSettings] = useState<SystemSetting[]>(INITIAL_SETTINGS);
   const [modifiedSettings, setModifiedSettings] = useState<
     Record<string, SystemSetting["value"]>
   >({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchCurrentSettings = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/v1/superadmin/settings", {
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) throw new Error("Failed to fetch settings");
+      const data = await response.json();
+      if (data?.data) {
+        const fetched = data.data as SystemSetting[];
+        setSettings((prev) =>
+          prev.map((s) => {
+            const fetchedSetting = fetched.find((f) => f.id === s.id);
+            return fetchedSetting ? { ...s, value: fetchedSetting.value } : s;
+          }),
+        );
+      }
+    } catch {
+      toast({
+        title: "Failed to fetch settings",
+        description: "Unable to reach the server. Using local defaults.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    setIsLoading(true);
+    try {
+      const updates = Object.entries(modifiedSettings).map(
+        ([id, value]) => ({
+          key: id,
+          value,
+        }),
+      );
+
+      const results = await Promise.all(
+        updates.map((update) =>
+          fetch("/api/v1/superadmin/settings", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(update),
+          }),
+        ),
+      );
+
+      const allOk = results.every((r) => r.ok);
+      if (!allOk) {
+        throw new Error("Some settings failed to save");
+      }
+
+      const updatedSettings = settings.map((setting) =>
+        modifiedSettings.hasOwnProperty(setting.id)
+          ? { ...setting, value: modifiedSettings[setting.id] }
+          : setting,
+      );
+      setSettings(updatedSettings);
+      setModifiedSettings({});
+      setHasChanges(false);
+      toast({ title: "Settings saved successfully" });
+    } catch {
+      toast({
+        title: "Failed to save settings",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetChanges = () => {
+    setModifiedSettings({});
+    setHasChanges(false);
+  };
 
   const handleSettingChange = (
     id: string,
@@ -103,23 +184,10 @@ export function SystemSettings() {
     setHasChanges(true);
   };
 
-  const handleSaveSettings = () => {
-    const updatedSettings = settings.map((setting) =>
-      modifiedSettings.hasOwnProperty(setting.id)
-        ? { ...setting, value: modifiedSettings[setting.id] }
-        : setting,
-    );
-
-    setSettings(updatedSettings);
-    setModifiedSettings({});
-    setHasChanges(false);
-    alert("Settings saved successfully!");
-  };
-
-  const handleResetChanges = () => {
-    setModifiedSettings({});
-    setHasChanges(false);
-  };
+  useEffect(() => {
+    fetchCurrentSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const renderSettingInput = (setting: SystemSetting) => {
     const value = modifiedSettings.hasOwnProperty(setting.id)
@@ -305,10 +373,15 @@ export function SystemSettings() {
             </Button>
             <Button
               onClick={handleSaveSettings}
+              disabled={isLoading}
               className='gap-2 bg-red-600 hover:bg-red-700'
             >
-              <Save className='h-4 w-4' />
-              Save Settings
+              {isLoading ? (
+                <Loader2 className='h-4 w-4 animate-spin' />
+              ) : (
+                <Save className='h-4 w-4' />
+              )}
+              {isLoading ? "Saving..." : "Save Settings"}
             </Button>
           </CardContent>
         </Card>

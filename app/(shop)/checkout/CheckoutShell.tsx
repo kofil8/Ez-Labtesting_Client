@@ -96,24 +96,28 @@ export default function CheckoutShell({
 
                     <div className='border-t border-slate-50 dark:border-slate-800 pt-6 space-y-3'>
                       <div className='flex justify-between text-sm items-center'>
-                        <span className='text-slate-500 font-medium'>Subtotal Items</span>
+                        <span className='text-slate-500 font-medium'>
+                          Subtotal Items
+                        </span>
                         <span className='font-bold text-slate-900 dark:text-white'>
                           {formatCurrency(subtotal)}
                         </span>
                       </div>
 
                       <div className='flex justify-between text-sm items-center'>
-                        <span className='text-slate-500 font-medium'>Processing & Review</span>
+                        <span className='text-slate-500 font-medium'>
+                          Processing fee
+                        </span>
                         <span className='font-bold text-slate-900 dark:text-white'>
                           {formatCurrency(processingFee)}
                         </span>
                       </div>
 
-                      <div className='border-t-2 border-slate-900/5 dark:border-white/5 pt-4 mt-2 flex justify-between items-center'>
-                        <span className='text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter'>
+                      <div className='flex justify-between text-sm items-center'>
+                        <span className='text-slate-500 font-medium'>
                           Total
                         </span>
-                        <span className='font-black text-3xl text-primary'>
+                        <span className='text-lg font-extrabold text-slate-900 dark:text-white'>
                           {formatCurrency(total)}
                         </span>
                       </div>
