@@ -46,6 +46,28 @@ export const SOLD_COUNT_VISIBILITY_THRESHOLD = 100;
 
 const TEMP_PHYSICIAN_REVIEWED_SLUGS = new Set<string>();
 
+function getConsumerSpecimenLabel(test: PublicCatalogTest) {
+  if (test.isPanel) {
+    return test.componentCount
+      ? `${test.componentCount} included tests`
+      : "Panel test";
+  }
+
+  const specimen = test.specimenType?.toLowerCase() || "";
+  const preparation = test.preparation?.toLowerCase() || "";
+
+  if (
+    specimen.includes("blood") ||
+    specimen.includes("sst") ||
+    specimen.includes("lavender") ||
+    preparation.includes("collection")
+  ) {
+    return "Blood draw";
+  }
+
+  return test.specimenType || "Blood draw";
+}
+
 export function getVisibleSoldLabel(test: PublicCatalogTest) {
   const soldCount =
     typeof test.soldCount === "number"
@@ -97,7 +119,6 @@ export function TestCard({
     : test.preparation
       ? "Prep instructions included"
       : "No fasting noted";
-  const specimenLabel = test.specimenType || "See test details";
   const whyThisTest =
     summary ||
     `Review ${test.testName} details, preparation, specimen type, and lab options before ordering.`;
@@ -414,7 +435,7 @@ export function TestCard({
                 {test.isPanel ? "Panel type" : "Specimen"}
               </p>
               <p className='truncate text-sm text-foreground'>
-                {test.isPanel ? componentLabel : specimenLabel}
+                {getConsumerSpecimenLabel(test)}
               </p>
             </div>
           </div>

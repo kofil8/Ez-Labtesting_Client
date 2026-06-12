@@ -59,13 +59,13 @@ export function SiteFooter({
               <strong className='text-slate-600 dark:text-slate-400'>
                 Physician Services:
               </strong>{" "}
-              All laboratory tests ordered through EzLabTesting are ordered and
-              reviewed by independent physicians or healthcare providers
-              licensed in your state. Test results should be shared with your
-              primary care physician. Our services comply with CLIA (Clinical
-              Laboratory Improvement Amendments) regulations. All partner
-              laboratories are CLIA-certified and meet federal quality standards
-              for laboratory testing.
+              Every order placed through EzLabTesting is reviewed and approved
+              by an independent licensed physician or healthcare provider before
+              lab fulfillment. Test results should be shared with your primary
+              care physician. Our services comply with CLIA (Clinical Laboratory
+              Improvement Amendments) regulations. All partner laboratories are
+              CLIA-certified and meet federal quality standards for laboratory
+              testing.
             </p>
           </div>
         </div>
@@ -202,9 +202,9 @@ export function SiteFooter({
               ))}
             </div>
             <p className='max-w-4xl text-xs leading-6 text-slate-500'>
-              Informed consent, physician-services terms, refund terms, and
-              state-specific notices should be reviewed by qualified U.S.
-              healthcare counsel before publication and checkout use.
+              EzLabTesting does not provide medical advice, diagnosis, or
+              treatment. Availability, ordering rules, and physician review
+              requirements vary by state, ZIP code, test type, and lab partner.
             </p>
           </div>
 

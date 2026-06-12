@@ -7,25 +7,26 @@ const partners = [
     name: "ACCESS",
     badge: "Currently active",
     active: true,
-    description: "Active partner coverage for eligible orders.",
+    description:
+      "ACCESS provides eligible orders access to certified local blood draw locations through its active network.",
   },
   {
     name: "CPL",
-    badge: "Planned",
+    badge: "Expansion",
     active: false,
-    description: "Additional network expansion planned.",
+    description: "Future partner network. Not available for checkout until enabled by ZIP code.",
   },
   {
     name: "Labcorp",
-    badge: "Planned",
+    badge: "Expansion",
     active: false,
-    description: "Additional network expansion planned.",
+    description: "Future partner network. Not available for checkout until enabled by ZIP code.",
   },
   {
     name: "Quest",
-    badge: "Planned",
+    badge: "Expansion",
     active: false,
-    description: "Additional network expansion planned.",
+    description: "Future partner network. Not available for checkout until enabled by ZIP code.",
   },
 ];
 
@@ -47,7 +48,7 @@ export function PartnerNetwork() {
           </p>
         </div>
 
-        <div className='grid gap-3 lg:grid-cols-[1.15fr_0.95fr_0.95fr_0.95fr]'>
+        <div className='grid gap-3 lg:grid-cols-[1.35fr_0.85fr_0.85fr_0.85fr]'>
           {partners.map((partner) => {
             const Icon = partner.active ? BadgeCheck : Clock3;
             return (
@@ -55,8 +56,8 @@ export function PartnerNetwork() {
               key={partner.name}
               className={`min-h-0 rounded-xl border shadow-sm transition-colors ${
                 partner.active
-                  ? "border-emerald-300 bg-emerald-50/70 dark:border-emerald-900/60 dark:bg-emerald-950/20"
-                  : "border-slate-200 bg-slate-50 opacity-90 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900"
+                  ? "border-emerald-300 bg-emerald-50/80 shadow-md shadow-emerald-100/50 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:shadow-none"
+                  : "border-slate-200 bg-slate-50 opacity-70 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900"
               }`}
             >
               <CardContent className={partner.active ? "p-5" : "p-5"}>

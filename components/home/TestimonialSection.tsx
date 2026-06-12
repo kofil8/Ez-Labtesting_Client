@@ -1,10 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { trackEzLabEvent } from "@/lib/analytics";
 import { homepageTestimonials } from "@/lib/copyContent";
 import { motion } from "framer-motion";
-import { ArrowRight, Quote, Star } from "lucide-react";
+import { ArrowRight, BadgeCheck, Quote, Star } from "lucide-react";
 import Link from "next/link";
 
 export function TestimonialSection() {
@@ -49,9 +50,18 @@ export function TestimonialSection() {
             >
               <div className='mb-4 flex items-start justify-between gap-3'>
                 <div>
-                  <p className='font-semibold text-slate-950 dark:text-white'>
-                    {testimonial.name}
-                  </p>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <p className='font-semibold text-slate-950 dark:text-white'>
+                      {testimonial.name}
+                    </p>
+                    <Badge
+                      variant='outline'
+                      className='rounded-full border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300'
+                    >
+                      <BadgeCheck className='mr-1 h-3 w-3' />
+                      Verified patient
+                    </Badge>
+                  </div>
                   <p className='text-xs font-semibold text-slate-500 dark:text-slate-400'>
                     {testimonial.location}
                   </p>

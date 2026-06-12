@@ -67,10 +67,14 @@ function matchesFilter(test: PublicCatalogTest, search: string) {
 }
 
 function getTestContext(test: PublicCatalogTest) {
+  const backendSummary = test.shortDescription || test.description;
+
+  if (backendSummary?.trim()) {
+    return backendSummary.trim();
+  }
+
   const haystack = [
     test.testName,
-    test.shortDescription,
-    test.description,
     test.category?.name,
     ...(test.keywords ?? []),
   ]
@@ -82,6 +86,24 @@ function getTestContext(test: PublicCatalogTest) {
       fallback.match.some((token) => haystack.includes(token)),
     )?.text ?? homepageDefaultTestContext
   );
+}
+
+function getConsumerSpecimenLabel(test: PublicCatalogTest) {
+  if (test.isPanel) return "Blood draw";
+
+  const specimen = test.specimenType?.toLowerCase() || "";
+  const preparation = test.preparation?.toLowerCase() || "";
+
+  if (
+    specimen.includes("blood") ||
+    specimen.includes("sst") ||
+    specimen.includes("lavender") ||
+    preparation.includes("collection")
+  ) {
+    return "Blood draw";
+  }
+
+  return test.specimenType || "Blood draw";
 }
 
 export function PopularTestsSection() {
@@ -244,7 +266,7 @@ export function PopularTestsSection() {
                       <div className='mt-4 grid gap-2 text-sm text-slate-600 dark:text-slate-300'>
                         <div className='flex items-center gap-2'>
                           <TestTube2 className='h-4 w-4 text-sky-700 dark:text-sky-300' />
-                          <span>{test.specimenType || "Blood draw"}</span>
+                          <span>{getConsumerSpecimenLabel(test)}</span>
                         </div>
                         <div className='flex items-center gap-2'>
                           <Clock3 className='h-4 w-4 text-sky-700 dark:text-sky-300' />

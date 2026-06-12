@@ -189,7 +189,11 @@ export const homepageTestContextFallbacks = [
     text: "Often ordered to check nutrient markers tied to wellness and energy.",
   },
   {
-    match: ["testosterone", "hormone", "cortisol", "dhea"],
+    match: ["testosterone"],
+    text: "Often ordered to assess androgen levels tied to vitality, muscle mass, and hormonal balance.",
+  },
+  {
+    match: ["hormone", "cortisol", "dhea"],
     text: "Often ordered to explore hormone markers and wellness questions.",
   },
 ];

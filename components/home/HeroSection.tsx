@@ -1,7 +1,6 @@
 "use client";
 
 import { QuickHealthQuizDialog } from "@/components/home/QuickHealthQuizDialog";
-import { CompactTrustBadges } from "@/components/shared/CompactTrustBadges";
 import { ZipSearchForm } from "@/components/shared/ZipSearchForm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,50 +8,37 @@ import { trackEzLabEvent } from "@/lib/analytics";
 import { homepageHeroCopy } from "@/lib/copyContent";
 import {
   ArrowRight,
-  Beaker,
   CheckCircle2,
-  FileCheck2,
+  FlaskConical,
   MapPinned,
   Search,
-  ShieldCheck,
   Stethoscope,
 } from "lucide-react";
 import Link from "next/link";
 
-const assuranceCards = [
-  {
-    icon: ShieldCheck,
-    title: "Availability first",
-    label: "Check state and ZIP eligibility before the order path.",
-  },
-  {
-    icon: Beaker,
-    title: "Clear catalog",
-    label: "Compare test names, specimen notes, timing, and price.",
-  },
-  {
-    icon: FileCheck2,
-    title: "Result guidance",
-    label: "Secure account access with educational context.",
-  },
-];
-
 const journeySteps = [
   {
     label: "Search",
-    text: "Find tests by health goal, marker, or condition.",
+    text: "Find tests by health goal, marker, condition, or partner network.",
     icon: Search,
   },
   {
     label: "Check",
-    text: "Confirm local ordering availability before checkout.",
+    text: "Confirm state and ZIP availability before checkout.",
     icon: MapPinned,
   },
   {
     label: "Review",
-    text: "Open pricing, specimen, and result timing details.",
+    text: "Compare price, specimen notes, timing, and result access.",
     icon: Stethoscope,
   },
+];
+
+const labPartners = [
+  { name: "ACCESS", status: "Active" },
+  { name: "Labcorp", status: "Network" },
+  { name: "CPL", status: "Network" },
+  { name: "Quest", status: "Network" },
 ];
 
 export function HeroSection() {
@@ -107,36 +93,21 @@ export function HeroSection() {
                 </Link>
               </Button>
             </div>
-
-            <CompactTrustBadges placement='hero' className='max-w-3xl' />
-
-            <div className='grid max-w-3xl gap-3 sm:grid-cols-3'>
-              {assuranceCards.map((card) => {
-                const Icon = card.icon;
-                return (
-                  <div
-                    key={card.title}
-                    className='rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm dark:border-slate-800 dark:bg-slate-900'
-                  >
-                    <span className='mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300'>
-                      <Icon className='h-5 w-5' />
-                    </span>
-                    <h2 className='text-sm font-semibold text-slate-950 dark:text-white'>
-                      {card.title}
-                    </h2>
-                    <p className='mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400'>
-                      {card.label}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
           </div>
 
           <div className='relative min-w-0'>
-            <div className='overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_32px_70px_-45px_rgba(14,116,144,0.45)] dark:border-slate-800 dark:bg-slate-900'>
-              <div className='border-b border-slate-200 bg-gradient-to-r from-white via-sky-50 to-cyan-50 px-5 py-5 dark:border-slate-800 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 sm:px-6'>
-                <div className='flex min-w-0 flex-wrap items-start justify-between gap-3'>
+            <div className='relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_32px_70px_-45px_rgba(14,116,144,0.45)] dark:border-slate-800 dark:bg-slate-900'>
+              <div
+                className='absolute inset-0 bg-[url("/images/Pipetting.jpeg")] bg-cover bg-center opacity-15 dark:opacity-10'
+                aria-hidden='true'
+              />
+              <div
+                className='absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(240,249,255,0.94)_48%,rgba(236,253,245,0.9)_100%)] dark:bg-[linear-gradient(135deg,rgba(2,6,23,0.96)_0%,rgba(15,23,42,0.93)_58%,rgba(8,47,73,0.9)_100%)]'
+                aria-hidden='true'
+              />
+
+              <div className='relative border-b border-slate-200/80 px-5 py-5 dark:border-slate-800/80 sm:px-6'>
+                <div className='flex min-w-0 flex-wrap items-start justify-between gap-4'>
                   <div className='min-w-0'>
                     <p className='text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-300'>
                       Care journey
@@ -144,20 +115,55 @@ export function HeroSection() {
                     <h2 className='mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white'>
                       From question to test
                     </h2>
+                    <p className='mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300'>
+                      One flow for eligibility, partner selection, checkout, and secure results.
+                    </p>
                   </div>
-                  <span className='rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300'>
+                  <span className='inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300'>
+                    <CheckCircle2 className='h-3.5 w-3.5' />
                     ACCESS active
                   </span>
                 </div>
               </div>
 
-              <div className='space-y-4 p-5 sm:p-6'>
+              <div className='relative space-y-4 p-5 sm:p-6'>
+                <div className='rounded-[1.5rem] border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/65'>
+                  <div className='flex items-center gap-3'>
+                    <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'>
+                      <FlaskConical className='h-5 w-5' />
+                    </span>
+                    <div className='min-w-0'>
+                      <p className='text-sm font-bold text-slate-950 dark:text-white'>
+                        Partner lab options
+                      </p>
+                      <p className='text-xs leading-5 text-slate-600 dark:text-slate-400'>
+                        Availability is checked by test, ZIP, and state rules.
+                      </p>
+                    </div>
+                  </div>
+                  <div className='mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4'>
+                    {labPartners.map((partner) => (
+                      <div
+                        key={partner.name}
+                        className='rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/80'
+                      >
+                        <p className='text-sm font-bold text-slate-950 dark:text-white'>
+                          {partner.name}
+                        </p>
+                        <p className='mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300'>
+                          {partner.status}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {journeySteps.map((step, index) => {
                   const Icon = step.icon;
                   return (
                     <div
                       key={step.label}
-                      className='grid grid-cols-[auto_1fr] gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950'
+                      className='grid grid-cols-[auto_1fr] gap-3 rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/65'
                     >
                       <span className='flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm dark:bg-slate-900 dark:text-sky-300'>
                         <Icon className='h-5 w-5' />
@@ -179,7 +185,7 @@ export function HeroSection() {
                   );
                 })}
 
-                <div className='rounded-[1.5rem] border border-sky-100 bg-sky-50/80 p-4 dark:border-sky-900/60 dark:bg-sky-950/20'>
+                <div className='rounded-[1.5rem] border border-sky-100 bg-sky-50/85 p-4 shadow-sm backdrop-blur dark:border-sky-900/60 dark:bg-sky-950/35'>
                   <div className='flex items-start gap-3'>
                     <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm dark:bg-slate-900 dark:text-sky-300'>
                       <CheckCircle2 className='h-5 w-5' />
@@ -189,7 +195,7 @@ export function HeroSection() {
                         Simple next step
                       </p>
                       <p className='mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400'>
-                        Browse individual tests or panels, then review details before checkout.
+                        Browse tests or panels, confirm availability, then review details before checkout.
                       </p>
                     </div>
                   </div>
