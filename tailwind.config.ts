@@ -36,7 +36,11 @@ const config = {
       "2xl": "1400px",
     },
     extend: {
-        colors: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        heading: ["var(--font-jakarta)", "var(--font-inter)", "system-ui", "sans-serif"],
+      },
+      colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

@@ -145,7 +145,7 @@ export function ZipSearchForm({
             type='submit'
             disabled={checking}
             className={cn(
-              "h-12 w-full rounded-2xl bg-sky-700 px-6 text-[15px] font-black text-white shadow-[0_16px_30px_-18px_rgba(3,105,161,0.7)] hover:bg-sky-800 sm:w-auto",
+              "h-12 w-full rounded-2xl bg-blue-600 px-6 text-[15px] font-semibold text-white shadow-md shadow-blue-600/20 hover:bg-blue-700 sm:w-auto",
               buttonClassName,
             )}
           >

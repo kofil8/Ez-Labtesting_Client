@@ -37,43 +37,40 @@ const toneClasses = {
 
 export function HealthGoalDiscoverySection() {
   return (
-    <section id='health-goals' className='scroll-mt-24 bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] py-14 dark:bg-slate-950 sm:py-18 lg:py-20'>
+    <section id='health-goals' className='scroll-mt-24 bg-[linear-gradient(180deg,#ffffff_0%,#f4f9fd_100%)] py-14 dark:bg-slate-950 sm:py-18 lg:py-20'>
       <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
-        <div className='mx-auto mb-9 max-w-3xl text-center'>
-          <div>
-            <p className='mb-3 inline-flex rounded-full border border-sky-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-700 shadow-sm dark:border-sky-900/60 dark:bg-slate-900 dark:text-sky-300'>
-              Quick health quiz
-            </p>
-            <h2 className='text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl'>
-              Start with what you want to understand
-            </h2>
-            <p className='mt-4 text-base leading-7 text-slate-600 dark:text-slate-300'>
-              You do not need to know the exact test name. Pick the closest goal
-              and we will send you to matching lab options.
-            </p>
-          </div>
+        <div className='mx-auto mb-10 max-w-3xl text-center'>
+          <p className='mb-3 inline-flex rounded-full border border-sky-200 bg-white px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-sky-700 shadow-2xs dark:border-sky-900/60 dark:bg-slate-900 dark:text-sky-300'>
+            Start with How You Feel
+          </p>
+          <h2 className='text-3xl font-extrabold tracking-tight text-slate-950 font-heading dark:text-white sm:text-4xl'>
+            Don&apos;t Know the Exact Test Name?
+          </h2>
+          <p className='mt-3 text-base leading-relaxed text-slate-600 dark:text-slate-300'>
+            Most people don&apos;t know clinical test names like &ldquo;CMP&rdquo; or &ldquo;TSH&rdquo;. Choose your symptom or health goal below, and we&apos;ll point you to the doctor-recommended tests.
+          </p>
         </div>
 
-        <div className='rounded-[2rem] border border-slate-200 bg-white p-4 shadow-[0_30px_80px_-55px_rgba(14,165,233,0.45)] dark:border-slate-800 dark:bg-slate-900 sm:p-5 lg:p-6'>
-          <div className='mb-5 flex flex-col gap-3 border-b border-slate-100 pb-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between'>
+        <div className='rounded-3xl border border-slate-200/90 bg-white p-5 shadow-lg shadow-sky-950/5 dark:border-slate-800 dark:bg-slate-900 sm:p-6 lg:p-8'>
+          <div className='mb-6 flex flex-col gap-3 border-b border-slate-100 pb-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between'>
             <div>
-              <p className='text-xs font-semibold uppercase tracking-[0.18em] text-blue-600 dark:text-sky-300'>
-                Browse by concern
+              <p className='text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400'>
+                Popular Health Goals &amp; Symptoms
               </p>
-              <p className='mt-1 text-sm text-slate-600 dark:text-slate-400'>
-                Pick a common starting point and jump into the matching catalog.
+              <p className='mt-0.5 text-sm text-slate-500 dark:text-slate-400'>
+                Click any category to view matching diagnostic tests and upfront pricing.
               </p>
             </div>
-          <Button
-            asChild
-            variant='outline'
-              className='w-full rounded-full bg-white font-semibold shadow-sm dark:bg-slate-950 sm:w-auto'
-          >
-            <Link href='/tests'>Browse all tests</Link>
-          </Button>
+            <Button
+              asChild
+              variant='outline'
+              className='w-full rounded-xl border-slate-200 bg-white font-bold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 sm:w-auto'
+            >
+              <Link href='/tests'>View All 500+ Tests</Link>
+            </Button>
           </div>
 
-          <div className='grid gap-3 md:grid-cols-2 xl:grid-cols-3'>
+          <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-3'>
             {homepageGoalCards.map((goal) => {
               const Icon = icons[goal.icon as keyof typeof icons] || Sparkles;
               const tone =
@@ -83,35 +80,44 @@ export function HealthGoalDiscoverySection() {
                 <Link
                   key={goal.title}
                   href={`/tests?search=${encodeURIComponent(goal.search)}`}
-                  className='group flex h-full flex-col rounded-2xl border border-slate-200 bg-slate-50/60 p-4 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-sky-800'
+                  className='group flex h-full flex-col justify-between rounded-2xl border border-slate-200/80 bg-slate-50/50 p-5 transition-all duration-200 hover:-translate-y-1 hover:border-sky-300 hover:bg-white hover:shadow-md hover:shadow-sky-100/50 dark:border-slate-800 dark:bg-slate-950/60 dark:hover:border-sky-700 dark:hover:bg-slate-900 dark:hover:shadow-none'
                 >
-                  <div className='mb-4 flex items-start justify-between gap-4'>
-                    <span
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border ${tone}`}
-                    >
-                      <Icon className='h-5 w-5' />
-                    </span>
-                    <ArrowRight className='mt-2 h-5 w-5 text-slate-300 transition-colors group-hover:text-sky-700 dark:text-slate-700 dark:group-hover:text-sky-300' />
-                  </div>
-                  <h3 className='text-base font-bold leading-snug text-slate-950 dark:text-white'>
-                    {goal.title}
-                  </h3>
-                  <p className='mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400'>
-                    {goal.description}
-                  </p>
-                  <div className='mt-4 flex flex-wrap gap-2'>
-                    {goal.examples.map((example) => (
+                  <div>
+                    <div className='mb-4 flex items-start justify-between gap-3'>
                       <span
-                        key={example}
-                        className='rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border shadow-2xs ${tone}`}
                       >
-                        {example}
+                        <Icon className='h-5 w-5' />
                       </span>
-                    ))}
+                      {"badge" in goal && goal.badge && (
+                        <span className='rounded-full border border-sky-100 bg-sky-50 px-2.5 py-0.5 text-[11px] font-bold text-sky-700 dark:border-sky-900 dark:bg-sky-950 dark:text-sky-300'>
+                          {goal.badge}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className='text-base font-bold text-slate-900 group-hover:text-sky-700 dark:text-white dark:group-hover:text-sky-300'>
+                      {goal.title}
+                    </h3>
+                    <p className='mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400'>
+                      {goal.description}
+                    </p>
+                    <div className='mt-3.5 flex flex-wrap gap-1.5'>
+                      {goal.examples.map((example) => (
+                        <span
+                          key={example}
+                          className='rounded-md border border-slate-200/80 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-700 dark:border-slate-850 dark:bg-slate-900 dark:text-slate-300'
+                        >
+                          {example}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <span className='mt-auto pt-5 text-sm font-semibold text-sky-700 group-hover:text-sky-800 dark:text-sky-300'>
-                    See matching tests
-                  </span>
+                  <div className='mt-5 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-850'>
+                    <span className='text-xs font-bold text-sky-600 group-hover:text-sky-700 dark:text-sky-400'>
+                      See tests &amp; cash pricing
+                    </span>
+                    <ArrowRight className='h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-sky-600 dark:text-slate-600 dark:group-hover:text-sky-400' />
+                  </div>
                 </Link>
               );
             })}

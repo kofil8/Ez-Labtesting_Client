@@ -43,28 +43,62 @@ const labPartners = [
 
 export function HeroSection() {
   return (
-    <section className='relative overflow-hidden border-b border-sky-100 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_56%,#f3faff_100%)] pb-10 pt-8 dark:border-slate-800 dark:bg-slate-950 sm:pb-14 sm:pt-10 lg:pb-16 lg:pt-14'>
-      <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
-        <div className='grid min-w-0 items-center gap-10 lg:grid-cols-[1.03fr_0.97fr] lg:gap-12'>
-          <div className='min-w-0 space-y-5 lg:space-y-6'>
-            <Badge className='border border-sky-200 bg-white px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-700 shadow-sm hover:bg-white dark:border-sky-900/60 dark:bg-slate-900 dark:text-sky-300'>
-              {homepageHeroCopy.eyebrow}
-            </Badge>
+    <section className='relative overflow-hidden border-b border-sky-100 bg-[linear-gradient(180deg,#f6fbff_0%,#ffffff_50%,#f0f9ff_100%)] pb-12 pt-8 dark:border-slate-800 dark:bg-slate-950 sm:pb-16 sm:pt-12 lg:pb-20 lg:pt-16'>
+      {/* Subtle background glow */}
+      <div
+        className='pointer-events-none absolute -top-24 left-1/2 -z-10 h-96 w-[56rem] -translate-x-1/2 rounded-full bg-gradient-to-tr from-sky-200/40 via-blue-100/30 to-emerald-100/30 blur-3xl dark:from-sky-950/20 dark:to-emerald-950/20'
+        aria-hidden='true'
+      />
 
-            <div className='space-y-3 sm:space-y-4'>
-              <h1 className='max-w-3xl text-4xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-5xl lg:text-[3.55rem] lg:leading-[1.05]'>
-                Find the right lab test
-                <span className='block text-sky-700 dark:text-sky-300'>
-                  for what you want to understand.
+      <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
+        <div className='grid min-w-0 items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14'>
+          {/* Left Column: Human Hook, Value Prop, Search & Trust */}
+          <div className='min-w-0 space-y-6'>
+            <div className='inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/95 px-3.5 py-1.5 shadow-sm dark:border-sky-800 dark:bg-slate-900'>
+              <span className='flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse' />
+              <span className='text-xs font-bold uppercase tracking-wider text-sky-800 dark:text-sky-300'>
+                {homepageHeroCopy.eyebrow}
+              </span>
+            </div>
+
+            <div className='space-y-4'>
+              <h1 className='text-4xl font-extrabold tracking-tight text-slate-950 font-heading dark:text-white sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1] [text-wrap:balance]'>
+                Doctor-Approved Lab Tests.{" "}
+                <span className='bg-gradient-to-r from-sky-600 via-blue-600 to-teal-600 bg-clip-text text-transparent dark:from-sky-400 dark:to-teal-300'>
+                  On Your Own Terms.
                 </span>
               </h1>
-              <p className='max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg'>
+              <p className='max-w-2xl text-base leading-relaxed text-slate-700 dark:text-slate-300 sm:text-lg'>
                 {homepageHeroCopy.description}
               </p>
             </div>
 
+            {/* Reassurance Checklist Pills */}
+            <div className='grid grid-cols-2 gap-2.5 pt-1 sm:grid-cols-4'>
+              {[
+                { title: "No Doctor Visit", sub: "Physician order included" },
+                { title: "No Insurance Needed", sub: "Upfront cash pricing" },
+                { title: "4,000+ Draw Labs", sub: "Quest, Labcorp & ACCESS" },
+                { title: "Fast 24-72h Results", sub: "Confidential & secure" },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className='rounded-xl border border-sky-100 bg-white/90 p-2.5 shadow-xs dark:border-slate-800 dark:bg-slate-900/80'
+                >
+                  <div className='flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white'>
+                    <CheckCircle2 className='h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400' />
+                    <span>{item.title}</span>
+                  </div>
+                  <p className='mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 pl-5'>
+                    {item.sub}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* ZIP & Search Action Box */}
             <div
-              className='max-w-2xl rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_-45px_rgba(14,116,144,0.5)] dark:border-slate-800 dark:bg-slate-900'
+              className='rounded-2xl border border-slate-200/90 bg-white p-5 shadow-lg shadow-sky-950/5 dark:border-slate-800 dark:bg-slate-900'
               onClickCapture={(event) => {
                 const target = event.target as HTMLElement;
                 if (target.closest("button")) {
@@ -74,132 +108,141 @@ export function HeroSection() {
                 }
               }}
             >
+              <p className='mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400'>
+                Check lab availability near you:
+              </p>
               <ZipSearchForm
-                buttonLabel='Check ZIP'
+                buttonLabel='Find Local Labs'
+                buttonClassName='bg-blue-600 hover:bg-blue-700 font-semibold'
                 helperText={homepageHeroCopy.helperText}
               />
             </div>
 
-            <div className='flex max-w-2xl flex-col gap-3 sm:flex-row'>
+            {/* CTAs */}
+            <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
               <QuickHealthQuizDialog />
               <Button
                 asChild
                 variant='outline'
-                className='h-12 w-full rounded-full border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900 sm:w-auto'
+                className='h-12 rounded-xl border-slate-300 bg-white px-6 font-semibold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
               >
                 <Link href='/tests'>
                   {homepageHeroCopy.secondaryCta}
-                  <ArrowRight className='ml-2 h-4 w-4' />
+                  <ArrowRight className='ml-2 h-4 w-4 text-blue-600' />
                 </Link>
               </Button>
             </div>
+
+            {/* Social Proof Strip */}
+            <div className='flex flex-wrap items-center gap-4 pt-1 text-xs text-slate-600 dark:text-slate-400'>
+              <div className='flex items-center gap-1 text-amber-500'>
+                {"★".repeat(5)}
+                <span className='ml-1 font-bold text-slate-900 dark:text-white'>4.9/5</span>
+              </div>
+              <span className='text-slate-300 dark:text-slate-700'>•</span>
+              <span className='font-semibold text-slate-700 dark:text-slate-300'>
+                Over 50,000+ Tests Completed Across the USA
+              </span>
+            </div>
           </div>
 
+          {/* Right Column: Visual Human Reassurance Card (Result Experience Preview) */}
           <div className='relative min-w-0'>
-            <div className='relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_32px_70px_-45px_rgba(14,116,144,0.45)] dark:border-slate-800 dark:bg-slate-900'>
-              <div
-                className='absolute inset-0 bg-[url("/images/Pipetting.jpeg")] bg-cover bg-center opacity-15 dark:opacity-10'
-                aria-hidden='true'
-              />
-              <div
-                className='absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(240,249,255,0.94)_48%,rgba(236,253,245,0.9)_100%)] dark:bg-[linear-gradient(135deg,rgba(2,6,23,0.96)_0%,rgba(15,23,42,0.93)_58%,rgba(8,47,73,0.9)_100%)]'
-                aria-hidden='true'
-              />
-
-              <div className='relative border-b border-slate-200/80 px-5 py-5 dark:border-slate-800/80 sm:px-6'>
-                <div className='flex min-w-0 flex-wrap items-start justify-between gap-4'>
-                  <div className='min-w-0'>
-                    <p className='text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-300'>
-                      Care journey
-                    </p>
-                    <h2 className='mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white'>
-                      From question to test
-                    </h2>
-                    <p className='mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300'>
-                      One flow for eligibility, partner selection, checkout, and secure results.
+            <div className='relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-sky-900/10 dark:border-slate-800 dark:bg-slate-900 sm:p-7'>
+              {/* Header */}
+              <div className='flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800'>
+                <div className='flex items-center gap-2.5'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300'>
+                    <FlaskConical className='h-5 w-5' />
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-bold text-slate-900 dark:text-white'>
+                      Patient Requisition & Results
+                    </h3>
+                    <p className='text-xs text-slate-500 dark:text-slate-400'>
+                      Sample Patient Portal View
                     </p>
                   </div>
-                  <span className='inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50/90 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300'>
-                    <CheckCircle2 className='h-3.5 w-3.5' />
-                    ACCESS active
-                  </span>
+                </div>
+                <span className='inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/60 dark:text-emerald-300'>
+                  <CheckCircle2 className='h-3.5 w-3.5 text-emerald-600' /> Verified CLIA Lab
+                </span>
+              </div>
+
+              {/* Sample Lab Marker Cards */}
+              <div className='mt-5 space-y-3'>
+                <div className='rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-950/60'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <p className='text-xs font-semibold text-slate-900 dark:text-white'>
+                        Vitamin D, 25-Hydroxy
+                      </p>
+                      <p className='text-[11px] text-slate-400 dark:text-slate-500'>Optimal Range: 30 - 100 ng/mL</p>
+                    </div>
+                    <div className='text-right'>
+                      <span className='inline-flex items-center rounded-md border border-emerald-200/70 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300'>
+                        48.2 ng/mL (Normal)
+                      </span>
+                    </div>
+                  </div>
+                  <div className='mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800'>
+                    <div className='h-full w-[52%] rounded-full bg-emerald-500' />
+                  </div>
+                </div>
+
+                <div className='rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-950/60'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <p className='text-xs font-semibold text-slate-900 dark:text-white'>
+                        TSH (Thyroid Stimulating Hormone)
+                      </p>
+                      <p className='text-[11px] text-slate-400 dark:text-slate-500'>Standard Range: 0.45 - 4.50 uIU/mL</p>
+                    </div>
+                    <div className='text-right'>
+                      <span className='inline-flex items-center rounded-md border border-emerald-200/70 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/60 dark:text-emerald-300'>
+                        1.85 uIU/mL (Optimal)
+                      </span>
+                    </div>
+                  </div>
+                  <div className='mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800'>
+                    <div className='h-full w-[45%] rounded-full bg-emerald-500' />
+                  </div>
+                </div>
+
+                <div className='rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-950/60'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <p className='text-xs font-semibold text-slate-900 dark:text-white'>
+                        Total Cholesterol / Lipid Panel
+                      </p>
+                      <p className='text-[11px] text-slate-400 dark:text-slate-500'>Desirable: &lt; 200 mg/dL</p>
+                    </div>
+                    <div className='text-right'>
+                      <span className='inline-flex items-center rounded-md border border-sky-200/70 bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-800 dark:border-sky-900/50 dark:bg-sky-950/60 dark:text-sky-300'>
+                        182 mg/dL (Normal)
+                      </span>
+                    </div>
+                  </div>
+                  <div className='mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800'>
+                    <div className='h-full w-[60%] rounded-full bg-sky-500' />
+                  </div>
                 </div>
               </div>
 
-              <div className='relative space-y-4 p-5 sm:p-6'>
-                <div className='rounded-[1.5rem] border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/65'>
-                  <div className='flex items-center gap-3'>
-                    <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'>
-                      <FlaskConical className='h-5 w-5' />
-                    </span>
-                    <div className='min-w-0'>
-                      <p className='text-sm font-bold text-slate-950 dark:text-white'>
-                        Partner lab options
-                      </p>
-                      <p className='text-xs leading-5 text-slate-600 dark:text-slate-400'>
-                        Availability is checked by test, ZIP, and state rules.
-                      </p>
-                    </div>
-                  </div>
-                  <div className='mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4'>
-                    {labPartners.map((partner) => (
-                      <div
-                        key={partner.name}
-                        className='rounded-2xl border border-slate-200 bg-white/90 px-3 py-2 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/80'
-                      >
-                        <p className='text-sm font-bold text-slate-950 dark:text-white'>
-                          {partner.name}
-                        </p>
-                        <p className='mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300'>
-                          {partner.status}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
+              {/* Bottom Quick Benefits Callout */}
+              <div className='mt-5 flex items-center justify-between rounded-xl bg-gradient-to-r from-sky-50 to-teal-50 p-3.5 dark:from-slate-800 dark:to-slate-850'>
+                <div className='flex items-center gap-2'>
+                  <Stethoscope className='h-4 w-4 text-teal-600 dark:text-teal-400' />
+                  <span className='text-xs font-semibold text-slate-800 dark:text-slate-200'>
+                    Doctor order generated immediately upon checkout
+                  </span>
                 </div>
-
-                {journeySteps.map((step, index) => {
-                  const Icon = step.icon;
-                  return (
-                    <div
-                      key={step.label}
-                      className='grid grid-cols-[auto_1fr] gap-3 rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur dark:border-slate-800/80 dark:bg-slate-950/65'
-                    >
-                      <span className='flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm dark:bg-slate-900 dark:text-sky-300'>
-                        <Icon className='h-5 w-5' />
-                      </span>
-                      <div>
-                        <div className='flex items-center justify-between gap-3'>
-                          <h3 className='text-sm font-bold text-slate-950 dark:text-white'>
-                            {step.label}
-                          </h3>
-                          <span className='text-xs font-semibold text-slate-400 dark:text-slate-600'>
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                        </div>
-                        <p className='mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400'>
-                          {step.text}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                <div className='rounded-[1.5rem] border border-sky-100 bg-sky-50/85 p-4 shadow-sm backdrop-blur dark:border-sky-900/60 dark:bg-sky-950/35'>
-                  <div className='flex items-start gap-3'>
-                    <span className='flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm dark:bg-slate-900 dark:text-sky-300'>
-                      <CheckCircle2 className='h-5 w-5' />
-                    </span>
-                    <div>
-                      <p className='text-sm font-bold text-slate-950 dark:text-white'>
-                        Simple next step
-                      </p>
-                      <p className='mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400'>
-                        Browse tests or panels, confirm availability, then review details before checkout.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <Link
+                  href='/tests'
+                  className='text-xs font-bold text-sky-700 hover:underline dark:text-sky-400'
+                >
+                  See Tests →
+                </Link>
               </div>
             </div>
           </div>

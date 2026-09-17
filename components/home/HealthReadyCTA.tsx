@@ -14,22 +14,22 @@ export function HealthReadyCTA() {
         <div className='relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-5 text-slate-950 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-white sm:p-8 lg:p-10'>
           <div className='grid gap-8 lg:grid-cols-[1fr_0.88fr] lg:items-center'>
             <div>
-              <p className='mb-3 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300'>
+              <p className='mb-3 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300'>
                 {homepageFinalCtaCopy.eyebrow}
               </p>
-              <h2 className='text-2xl font-bold tracking-tight sm:text-4xl'>
+              <h2 className='text-3xl font-extrabold tracking-tight font-heading sm:text-4xl text-slate-900 dark:text-white'>
                 {homepageFinalCtaCopy.title}
               </h2>
-              <p className='mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg sm:leading-8'>
+              <p className='mt-3.5 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg'>
                 {homepageFinalCtaCopy.description}
               </p>
               <div className='mt-5 flex flex-wrap gap-2'>
                 {homepageFinalCtaCopy.chips.map((item) => (
                   <span
                     key={item}
-                    className='rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300'
+                    className='rounded-full border border-sky-100 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-2xs dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300'
                   >
-                    {item}
+                    ✓ {item}
                   </span>
                 ))}
               </div>

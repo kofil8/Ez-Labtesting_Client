@@ -11,33 +11,33 @@ import {
 const cards = [
   {
     icon: CreditCard,
-    title: "Transparent pricing",
-    description: "See your price before checkout.",
+    title: "100% Upfront Pricing",
+    description: "The price you see is what you pay. Zero hidden lab processing fees or surprise hospital bills.",
   },
   {
     icon: ShieldCheck,
-    title: "Secure checkout",
-    description: "Pay online through secure checkout.",
+    title: "Doctor's Order Included",
+    description: "Every test is physician-approved by our licensed clinical network—no doctor appointment required.",
   },
   {
     icon: FileLock2,
-    title: "Privacy-aware result access",
-    description: "View results from your account.",
+    title: "HIPAA-Protected Privacy",
+    description: "Your health records are strictly confidential and encrypted with 256-bit bank-grade security.",
   },
   {
     icon: MapPinned,
-    title: "State rules apply",
-    description: "Availability depends on your state and ZIP.",
+    title: "Nationwide Lab Network",
+    description: "Walk into authorized patient service centers (Quest, Labcorp, ACCESS) across 45+ states.",
   },
   {
     icon: FlaskConical,
-    title: "Partner lab fulfillment",
-    description: "Collection and testing are handled by authorized partners.",
+    title: "CLIA & CAP Accredited",
+    description: "Samples are analyzed exclusively in certified, high-complexity diagnostic clinical laboratories.",
   },
   {
     icon: AlertTriangle,
-    title: "Not for emergencies",
-    description: "Severe symptoms? Call 911 or seek urgent care.",
+    title: "Routine & Wellness Use",
+    description: "For diagnostic screening and monitoring. If experiencing a medical emergency, please call 911.",
   },
 ];
 
@@ -46,14 +46,14 @@ export function ComplianceBanner() {
     <section id='not-for-emergency-use' className='bg-white py-14 dark:bg-slate-950 sm:py-20'>
       <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
         <div className='mb-10 max-w-3xl'>
-          <p className='mb-3 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300'>
-            Privacy, pricing & compliance
+          <p className='mb-3 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300'>
+            Patient Bill of Rights &amp; Standards
           </p>
-          <h2 className='text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl'>
-            Clear before you order
+          <h2 className='text-3xl font-extrabold tracking-tight text-slate-950 font-heading dark:text-white sm:text-4xl'>
+            Transparent, Regulated, &amp; Patient-First
           </h2>
-          <p className='mt-4 text-lg leading-8 text-slate-600 dark:text-slate-300'>
-            Know the price, privacy basics, and ordering limits before you pay.
+          <p className='mt-3 text-base leading-relaxed text-slate-600 dark:text-slate-300'>
+            We believe you deserve full control over your health data with complete transparency around pricing, clinical oversight, and privacy.
           </p>
         </div>
 

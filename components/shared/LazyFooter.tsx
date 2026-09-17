@@ -7,11 +7,7 @@ const SiteFooterLazy = dynamic(() =>
   import("@/components/shared/SiteFooter").then((m) => m.SiteFooter),
 );
 
-export function LazyFooter({
-  showDeveloperCredit = false,
-}: {
-  showDeveloperCredit?: boolean;
-}) {
+export function LazyFooter() {
   const footerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -22,13 +18,12 @@ export function LazyFooter({
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          // Once visible, we can stop observing to avoid unnecessary updates
           observer.unobserve(entry.target);
         }
       },
       {
-        threshold: 0.1, // Trigger when 10% of footer is visible
-        rootMargin: "50px", // Start loading when 50px away from viewport
+        threshold: 0.1,
+        rootMargin: "50px",
       },
     );
 
@@ -41,9 +36,7 @@ export function LazyFooter({
 
   return (
     <div ref={footerRef}>
-      {isVisible && (
-        <SiteFooterLazy showDeveloperCredit={showDeveloperCredit} />
-      )}
+      {isVisible && <SiteFooterLazy />}
     </div>
   );
 }

@@ -13,9 +13,23 @@ import { CartSidebarProvider } from "@/lib/cart-sidebar-context";
 import { CheckoutErrorProvider } from "@/lib/checkout-error-context";
 import { CheckoutProvider } from "@/lib/context/CheckoutContext";
 import { RestrictionStatusProvider } from "@/lib/context/RestrictionStatusContext";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+  weight: ["500", "600", "700", "800"],
+});
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
@@ -102,7 +116,7 @@ export default function RootLayout({
   return (
     <html
       lang='en'
-      className='smooth-scroll'
+      className={`smooth-scroll ${inter.variable} ${plusJakarta.variable}`}
       data-scroll-behavior='smooth'
       suppressHydrationWarning
     >
@@ -112,7 +126,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className='antialiased custom-scrollbar' suppressHydrationWarning>
+      <body className='font-sans antialiased custom-scrollbar' suppressHydrationWarning>
         <Script id='init-theme' strategy='beforeInteractive'>
           {`(() => {
   try {

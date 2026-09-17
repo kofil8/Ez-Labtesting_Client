@@ -1,39 +1,43 @@
 export const homepageTrustClaims = [
-  "Most results in 24-72h after processing",
-  "Secure, HIPAA-compliant account access",
-  "No insurance required",
-  "Built for U.S. state-by-state availability",
+  "Physician Order Included Automatically",
+  "CLIA-Certified & Accredited Labs",
+  "No Doctor Visit or Insurance Needed",
+  "Private Results Delivered in 24-72h",
 ];
 
 export const homepageHeroCopy = {
-  eyebrow: "Built for U.S. patients",
-  headline: "Lab results you can understand.",
+  eyebrow: "Confidential Clinical Lab Testing • USA",
+  headline: "Doctor-Approved Lab Tests. On Your Own Terms.",
   description:
-    "Start with what you want to learn, check local availability, and order eligible lab tests with clear cash-pay pricing through authorized U.S. partner lab coverage.",
-  primaryCta: "Quick Health Quiz",
-  secondaryCta: "Browse Tests",
+    "Skip the waiting rooms and surprise medical bills. Order 100% confidential blood tests online with a physician's order included, visit an authorized local lab near you, and view secure results in 24–72 hours.",
+  primaryCta: "Find Tests by Symptoms",
+  secondaryCta: "Browse 500+ Tests",
   helperText:
-    "Enter your ZIP code to confirm local availability before you order.",
+    "Enter your ZIP code to find nearby certified draw locations (Quest, Labcorp & ACCESS networks).",
 };
 
 export const homepageTrustBadgeCopy = [
   {
-    title: "HIPAA",
-    label: "HIPAA-compliant privacy",
+    title: "CLIA & CAP",
+    label: "Certified laboratory partners",
   },
   {
-    title: "CLIA",
-    label: "CLIA-certified lab processing",
+    title: "Doctor Approved",
+    label: "Physician order included",
   },
   {
-    title: "256-bit",
-    label: "Encrypted checkout",
+    title: "100% Private",
+    label: "HIPAA-compliant & confidential",
+  },
+  {
+    title: "HSA / FSA",
+    label: "Eligible card payment accepted",
   },
 ];
 
 export const physicianTrustCopy = {
-  badgeText: "Physician Reviewed",
-  supportingText: "Physician involvement where required",
+  badgeText: "Physician Approved",
+  supportingText: "Every order reviewed by a licensed physician",
 };
 
 export const siteMetricsFallback = {
@@ -47,168 +51,169 @@ export const homepageTestimonials = [
     name: "Sarah M.",
     location: "Seattle, WA",
     rating: 5,
-    testName: "Thyroid wellness",
+    testName: "Thyroid & Energy Panel",
     href: "/tests?search=thyroid%20wellness",
     quote:
-      "The plain-language flow helped me stop guessing and bring something concrete to my appointment.",
+      "My doctor wouldn't order a full thyroid panel, so I ordered it myself. The walk-in visit took 10 minutes and I had clear answers in two days!",
   },
   {
     name: "Marcus T.",
     location: "Austin, TX",
     rating: 5,
-    testName: "Annual checkup",
+    testName: "Comprehensive Annual Wellness",
     href: "/tests?search=annual%20cbc%20cmp%20lipid",
     quote:
-      "I could compare pricing, check availability, and get results in one place without phone calls.",
+      "No high deductible bills or insurance hassles. Transparent cash price paid upfront, and the results portal was easy to read and share with my MD.",
   },
   {
     name: "Priya K.",
     location: "Phoenix, AZ",
     rating: 5,
-    testName: "A1C tracking",
+    testName: "Diabetes & A1C Tracker",
     href: "/tests?search=a1c%20glucose",
     quote:
-      "The process felt private and clear, and the results gave me better questions for my clinician.",
+      "The discrete process gave me peace of mind. Fast, private, and way cheaper than doing it directly through urgent care.",
   },
   {
     name: "Daniel R.",
     location: "Denver, CO",
-    rating: 4,
-    testName: "Heart markers",
-    href: "/tests?search=lipid%20cholesterol",
+    rating: 5,
+    testName: "Men's Hormone & Vitality",
+    href: "/tests?search=testosterone%20cortisol",
     quote:
-      "Transparent cash pricing and secure account access made it easier to follow up on routine labs.",
+      "Clear upfront pricing and quick turnaround. It helped me monitor my hormone levels proactively without waiting weeks for an appointment.",
   },
 ];
 
 export const homepageGoalCards = [
   {
-    title: "I'm tired all the time",
+    title: "Feeling Tired & Low Energy?",
     description:
-      "Look at common markers tied to energy, thyroid, vitamins, and metabolism.",
-    examples: ["TSH", "Vitamin D", "B12"],
+      "Check common fatigue root causes: thyroid, vitamin levels, iron, and metabolism.",
+    examples: ["TSH + Free T4", "Vitamin D (25-OH)", "Vitamin B12", "Ferritin / Iron"],
     search: "fatigue thyroid vitamin b12 metabolic",
     icon: "sparkles",
     tone: "sky",
+    badge: "Most Common",
   },
   {
-    title: "I want a yearly checkup",
+    title: "Overdue for an Annual Checkup?",
     description:
-      "Start with baseline labs people commonly review for routine wellness.",
-    examples: ["CBC", "CMP", "Lipid"],
+      "Complete wellness baseline covering vital organs, heart health, blood sugar, and blood counts.",
+    examples: ["Comprehensive Metabolic (CMP)", "Lipid Panel", "CBC", "HbA1c"],
     search: "annual checkup cbc cmp lipid a1c",
     icon: "stethoscope",
     tone: "emerald",
+    badge: "Essential",
   },
   {
-    title: "I'm tracking A1C",
+    title: "Hormone & Vitality Balance",
     description:
-      "Compare glucose and metabolic markers often used for blood sugar trends.",
-    examples: ["A1C", "Glucose", "CMP"],
-    search: "diabetes a1c glucose metabolic",
-    icon: "droplet",
-    tone: "amber",
-  },
-  {
-    title: "I'm checking thyroid",
-    description:
-      "Find thyroid markers that may help explain energy, weight, or temperature changes.",
-    examples: ["TSH", "Free T4", "Free T3"],
-    search: "thyroid tsh free t4 free t3",
-    icon: "activity",
-    tone: "blue",
-  },
-  {
-    title: "I want heart markers",
-    description:
-      "Review cholesterol and inflammation markers used in heart-health screening.",
-    examples: ["Lipid", "hs-CRP", "ApoB"],
-    search: "heart lipid cholesterol hs-crp apob",
-    icon: "heart",
-    tone: "rose",
-  },
-  {
-    title: "I'm checking hormones",
-    description:
-      "Explore common hormone markers for men's, women's, and general wellness.",
-    examples: ["Testosterone", "Cortisol", "DHEA"],
+      "Explore key hormonal biomarkers for energy, mood, muscle tone, and reproductive wellness.",
+    examples: ["Total & Free Testosterone", "Estradiol", "Cortisol", "DHEA-S"],
     search: "hormone testosterone cortisol dhea",
     icon: "microscope",
     tone: "violet",
+    badge: "Popular",
+  },
+  {
+    title: "Weight & Metabolism Check",
+    description:
+      "Understand insulin resistance, thyroid speed, and lipid markers impacting weight.",
+    examples: ["Fasting Insulin", "Thyroid Panel", "Glucose", "Lipid Profile"],
+    search: "weight metabolism insulin glucose thyroid",
+    icon: "activity",
+    tone: "blue",
+    badge: "High Demand",
+  },
+  {
+    title: "Heart Health & Cholesterol",
+    description:
+      "Go beyond basic cholesterol with in-depth cardiovascular risk and inflammation markers.",
+    examples: ["Advanced Lipid Panel", "hs-CRP (Inflammation)", "ApoB", "Homocysteine"],
+    search: "heart lipid cholesterol hs-crp apob",
+    icon: "heart",
+    tone: "rose",
+    badge: "Recommended",
+  },
+  {
+    title: "Private & Confidential Screen",
+    description:
+      "Discrete, 100% confidential sexual health and infectious disease screenings with zero awkward questions.",
+    examples: ["Comprehensive 10-Test Panel", "HIV 4th Gen", "Chlamydia & Gonorrhea"],
+    search: "std sti confidential screening",
+    icon: "droplet",
+    tone: "amber",
+    badge: "100% Discrete",
   },
 ];
 
 export const homepageHowItWorksSteps = [
   {
-    title: "Start with what you want to understand",
+    step: "01",
+    title: "Order Online in Minutes",
     description:
-      "Choose a plain-language health goal or browse the catalog if you already know the test name.",
+      "Select your tests or panel. A licensed physician order is included automatically—no prescription or doctor visit required.",
     icon: "search",
+    highlight: "Doctor's Order Included",
   },
   {
-    title: "Check what's available near you",
+    step: "02",
+    title: "Walk Into a Local Lab",
     description:
-      "State rules, ZIP coverage, partner availability, and test type are checked before checkout.",
+      "Bring your lab requisition to any certified draw location near you. Most visits take less than 10 minutes with no appointment necessary.",
     icon: "map",
+    highlight: "Fast 10-Minute Visit",
   },
   {
-    title: "Order securely",
+    step: "03",
+    title: "Get Clear Results in 24–72 Hours",
     description:
-      "Review cash-pay pricing, complete patient details, and pay through secure checkout.",
-    icon: "lock",
-  },
-  {
-    title: "Visit a partner draw center",
-    description:
-      "When eligible, collection instructions point you to an approved partner location.",
-    icon: "building",
-  },
-  {
-    title: "Read results in your account",
-    description:
-      "Results return to your secure account with marker flags and educational context when available.",
+      "Receive an email when your results are ready in your secure, HIPAA-protected patient portal with easy-to-read charts you can download or share.",
     icon: "file",
+    highlight: "Secure & Downloadable",
   },
 ];
 
 export const homepageTestContextFallbacks = [
   {
     match: ["a1c", "glucose", "diabetes"],
-    text: "Often ordered to understand blood sugar trends and metabolic health.",
+    text: "Often ordered to monitor blood sugar trends, prediabetes risk, and metabolic vitality.",
   },
   {
     match: ["thyroid", "tsh", "t4", "t3"],
-    text: "Often ordered when energy, weight, or thyroid function is a concern.",
+    text: "Essential for evaluating unexplained weight fluctuations, persistent fatigue, and mood changes.",
   },
   {
     match: ["lipid", "cholesterol", "heart", "cardiac"],
-    text: "Often ordered to review cholesterol and heart-health markers.",
+    text: "Key markers for cardiovascular health, arterial risk assessment, and dietary balance.",
   },
   {
     match: ["vitamin", "b12", "folate", "d"],
-    text: "Often ordered to check nutrient markers tied to wellness and energy.",
+    text: "Crucial for immune resilience, bone density, mental focus, and everyday stamina.",
   },
   {
     match: ["testosterone"],
-    text: "Often ordered to assess androgen levels tied to vitality, muscle mass, and hormonal balance.",
+    text: "Frequently checked for strength, libido, recovery, and overall male hormonal health.",
   },
   {
     match: ["hormone", "cortisol", "dhea"],
-    text: "Often ordered to explore hormone markers and wellness questions.",
+    text: "Helps uncover adrenal fatigue, stress response, and endocrine system equilibrium.",
   },
 ];
 
 export const homepageDefaultTestContext =
-  "Often ordered by people who want a clearer baseline before their next health conversation.";
+  "Trusted diagnostic screening for proactive health tracking and peace of mind.";
 
 export const homepageFinalCtaCopy = {
-  eyebrow: "Take the next step",
-  title: "See what is available in your ZIP code.",
+  eyebrow: "Ready to Take Charge of Your Health?",
+  title: "Find Certified Blood Draw Centers Near You",
   description:
-    "Check coverage first, then browse eligible tests with transparent pricing before checkout.",
+    "Enter your ZIP code to find nearby approved partner facilities. Get upfront cash-pay pricing, doctor-approved lab orders, and results in days.",
   chips: [
-    "ACCESS active coverage",
-    "State and ZIP availability checked first",
-    "Secure account results",
+    "No Doctor's Prescription Needed",
+    "CLIA-Certified Partner Facilities",
+    "Results in 24-72 Hours",
+    "HSA & FSA Eligible Cards Accepted",
   ],
 };

@@ -160,7 +160,7 @@ export default function HomePage() {
         <FAQSection />
         <HealthReadyCTA />
       </main>
-      <LazyFooter showDeveloperCredit />
+      <LazyFooter />
     </>
   );
 }

@@ -122,16 +122,15 @@ export function PopularTestsSection() {
       className='scroll-mt-24 bg-[linear-gradient(180deg,#f4faff_0%,#ffffff_100%)] py-14 dark:bg-slate-950 sm:py-20'
     >
       <div className='container mx-auto px-4 xs:px-5 sm:px-6 lg:px-8 xl:px-10'>
-        <div className='mx-auto mb-8 max-w-3xl text-center'>
-          <p className='mb-3 inline-flex rounded-full border border-sky-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-700 shadow-sm dark:border-sky-900/60 dark:bg-slate-900 dark:text-sky-300'>
-              Trending this week
-            </p>
-          <h2 className='text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl'>
-            Browse commonly checked lab tests
+        <div className='mx-auto mb-10 max-w-3xl text-center'>
+          <p className='mb-3 inline-flex rounded-full border border-sky-200 bg-white px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-sky-700 shadow-2xs dark:border-sky-900/60 dark:bg-slate-900 dark:text-sky-300'>
+            Upfront Cash-Pay Pricing
+          </p>
+          <h2 className='text-3xl font-extrabold tracking-tight text-slate-950 font-heading dark:text-white sm:text-4xl'>
+            Most Frequently Ordered Clinical Tests
           </h2>
-          <p className='mt-3 text-base leading-7 text-slate-600 dark:text-slate-300'>
-            Start with common labs, compare essentials, then confirm local
-            availability before checkout.
+          <p className='mt-3 text-base leading-relaxed text-slate-600 dark:text-slate-300'>
+            Clear, transparent pricing with doctor&apos;s authorization and lab processing fees included. No hidden medical bills or insurance deductibles.
           </p>
         </div>
 
