@@ -168,6 +168,14 @@ export function HomepageLabAssistant({
 }: HomepageLabAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showLauncherPopup, setShowLauncherPopup] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLauncherPopup(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
